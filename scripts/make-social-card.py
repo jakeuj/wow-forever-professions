@@ -29,10 +29,10 @@ def create():
     draw.line((70, 116, 1130, 116), fill='#343b31', width=1)
     draw.text((76, 61), '永恆 / 專業議事廳', font=font(23, True), fill=cream)
     draw.text((810, 65), 'WORLD OF WARCRAFT · FOREVER', font=font(13, latin=True), fill=gold)
-    draw.text((76, 149), '推薦起手 / 雙採集主號＋後勤小號', font=font(16), fill=gold)
-    draw.text((72, 196), '主號雙採集，', font=font(50, True), fill=cream)
-    draw.text((72, 272), '小號做包與拆裝。', font=font(50, True), fill='#edcf94')
-    draw.text((78, 362), '先兩隻起步，再逐步補齊全專業。', font=font(20), fill=muted)
+    draw.text((76, 149), '推薦首選 / 主號雙採集＋小號雙製造', font=font(16), fill=gold)
+    draw.text((72, 196), '主號負責採集，', font=font(50, True), fill=cream)
+    draw.text((72, 272), '小號專心製造。', font=font(50, True), fill='#edcf94')
+    draw.text((78, 362), '三位雙製造工匠，集中六項製造。', font=font(20), fill=muted)
     cx, cy = 961, 287
     for radius, line in [(175, '#51472e'), (149, '#76623b'), (137, '#373d2b')]:
         draw.ellipse((cx-radius, cy-radius, cx+radius, cy+radius), outline=line, width=1)
@@ -52,7 +52,7 @@ def create():
         draw.text((x+74, 489), label, font=font(17), fill=cream)
     draw.text((78, 558), 'blog.jakeuj.com/wow-forever-professions', font=font(14, latin=True), fill=muted)
     draw.text((1130, 558), 'zh-TW / 2026.11.11', font=font(13, latin=True), fill=muted, anchor='ra')
-    destination = ROOT / 'assets' / 'social-v2.png'
+    destination = ROOT / 'assets' / 'social-v3.png'
     image.save(destination, optimize=True)
     print(f'{destination} ({WIDTH}x{HEIGHT})')
 
