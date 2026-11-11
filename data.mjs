@@ -16,6 +16,59 @@ const hunter = { classId: 'hunter', name: '獵人', seal: '獵', role: '皮料�
 const rogue = { classId: 'rogue', name: '盜賊', seal: '賊', role: '工程與工具', order: '第四隻副角', profs: ['mining', 'engineering'], reason: '礦料自供工程工具；增加控場與工具選擇。' };
 const warrior = { classId: 'warrior', name: '戰士', seal: '戰', role: '武器與護甲', order: '長期工匠', profs: ['mining', 'blacksmithing'], reason: '採礦直接供應鍛造，製作自用武器與護甲。' };
 const paladin = { classId: 'paladin', name: '聖騎士', seal: '聖', role: '保留既有投入', order: '現有主角', profs: ['mining', 'blacksmithing'], reason: '礦料直接供應武器與護甲製作；維持主角的採礦／鍛造。' };
+export const paladinRoutes = {
+  keep: {
+    letter: 'A', label: '保留現況', pair: '採礦／鍛造', short: '主角不更換專業', recommended: true,
+    title: '保留採礦／鍛造，讓小號集中其他製造。',
+    description: '適合目前已學採礦／鍛造、想先延續投入的玩家。法師與獵人各學雙製造，聖騎士供礦給自己與盜賊，盜賊的第二格保留彈性。',
+    change: '聖騎士保留採礦／鍛造；先建立法師裁縫／附魔，再逐步補齊其他工匠。',
+    flow: '聖騎士的礦供自身鍛造與盜賊工程；德魯伊的草與皮供獵人；布料與可寄綠裝交法師。',
+    fit: '優先保留目前投入、想少洗專業的玩家。之後盜賊能穩定供礦時，也能銜接 B 路線。',
+    note: '五種職業、九項專業全部涵蓋，四位製造角色合計最多 18 點。盜賊只須工程即可補齊製造，第二格可留空或依玩法選擇。',
+    rows: [
+      { ...paladin, reason: '維持採礦／鍛造；採到的礦料也可供應盜賊工程。' },
+      { ...mage, order: '第一隻小號' },
+      { ...hunter, order: '雙製造小號', role: '製皮與煉金', profs: ['leatherworking', 'alchemy'], reason: '接收德魯伊的皮料與草藥，同時發展製皮／煉金。' },
+      { ...druid, order: '雙採集小號', role: '草藥與皮料', profs: ['herbalism', 'skinning'], reason: '採草與剝皮集中供應獵人；採集角仍需能前往相應地圖。' },
+      { ...rogue, order: '工程小號', role: '工程與彈性格', profs: ['engineering'], flexibleSlot: true, reason: '接收聖騎士的礦料發展工程，第二格保持彈性。' },
+    ],
+  },
+  crafting: {
+    letter: 'B', label: '主角雙製造', pair: '鍛造／工程學', short: '採礦移交盜賊',
+    title: '鍛造留在聖騎士，再加入工程工具。',
+    description: '聖騎士把採礦換成工程，盜賊接手供礦。主角、法師與獵人各學雙製造，六項製造集中在三位角色；主角自己也是工匠。',
+    change: '聖騎士採礦 → 工程；盜賊改學採礦。先備妥替代礦料來源，再考慮更換。',
+    flow: '盜賊的礦供聖騎士鍛造／工程；德魯伊的草與皮供獵人；布料與可寄綠裝交法師。',
+    fit: '想保留鍛造自用效益並增加工程工具的玩家。工程是此路線的具體示例，第二項製造仍可依坦／補／懲戒或 PvP 需求重配。',
+    note: '五種職業、九項專業、三位製造角色，最多 18 點。與 A 相比，主角的採礦與盜賊的工程互換；其餘三隻角色的專業不必改。',
+    rows: [
+      { ...paladin, role: '主角雙製造', profs: ['blacksmithing', 'engineering'], reason: '保留鍛造，把採礦換成工程；兩項製造都由主角使用。' },
+      { ...mage, order: '雙製造小號' },
+      { ...hunter, order: '雙製造小號', role: '製皮與煉金', profs: ['leatherworking', 'alchemy'], reason: '接收德魯伊的皮料與草藥，同時發展製皮／煉金。' },
+      { ...druid, order: '雙採集小號', role: '草藥與皮料', profs: ['herbalism', 'skinning'], reason: '採草與剝皮集中供應獵人。' },
+      { ...rogue, order: '採礦採集角', role: '礦料與彈性格', profs: ['mining'], flexibleSlot: true, reason: '礦料集中供應聖騎士的鍛造／工程，第二格可留空或另選。' },
+    ],
+  },
+  gathering: {
+    letter: 'C', label: '主角專心採集', pair: '採礦／剝皮', short: '鍛造移交戰士',
+    title: '主角保留採礦，製造工作交給小號。',
+    description: '此例聖騎士把鍛造換成剝皮，任務路上採礦與收皮；戰士承接鍛造／工程，法師與獵人各學雙製造，德魯伊提供草藥。',
+    change: '聖騎士鍛造 → 剝皮；鍛造交給戰士。更換前先盤點目前鍛造等級、配方與仍想自用的製造裝備。',
+    flow: '聖騎士的礦供戰士，皮料供獵人；德魯伊的草藥供獵人煉金；布料與可寄綠裝交法師。',
+    fit: '平常主要玩聖騎士、希望主角收材料而讓小號生產的玩家。若偏好採礦／採草，可讓德魯伊改負責剝皮，再重新分工。',
+    note: '五種職業、九項專業、三位製造小號，最多 18 點。這條路會更換主角的鍛造；部分製造裝備拾取綁定，收益會留在承接工作的工匠本人。',
+    rows: [
+      { ...paladin, role: '主角雙採集', profs: ['mining', 'skinning'], reason: '保留採礦，把鍛造換成剝皮；礦供戰士、皮供獵人。' },
+      { ...mage, order: '雙製造小號' },
+      { ...hunter, order: '雙製造小號', role: '製皮與煉金', profs: ['leatherworking', 'alchemy'], reason: '皮料由聖騎士提供，草藥由德魯伊提供，集中製皮／煉金。' },
+      { ...warrior, order: '雙製造小號', role: '鍛造與工程', profs: ['blacksmithing', 'engineering'], reason: '承接鍛造與工程，接收聖騎士提供的礦料。' },
+      { ...druid, order: '草藥採集角', role: '草藥與彈性格', profs: ['herbalism'], flexibleSlot: true, reason: '草藥供應獵人煉金；第二格可留空或依玩法選擇。' },
+    ],
+  },
+};
+export function getPaladinRoute(routeId = 'keep') {
+  return Object.hasOwn(paladinRoutes, routeId) ? paladinRoutes[routeId] : paladinRoutes.keep;
+}
 export const plans = {
   crafting: {
     label: '雙採集主號＋雙製造小號', tag: 'PLAN A · 集中製造首選', title: '主號供材料，三位小號各練雙製造。',
@@ -43,14 +96,15 @@ export const plans = {
     rows: [mage, druid, hunter, warrior, rogue],
   },
   paladin: {
-    label: '聖騎士既有配置', tag: 'PLAN D · 既有角色延伸', title: '已有採礦／鍛造？讓聖騎士繼續擔任工匠。',
-    description: '適合已學採礦／鍛造的聖騎士玩家。延續既有角色，再由法師提供裁縫／附魔，其他副角補上煉金、製皮與工程。',
-    note: '採礦重複一次：鍛造與工程各有礦料需求。五種職業不重複，九項主要專業全部涵蓋。',
-    rows: [paladin, mage, druid, hunter, { ...rogue, reason: '礦料自供工程工具，與聖騎士互補供應；增加控場與工具選擇。' }],
+    label: '聖騎士多路線', tag: 'PLAN D · 聖騎士路線比較', title: '從現有採礦／鍛造出發，考慮三條分工路線。',
+    description: '可先保留現況、改成主角雙製造，或把製造移交小號。三條路線都提供完整的全帳號分工，切換比較需要更換的專業與供料方式。',
+    note: paladinRoutes.keep.note,
+    rows: paladinRoutes.keep.rows,
   },
 };
-export function getRows(planId, stage = 'final') {
+export function getRows(planId, stage = 'final', routeId = 'keep') {
   const plan = plans[planId] || plans.crafting;
+  if (planId === 'paladin') return getPaladinRoute(routeId).rows.map(row => ({ ...row, profs: [...row.profs] }));
   return plan.rows.map(row => planId === 'gathering' && stage === 'start' && row.classId === 'druid'
     ? { ...row, profs: ['skinning', 'herbalism'], role: '雙採集起家', reason: '剝皮與採草存材料；皮留給獵人、草藥留給未來的煉金。此階段沒有製造傳承點數。' }
     : row);

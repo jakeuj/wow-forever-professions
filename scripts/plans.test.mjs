@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { professions, crafting, getRows, summarize, normalizeProgress, countPoints } from '../data.mjs';
+import { professions, crafting, paladinRoutes, getPaladinRoute, getRows, summarize, normalizeProgress, countPoints } from '../data.mjs';
 
 for (const plan of ['crafting', 'gathering', 'balanced', 'paladin']) {
   test(`${plan}: 五種職業、九項專業與十八點長期里程碑`, () => {
@@ -39,6 +39,39 @@ test('聖騎士保留既有採礦／鍛造，法師承接裁縫／附魔', () =>
   assert.equal(rows[0].classId, 'paladin');
   assert.deepEqual(rows[0].profs, ['mining', 'blacksmithing']);
   assert.deepEqual(rows.find(r => r.classId === 'mage').profs, ['tailoring', 'enchanting']);
+});
+for (const [route, mainProfs, expectedCrafters] of [
+  ['keep', ['mining', 'blacksmithing'], 4],
+  ['crafting', ['blacksmithing', 'engineering'], 3],
+  ['gathering', ['mining', 'skinning'], 3],
+]) {
+  test(`聖騎士 ${route} 路線：主角選擇、五種職業與六製造各一次`, () => {
+    const rows = getRows('paladin', 'final', route);
+    assert.equal(rows.length, 5);
+    assert.equal(new Set(rows.map(row => row.classId)).size, 5);
+    assert.deepEqual(rows[0].profs, mainProfs);
+    assert.ok(rows.every(row => row.profs.length >= 1 && row.profs.length <= 2));
+    assert.deepEqual([...summarize(rows).ids].sort(), professions.map(p => p.id).sort());
+    assert.equal(summarize(rows).points, 18);
+    assert.equal(summarize(rows).craftCharacters, expectedCrafters);
+    assert.deepEqual(rows.flatMap(row => row.profs).filter(id => crafting.some(p => p.id === id)).sort(), crafting.map(p => p.id).sort());
+  });
+}
+test('聖騎士 A 到 B 只交換主角採礦與盜賊工程，其餘角色專業維持', () => {
+  const early = getRows('paladin', 'final', 'keep');
+  const late = getRows('paladin', 'final', 'crafting');
+  for (const id of ['mage', 'hunter', 'druid']) {
+    assert.deepEqual(early.find(row => row.classId === id).profs, late.find(row => row.classId === id).profs);
+  }
+  assert.deepEqual(early.find(row => row.classId === 'rogue').profs, ['engineering']);
+  assert.deepEqual(late.find(row => row.classId === 'rogue').profs, ['mining']);
+});
+test('舊聖騎士入口及無效路線皆回到保留現況', () => {
+  assert.deepEqual(getRows('paladin'), getRows('paladin', 'final', 'keep'));
+  for (const invalid of ['unknown', 'constructor', 'toString']) {
+    assert.equal(getPaladinRoute(invalid), paladinRoutes.keep);
+    assert.deepEqual(getRows('paladin', 'final', invalid), getRows('paladin'));
+  }
 });
 test('進度按帳號專業計一次，每一階段累計六、十二、十八點', () => {
   for (const stage of [0, 1, 2, 3]) {

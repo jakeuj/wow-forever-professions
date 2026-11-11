@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111514">
   <title>魔獸世界：永恆｜全專業與傳承分配規劃</title>
-  <meta name="description" content="主號保留雙採集，三隻小號各學雙製造。比較集中雙製造、雙採集轉製造、直接分工與聖騎士既有配置，涵蓋九項專業與18點製造傳承。">
+  <meta name="description" content="主號保留雙採集，三隻小號各學雙製造。比較集中雙製造、雙採集轉製造、直接分工與聖騎士多路線，涵蓋九項專業與18點製造傳承。">
   <link rel="canonical" href="https://blog.jakeuj.com/wow-forever-professions/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="zh_TW">
@@ -24,8 +24,8 @@
   <meta name="twitter:image" content="https://blog.jakeuj.com/wow-forever-professions/assets/social-v3.png">
   <meta name="twitter:image:alt" content="三隻雙製造小號，搭配雙採集主號與採礦角色">
   <link rel="icon" type="image/svg+xml" href="./assets/crest.svg">
-  <link rel="stylesheet" href="./style.css?v=20261111-crafting">
-  <script src="./app.js?v=20261111-crafting" type="module"></script>
+  <link rel="stylesheet" href="./style.css?v=20261111-paladin">
+  <script src="./app.js?v=20261111-paladin" type="module"></script>
 </head>
 <body>
   <a class="skip-link" href="#plans">跳至專業分配</a>
@@ -65,10 +65,15 @@
         <button type="button" id="tab-crafting" role="tab" aria-selected="true" aria-controls="plan-panel" data-plan="crafting"><span>01</span><strong>雙製造小號 <em>首選</em></strong><small>主號採集，三位小號製造</small></button>
         <button type="button" id="tab-gathering" role="tab" aria-selected="false" aria-controls="plan-panel" tabindex="-1" data-plan="gathering"><span>02</span><strong>雙採集後轉製造</strong><small>先存材料，之後轉煉金</small></button>
         <button type="button" id="tab-balanced" role="tab" aria-selected="false" aria-controls="plan-panel" tabindex="-1" data-plan="balanced"><span>03</span><strong>直接全專業分工</strong><small>採集與製造同步養成</small></button>
-        <button type="button" id="tab-paladin" role="tab" aria-selected="false" aria-controls="plan-panel" tabindex="-1" data-plan="paladin"><span>04</span><strong>聖騎士既有配置</strong><small>已有採礦／鍛造可沿用</small></button>
+        <button type="button" id="tab-paladin" role="tab" aria-selected="false" aria-controls="plan-panel" tabindex="-1" data-plan="paladin"><span>04</span><strong>聖騎士多路線</strong><small>保留現況、雙製造或採集</small></button>
       </div>
       <div id="plan-panel" role="tabpanel" aria-labelledby="tab-crafting" tabindex="0">
         <div class="plan-intro"><div><span class="plan-tag" id="plan-tag">PLAN A · 集中製造首選</span><h3 id="plan-title">主號供材料，三位小號各練雙製造。</h3><p id="plan-description">德魯伊主號保留採草／剝皮；法師裁縫／附魔、獵人製皮／煉金、戰士鍛造／工程，把六項製造集中在三隻小號。盜賊負責採礦，第二格彈性保留。先從主號與法師起步，其餘角色逐步補齊。</p></div><div class="plan-controls"><button type="button" class="button button-outline" id="copy-plan">複製分配表 <span aria-hidden="true">↗</span></button><div class="stage-switch" id="stage-switch" role="group" aria-label="雙採集養成階段" hidden><button type="button" data-stage="start" aria-pressed="true">開局階段</button><button type="button" data-stage="final" aria-pressed="false">長期配置</button></div></div></div>
+        <section id="paladin-routes" class="paladin-routes" aria-labelledby="paladin-routes-title" hidden>
+          <div class="route-heading"><h3 id="paladin-routes-title">聖騎士的三條路線</h3><p>先比較主角要改什麼，再看誰提供材料。A 適合從既有採礦／鍛造繼續養成。</p></div>
+          <div id="paladin-route-options" class="route-options" role="group" aria-label="聖騎士專業路線"></div>
+          <dl class="route-details"><div><dt>聖騎士調整</dt><dd id="route-change"></dd></div><div><dt>材料流向</dt><dd id="route-flow"></dd></div><div><dt>適合情境</dt><dd id="route-fit"></dd></div></dl>
+        </section>
         <div class="roster" id="roster">
           <article class="character-row" data-class="druid"><span class="row-order">雙採集主號</span><div class="class-cell"><span class="class-seal druid" aria-hidden="true">德</span><div><h4>德魯伊</h4><small>草藥與皮料</small></div></div><div class="profession-pair"><span class="profession-chip ">草藥學</span><i aria-hidden="true">＋</i><span class="profession-chip ">剝皮</span></div><p class="row-reason">主號長期保留雙採集，草藥與皮料供應獵人的煉金／製皮。</p><span class="row-points">＋0<small>傳承上限</small></span></article>
           <article class="character-row" data-class="mage"><span class="row-order">第一隻小號</span><div class="class-cell"><span class="class-seal mage" aria-hidden="true">法</span><div><h4>法師</h4><small>雙製造：布甲</small></div></div><div class="profession-pair"><span class="profession-chip crafting">裁縫</span><i aria-hidden="true">＋</i><span class="profession-chip crafting">附魔</span></div><p class="row-reason">裁縫／附魔集中同一隻，先做包與拆裝，再逐步完成兩項製造里程碑。</p><span class="row-points">＋6<small>傳承上限</small></span></article>
