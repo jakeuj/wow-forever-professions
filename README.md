@@ -24,6 +24,8 @@
 
 招生圖採用使用者提供的營火橫幅，`assets/guild-campfire-640.webp`、`assets/guild-campfire-1280.webp` 保留完整構圖，`assets/guild-emblem.webp` 為方形公會識別。營火圖依螢幕寬度載入，所有圖片均設定尺寸與延遲載入。
 
+分配原則區開頭另放置「各有所長，一起準備下一段冒險。」專業分工插圖，呼應《黎明之劍》的互助與傳承意境。`assets/guild-professions-640.webp`、`assets/guild-professions-1280.webp`、`assets/guild-professions-1672.webp` 依螢幕寬度載入，保留完整人物與前景空位，設定圖片尺寸、替代文字與延遲載入；列印時隱藏插圖，保留分配說明。
+
 招生文案、聯絡方式與外連均在靜態 HTML 中，無 JavaScript 時仍可使用；啟用 JavaScript 後顯示三個複製按鈕。頁內招生入口會捲動並移動焦點至標題，保留目前的方案分享參數。複製失敗時顯示手動選取提示。
 
 ## 專案技能
