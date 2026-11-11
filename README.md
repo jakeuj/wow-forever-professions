@@ -16,6 +16,16 @@
 
 網站為純 HTML／CSS／JavaScript，不需安裝相依套件。進度只保存在使用者瀏覽器，不會讀取或同步遊戲資料。查證日期為 2026-11-11；規則與搭配依據列在網站中。
 
+## 《黎明之劍》公會招生
+
+專業分配表之後設有[公會招生區](https://blog.jakeuj.com/wow-forever-professions/#guild)，面向永恆亞服 PvP 部落玩家。文案依 [2026-11-11 巴哈招生文](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681451)，以新手教學、回鍋復健、日常組隊與預計 2026 年 12 月團本開荒為主。
+
+主要入口為 [Discord](https://discord.gg/RyTEUNTMMt)，另提供巴哈全文與公會聯絡人 `南方 勇者／amigo#3262`。聯絡人為 jakeuj 的朋友；這不是 jakeuj 本人的角色或 BattleTag。
+
+招生圖採用使用者提供的營火橫幅，`assets/guild-campfire-640.webp`、`assets/guild-campfire-1280.webp` 保留完整構圖，`assets/guild-emblem.webp` 為方形公會識別。營火圖依螢幕寬度載入，所有圖片均設定尺寸與延遲載入。
+
+招生文案、聯絡方式與外連均在靜態 HTML 中，無 JavaScript 時仍可使用；啟用 JavaScript 後顯示三個複製按鈕。頁內招生入口會捲動並移動焦點至標題，保留目前的方案分享參數。複製失敗時顯示手動選取提示。
+
 ## 本機預覽
 
 在專案目錄執行：
@@ -33,6 +43,8 @@ node --test scripts/plans.test.mjs
 ```
 
 資料集中於 `data.mjs`；`app.js` 處理方案切換、複製與本機進度。分享圖可用 `scripts/make-social-card.py` 重建，需要 Python、Pillow 與 Windows 微軟正黑體。
+
+招生區另以瀏覽器檢查桌機與 360px 手機版、三個複製按鈕、既有路線參數保留、停用 JavaScript 後的靜態內容，以及傳承進度重新整理後的保存。剪貼簿拒絕寫入情境可用受限瀏覽器測試；自動化環境若接管剪貼簿，則以 API 拒絕的模擬驗證實際事件處理器。
 
 ## 發布
 

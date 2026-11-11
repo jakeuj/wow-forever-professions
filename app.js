@@ -1,4 +1,4 @@
-import { professions, crafting, plans, paladinRoutes, getPaladinRoute, getRows, summarize, normalizeProgress, countPoints } from './data.mjs?v=20261111-paladin';
+import { professions, crafting, plans, paladinRoutes, getPaladinRoute, getRows, summarize, normalizeProgress, countPoints } from './data.mjs?v=20261111-guild';
 
 const $ = selector => document.querySelector(selector);
 const storageKey = 'wow-forever-professions:milestones:v1';
@@ -99,6 +99,29 @@ document.querySelectorAll('[data-stage]').forEach(button => button.addEventListe
 }));
 
 window.addEventListener('hashchange', () => { readHash(); renderPlan(); });
+
+// Guild navigation keeps the active profession route in the share URL.
+document.querySelectorAll('[data-guild-link]').forEach(link => link.addEventListener('click', event => {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  $('#guild-title').focus({ preventScroll: true });
+  $('#guild').scrollIntoView({ block: 'start' });
+}));
+
+document.querySelectorAll('[data-copy-target]').forEach(button => {
+  button.hidden = false;
+  button.addEventListener('click', async () => {
+    const text = document.getElementById(button.dataset.copyTarget).textContent.trim();
+    const status = $('#guild-copy-status');
+    status.textContent = '';
+    try {
+      await navigator.clipboard.writeText(text);
+      status.textContent = `已複製「${text}」`;
+    } catch {
+      status.textContent = '無法自動複製，請選取上方文字手動複製。';
+    }
+  });
+});
 
 $('#copy-plan').addEventListener('click', async () => {
   const rows = getRows(selectedPlan, selectedStage, selectedPaladinRoute);
