@@ -1,6 +1,6 @@
 # 魔獸世界：永恆｜專業與傳承分配規劃
 
-[開啟網站](https://jakeuj.github.io/wow-forever-professions/)
+[開啟網站](https://blog.jakeuj.com/wow-forever-professions/)
 
 台灣繁體中文的全帳號專業規劃頁：比較從零分配、雙採集開局、保留聖騎士採礦／鍛造三版方案。包含九項專業覆蓋檢查、六項製造傳承里程碑記錄，以及可複製的分配表與方案連結。
 

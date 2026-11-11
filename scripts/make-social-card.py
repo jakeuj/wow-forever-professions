@@ -50,7 +50,7 @@ def create():
     for x, number, label in [(78, '05', '不同職業'), (328, '09', '主要專業'), (578, '18', '製造里程碑點數')]:
         draw.text((x, 473), number, font=font(42, latin=True), fill=gold)
         draw.text((x+74, 489), label, font=font(17), fill=cream)
-    draw.text((78, 558), 'jakeuj.github.io/wow-forever-professions', font=font(14, latin=True), fill=muted)
+    draw.text((78, 558), 'blog.jakeuj.com/wow-forever-professions', font=font(14, latin=True), fill=muted)
     draw.text((1130, 558), 'zh-TW / 2026.11.11', font=font(13, latin=True), fill=muted, anchor='ra')
     destination = ROOT / 'assets' / 'social-v1.png'
     image.save(destination, optimize=True)
