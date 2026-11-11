@@ -1,11 +1,11 @@
-import { professions, crafting, plans, getRows, summarize, normalizeProgress, countPoints } from './data.mjs';
+import { professions, crafting, plans, getRows, summarize, normalizeProgress, countPoints } from './data.mjs?v=20261111-public';
 
 const $ = selector => document.querySelector(selector);
 const storageKey = 'wow-forever-professions:milestones:v1';
 const byId = Object.fromEntries(professions.map(p => [p.id, p]));
 const tabs = [...document.querySelectorAll('[data-plan]')];
-let selectedPlan = 'paladin';
-let selectedStage = 'final';
+let selectedPlan = 'gathering';
+let selectedStage = 'start';
 let progress = normalizeProgress(null);
 let storageAvailable = true;
 let toastTimer;

@@ -17,28 +17,28 @@ const rogue = { classId: 'rogue', name: '盜賊', seal: '賊', role: '工程與�
 const warrior = { classId: 'warrior', name: '戰士', seal: '戰', role: '武器與護甲', order: '長期工匠', profs: ['mining', 'blacksmithing'], reason: '採礦直接供應鍛造，製作自用武器與護甲。' };
 const paladin = { classId: 'paladin', name: '聖騎士', seal: '聖', role: '保留既有投入', order: '現有主角', profs: ['mining', 'blacksmithing'], reason: '礦料直接供應武器與護甲製作；維持主角的採礦／鍛造。' };
 export const plans = {
-  balanced: {
-    label: '從零分配', tag: 'PLAN A · 從零規劃', title: '從零建立，讓材料與製造一一對上。',
-    description: '暫不考慮既有角色，直接安排長期分工。法師先提供後勤，其餘製造各配一項採集，降低材料斷鏈的機會。',
-    note: '採礦重複一次，分別支援鍛造與工程。這版忽略既有角色；已有聖騎士採礦／鍛造時，可直接選第三版。',
-    rows: [mage, druid, hunter, warrior, rogue],
-  },
   gathering: {
-    label: '雙採集開局', tag: 'PLAN B · 分階段養成', title: '先把材料存下來，再讓德魯伊接手煉金。',
-    description: '首角德魯伊先剝皮／採草，早期另建法師做包與拆裝。皮料存給獵人，草藥留作日後煉金；準備好再轉換。',
+    label: '雙採集主號＋後勤小號', tag: 'PLAN A · 推薦起手', title: '主號雙採集，小號做包與拆裝。',
+    description: '先建立兩隻角色：德魯伊主號剝皮／採草，法師小號裁縫／附魔。其餘三位工匠之後再補；皮料留給獵人、草藥留作煉金，準備好再轉換。',
     note: '長期將德魯伊的剝皮換成煉金，保留採草。等獵人能持續供皮、煉金材料與升階條件準備好即可，不必硬等滿級。',
     startNote: '開局暫缺煉金，因此目前涵蓋 8 項專業、5 項製造。若永久保留雙採集，需另找角色學煉金，或讓另一位工匠改雙製造。',
-    rows: [{ ...druid, order: '第一隻角色', reason: '長期保留採草，把剝皮換成煉金；材料與升階條件備妥後再轉。' }, { ...mage, order: '早建支援小號' }, { ...hunter, order: '承接剝皮' }, warrior, rogue],
+    rows: [{ ...druid, order: '主號', reason: '長期保留採草，把剝皮換成煉金；材料與升階條件備妥後再轉。' }, { ...mage, order: '第一隻小號' }, { ...hunter, order: '後續：承接皮料' }, { ...warrior, order: '後續：鍛造' }, { ...rogue, order: '後續：工程' }],
+  },
+  balanced: {
+    label: '直接全專業分工', tag: 'PLAN B · 長期分工', title: '直接搭配採集與製造，建立完整分工。',
+    description: '適合想邊練等、邊製作裝備的玩家。法師負責裁縫／附魔，其餘製造各配一項採集，逐步建立五隻不同職業的工匠。',
+    note: '採礦重複一次，分別支援鍛造與工程。已有聖騎士採礦／鍛造的玩家，也可參考第三版延續既有投入。',
+    rows: [mage, druid, hunter, warrior, rogue],
   },
   paladin: {
-    label: '聖騎士既有配置', tag: 'PLAN C · 推薦方案', title: '聖騎士繼續鍛造，其他角色補齊版圖。',
-    description: '保留主角已學的採礦／鍛造。先建立法師支援做包與拆裝，再逐步補上煉金、製皮與工程。',
+    label: '聖騎士既有配置', tag: 'PLAN C · 既有角色延伸', title: '已有採礦／鍛造？讓聖騎士繼續擔任工匠。',
+    description: '適合已學採礦／鍛造的聖騎士玩家。延續既有角色，再由法師提供裁縫／附魔，其他副角補上煉金、製皮與工程。',
     note: '採礦重複一次：鍛造與工程各有礦料需求。五種職業不重複，九項主要專業全部涵蓋。',
     rows: [paladin, mage, druid, hunter, { ...rogue, reason: '礦料自供工程工具，與聖騎士互補供應；增加控場與工具選擇。' }],
   },
 };
 export function getRows(planId, stage = 'final') {
-  const plan = plans[planId] || plans.paladin;
+  const plan = plans[planId] || plans.gathering;
   return plan.rows.map(row => planId === 'gathering' && stage === 'start' && row.classId === 'druid'
     ? { ...row, profs: ['skinning', 'herbalism'], role: '雙採集起家', reason: '剝皮與採草存材料；皮留給獵人、草藥留給未來的煉金。此階段沒有製造傳承點數。' }
     : row);
