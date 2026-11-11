@@ -1,0 +1,4 @@
+interface:
+  display_name: "魔獸世界永恆"
+  short_description: "查證永恆台服玩法與專業傳承、維護公開規劃網站，並管理與診斷插件"
+  default_prompt: "使用 $wow-forever 以台灣繁體中文，協助查證永恆玩法、規劃專業與傳承、維護公開規劃網站，並依目前管理方式維護永恆插件。"
