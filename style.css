@@ -59,27 +59,48 @@
 .guild-story-label { font-size: 10px; letter-spacing: 1.5px; color: var(--gold); }
 .guild-stories h3 { font-family: var(--serif); font-size: 18px; font-weight: 600; margin: 12px 0; line-height: 1.7; }
 .guild-stories p { margin: 0; font-size: 13px; line-height: 2; color: var(--muted); }
-.guild-contacts { margin-top: 32px; padding: 25px 28px 12px; border: 1px solid #71574380; background: linear-gradient(110deg, #67413425, #44303c18); }
-.guild-contact-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 20px; }
-.guild-contact-heading h3 { margin: 0; font-family: var(--serif); font-size: 17px; font-weight: 500; letter-spacing: 1px; }
-.guild-contact-heading p { margin: 0; font-size: 11px; color: var(--muted); }
-.guild-contact-list { display: grid; grid-template-columns: 1fr 1fr 1.65fr; gap: 24px; margin: 22px 0 4px; }
-.guild-contact-list > div { min-width: 0; }
-.guild-contact-list dt { font-size: 10px; color: #b5a58f; letter-spacing: .6px; }
-.guild-contact-list dd { display: flex; align-items: center; gap: 12px; margin: 4px 0 0; }
-.guild-contact-list dd > span { font-size: 14px; color: var(--text); user-select: all; overflow-wrap: anywhere; }
-.guild-contact-list .guild-greeting dd > span { font-size: 12px; }
-.guild-copy-button { flex-shrink: 0; min-height: 44px; min-width: 44px; padding: 7px; border: 1px solid #74603d; background: transparent; color: var(--gold); font-size: 11px; }
-.guild-copy-button:hover { background: #cfb17a12; border-color: var(--gold); }
-.guild-copy-status { min-height: 24px; margin: 6px 0 0; font-size: 12px; line-height: 2; color: var(--gold-bright); overflow-wrap: anywhere; }
+.guild-contacts { margin-top: 34px; padding: 28px 28px 14px; border: 1px solid #71574380; background: radial-gradient(ellipse at 0 0, #9c713b12, transparent 65%), #151917; }
+.guild-contact-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px 28px; }
+.guild-contact-heading h3 { margin: 5px 0 0; font-family: var(--serif); font-size: 21px; font-weight: 500; letter-spacing: 1px; line-height: 1.7; text-wrap: balance; }
+.guild-contact-heading h3 > span { display: inline-block; }
+.guild-contact-heading p { margin: 0; font-size: 12px; color: var(--muted); }
+.guild-contact-heading .guild-contact-kicker { font-size: 10px; letter-spacing: 2px; color: var(--gold); }
+.guild-contact-heading > p { flex-shrink: 0; }
+.guild-contact-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; margin-top: 24px; }
+.guild-contact-card { min-width: 0; padding: 22px; border: 1px solid #665b415c; background: linear-gradient(130deg, #cfb17a08, transparent), #181e1a; }
+.guild-contact-card:focus-within { border-color: var(--gold-dim); }
+.guild-contact-person { display: flex; align-items: center; gap: 14px; }
+.guild-contact-seal { position: relative; display: grid; place-items: center; flex-shrink: 0; width: 44px; height: 50px; border: 1px solid #a58a515c; background: #cfb17a07; color: var(--gold); font: 23px var(--serif); }
+.guild-contact-seal::after { content: ""; position: absolute; inset: 4px; border: 1px solid #cfb17a24; pointer-events: none; }
+.guild-contact-identity { min-width: 0; flex: 1; }
+.guild-contact-identity > p { margin: 0 0 3px; color: #b5b3a0; font-size: 10px; letter-spacing: 1px; }
+.guild-contact-identity h4 { margin: 0; font-family: var(--serif); font-size: 23px; font-weight: 500; letter-spacing: 1px; line-height: 1.5; color: var(--gold-bright); user-select: all; }
+.guild-contact-details { margin: 18px 0 0; padding-top: 15px; border-top: 1px solid #cfb17a1c; }
+.guild-contact-details dt { margin-bottom: 3px; font-size: 10px; color: #b5b3a0; letter-spacing: .6px; }
+.guild-contact-details dd { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0; min-height: 44px; }
+.guild-contact-details dd > span { min-width: 0; font-size: 16px; color: var(--text); user-select: all; overflow-wrap: anywhere; }
+.guild-copy-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; flex-shrink: 0; min-height: 44px; min-width: 80px; padding: 9px 11px; border: 1px solid #74603d99; background: #cfb17a04; color: var(--gold); font-size: 11px; line-height: 1.5; white-space: nowrap; transition: background .2s, border-color .2s, color .2s; }
+.guild-copy-button svg { flex-shrink: 0; width: 15px; height: 15px; }
+.guild-copy-button:hover { background: #cfb17a12; border-color: var(--gold); color: var(--gold-bright); }
+.guild-copy-button.is-copied { color: #c5d6b1; border-color: #82976b; background: #82976b12; }
+.guild-greeting { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 18px; padding: 18px 20px; border-left: 2px solid var(--gold-dim); background: #cfb17a06; }
+.guild-greeting-label { margin: 0 0 5px; font-size: 11px; color: var(--muted); }
+.guild-greeting-message { margin: 0; font-family: var(--serif); font-size: 16px; line-height: 1.8; color: var(--text); }
+.guild-greeting-message > span { user-select: all; }
+.guild-contact-note { margin: 15px 0 0; font-size: 11px; color: var(--muted); }
+.guild-copy-status { min-height: 24px; margin: 3px 0 0; font-size: 12px; line-height: 2; color: var(--gold-bright); overflow-wrap: anywhere; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 10px 20px; font-size: 10px; color: var(--gold); }
 .footer-links a:hover { color: var(--gold-bright); }
 @media (max-width: 1120px) {
   .guild-intro { gap: 30px; }
   .guild-stories { gap: 24px; }
   .guild-stories h3 { font-size: 16px; }
-  .guild-contact-list { grid-template-columns: 1fr 1fr; }
-  .guild-greeting { grid-column: 1 / -1; }
+  .guild-contact-heading { align-items: flex-start; flex-direction: column; gap: 10px; }
+  .guild-contact-heading > p br { display: none; }
+  .guild-contact-card { padding: 20px; }
+  .guild-contact-seal { width: 36px; height: 44px; font-size: 21px; }
+  .guild-contact-person { gap: 12px; }
+  .guild-contact-identity h4 { font-size: 21px; }
 }
 @media (max-width: 900px) {
   .guild-intro { grid-template-columns: 1fr; gap: 28px; }
@@ -109,14 +130,23 @@
   .guild-stories { grid-template-columns: 1fr; gap: 23px; margin-top: 32px; }
   .guild-stories article { padding-top: 17px; }
   .guild-stories h3 { font-size: 17px; margin-block: 8px; }
-  .guild-contacts { margin-top: 27px; padding: 20px 17px 10px; }
-  .guild-contact-heading h3 { font-size: 16px; }
+  .guild-contacts { margin-top: 27px; padding: 22px 17px 10px; }
+  .guild-contact-heading h3 { max-width: 17em; font-size: 20px; letter-spacing: .5px; }
   .guild-contact-heading p { font-size: 11px; }
-  .guild-contact-list { grid-template-columns: 1fr; gap: 18px; margin-top: 23px; }
-  .guild-greeting { grid-column: auto; }
-  .guild-contact-list dd { justify-content: space-between; }
-  .guild-contact-list .guild-greeting dd > span { font-size: 12px; }
+  .guild-contact-heading .guild-contact-kicker { font-size: 10px; }
+  .guild-contact-cards { grid-template-columns: 1fr; gap: 12px; margin-top: 20px; }
+  .guild-contact-card { padding: 18px 16px; }
+  .guild-contact-identity h4 { font-size: 22px; }
+  .guild-contact-details { margin-top: 16px; padding-top: 12px; }
+  .guild-contact-details dd > span { font-size: 15px; }
+  .guild-greeting { align-items: flex-start; flex-direction: column; gap: 12px; padding: 16px; margin-top: 16px; }
+  .guild-greeting-message { font-size: 15px; }
+  .guild-greeting .guild-copy-button { align-self: flex-end; }
+  .guild-contact-note { font-size: 10px; }
   .footer-links { width: 100%; gap: 10px 18px; font-size: 10px; margin-top: 8px; }
+}
+@media (max-width: 400px) {
+  .guild-contact-seal { display: none; }
 }
 @media print {
   .hero-guild-link, .guild-section, .footer-links { display: none; }

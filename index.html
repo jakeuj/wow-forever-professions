@@ -24,8 +24,8 @@
   <meta name="twitter:image" content="https://blog.jakeuj.com/wow-forever-professions/assets/social-v3.png">
   <meta name="twitter:image:alt" content="三隻雙製造小號，搭配雙採集主號與採礦角色">
   <link rel="icon" type="image/svg+xml" href="./assets/crest.svg">
-  <link rel="stylesheet" href="./style.css?v=20261112-workshop">
-  <script src="./app.js?v=20261111-guild" type="module"></script>
+  <link rel="stylesheet" href="./style.css?v=20261113-contacts">
+  <script src="./app.js?v=20261113-contacts" type="module"></script>
 </head>
 <body>
   <a class="skip-link" href="#plans">跳至專業分配</a>
@@ -109,12 +109,27 @@
         <article><span class="guild-story-label">03 / 一起玩下去</span><h3>團本之外，也想一起玩下去。</h3><p>跑任務、約副本、聊配裝，或在野外喊聲支援；回鍋玩家也歡迎一起復健，慢慢找回手感。</p></article>
       </div>
       <div class="guild-contacts" aria-labelledby="guild-contacts-title">
-        <div class="guild-contact-heading"><h3 id="guild-contacts-title">先來打聲招呼，下一次一起出發。</h3><p>也可以在組頻喊一下，有看到就會加。</p></div>
-        <dl class="guild-contact-list">
-          <div><dt>遊戲內私訊</dt><dd><span id="guild-contact-name">真田 幸村 / 南方 勇者</span><button type="button" class="guild-copy-button" data-copy-target="guild-contact-name" aria-label="複製遊戲內聯絡人" hidden>複製</button></dd></div>
-          <div><dt>BattleTag</dt><dd><span id="guild-contact-battletag">御星幻#3967 / amigo#3262</span><button type="button" class="guild-copy-button" data-copy-target="guild-contact-battletag" aria-label="複製 BattleTag" hidden>複製</button></dd></div>
-          <div class="guild-greeting"><dt>不知道怎麼開場？這樣說就好</dt><dd><span id="guild-contact-greeting">網站看到的，想加入黎明之劍</span><button type="button" class="guild-copy-button" data-copy-target="guild-contact-greeting" aria-label="複製打招呼訊息" hidden>複製</button></dd></div>
-        </dl>
+        <div class="guild-contact-heading"><div><p class="guild-contact-kicker">下一位戰友，也許就是你</p><h3 id="guild-contacts-title"><span>先來打聲招呼，</span><span>下一次一起出發。</span></h3></div><p>遊戲內私訊或加 BattleTag，<br class="desktop-break">選一位聯絡就好。</p></div>
+        <div class="guild-contact-cards">
+          <article class="guild-contact-card" aria-labelledby="guild-contact-sanada-name">
+            <div class="guild-contact-person">
+              <span class="guild-contact-seal" aria-hidden="true">幸</span>
+              <div class="guild-contact-identity"><p>遊戲內私訊</p><h4 id="guild-contact-sanada-name">真田 幸村</h4></div>
+              <button type="button" class="guild-copy-button" data-copy-target="guild-contact-sanada-name" aria-label="複製真田 幸村的角色名稱" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="1"/><path d="M16 8V3H3v13h5"/></svg><span data-copy-label>複製</span></button>
+            </div>
+            <dl class="guild-contact-details"><div><dt>BattleTag</dt><dd><span id="guild-contact-sanada-battletag">御星幻#3967</span><button type="button" class="guild-copy-button" data-copy-target="guild-contact-sanada-battletag" aria-label="複製真田 幸村的 BattleTag：御星幻#3967" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="1"/><path d="M16 8V3H3v13h5"/></svg><span data-copy-label>複製</span></button></dd></div></dl>
+          </article>
+          <article class="guild-contact-card" aria-labelledby="guild-contact-amigo-name">
+            <div class="guild-contact-person">
+              <span class="guild-contact-seal" aria-hidden="true">勇</span>
+              <div class="guild-contact-identity"><p>遊戲內私訊</p><h4 id="guild-contact-amigo-name">南方 勇者</h4></div>
+              <button type="button" class="guild-copy-button" data-copy-target="guild-contact-amigo-name" aria-label="複製南方 勇者的角色名稱" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="1"/><path d="M16 8V3H3v13h5"/></svg><span data-copy-label>複製</span></button>
+            </div>
+            <dl class="guild-contact-details"><div><dt>BattleTag</dt><dd><span id="guild-contact-amigo-battletag">amigo#3262</span><button type="button" class="guild-copy-button" data-copy-target="guild-contact-amigo-battletag" aria-label="複製南方 勇者的 BattleTag：amigo#3262" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="1"/><path d="M16 8V3H3v13h5"/></svg><span data-copy-label>複製</span></button></dd></div></dl>
+          </article>
+        </div>
+        <div class="guild-greeting"><div><p class="guild-greeting-label">不知道怎麼開場？這樣說就好</p><p class="guild-greeting-message">「<span id="guild-contact-greeting">網站看到的，想加入黎明之劍</span>」</p></div><button type="button" class="guild-copy-button" data-copy-target="guild-contact-greeting" aria-label="複製打招呼訊息" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="1"/><path d="M16 8V3H3v13h5"/></svg><span data-copy-label>複製這句話</span></button></div>
+        <p class="guild-contact-note">也可以在組頻喊一下，有看到就會加。</p>
         <p class="guild-copy-status" id="guild-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
       </div>
     </section>
