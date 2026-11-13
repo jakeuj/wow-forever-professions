@@ -1,6 +1,6 @@
 ---
 name: wow-forever
-description: 處理《魔獸世界：永恆》（WoW Forever／wowf）的台服玩法、專業與傳承規劃、相關 GitHub Pages 網站維護，以及客戶端安裝與版本管理、插件管理與 Lua 錯誤排查。使用者提到魔獸永恆、_forever_ 或永恆版插件時使用；其他魔獸版本先確認分支。
+description: 處理《魔獸世界：永恆》（WoW Forever／wowf）的台服玩法、專業與傳承規劃、相關 GitHub Pages 網站維護與資料串接（Battle.net API、客戶端資料表、Wowhead），以及客戶端安裝與版本管理、插件管理與 Lua 錯誤排查。使用者提到魔獸永恆、_forever_ 或永恆版插件時使用；其他魔獸版本先確認分支。
 ---
 
 # 魔獸世界永恆
@@ -72,13 +72,17 @@ GitHub 專用分支、CurseForge 無法提供相容檔案，或使用者明確�
 
 傳承點數、跨角色專業分工、雙製造小號、雙採集轉製造，或參考 GearInsight 的職業專業推薦時，讀 [references/professions-and-legacy.md](references/professions-and-legacy.md)。其中區分官方規則、插件的升級目標與現行四版分配；點數上限與專業改動仍須按當前日期重查。
 
-官方公告與更新內容從 [永恆官網](https://worldofwarcraft.blizzard.com/zh-tw/forever/) 和 [台灣官方新聞](https://worldofwarcraft.blizzard.com/zh-tw/news/) 查證；插件行為以作者文件、發佈說明與原始碼為依據。舊經典版資料僅能作待驗證線索，無法核實的永恆細節就標明不確定。
+官方公告與更新內容從 [永恆官網](https://worldofwarcraft.blizzard.com/zh-tw/forever/) 和 [台灣官方新聞](https://worldofwarcraft.blizzard.com/zh-tw/news/) 查證；物品與法術的繁中資料可查 [Wowhead 永恆](https://www.wowhead.com/forever/tw/)；插件行為以作者文件、發佈說明與原始碼為依據。舊經典版資料僅能作待驗證線索，無法核實的永恆細節就標明不確定。
 
 回報先給可採取的結論，再列關鍵版本依據、來源連結與驗證範圍。只要確實讀過本機，就可說明目前已裝的版本；勿把磁碟上的插件目錄存在說成遊戲內運作正常。
 
 ## 公開專業規劃網站
 
 維護「永恆・專業議事廳」、調整專業分配頁的預設方案，或更新其 GitHub Pages 發布時，讀 [references/profession-planner-site.md](references/profession-planner-site.md)。網站面向一般玩家，01 雙採集主號＋三隻雙製造小號為預設首選，聖騎士多路線放 04；repo 相對路徑、正式網址、方案連結與驗證重點集中於該檔。
+
+## 公開資料與官方 API
+
+查官方 Battle.net API、客戶端版本與資料表、Wowhead、官方論壇、參考資料站，或為網站規劃外部資料串接時，讀 [references/public-data-sources.md](references/public-data-sources.md)。永恆 API 未文件化，該檔逐項標註官方文件、社群實測或本次實測；引用時沿用標記，並依日期重新查證。
 
 ## 公會與招募文案
 

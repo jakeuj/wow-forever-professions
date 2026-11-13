@@ -56,6 +56,10 @@
 - 涉及傳承記錄時，確認重新整理後保留進度，且計分按六項專業里程碑各算一次。
 - 發布完成以對應 commit 的 Pages 工作成功及正式頁、受影響資源可讀為準；來源推送成功是中間狀態。
 
+## 外部資料整合
+
+加入物品提示框、材料行情、配方清單或公會工匠名冊時，先讀 [public-data-sources.md](public-data-sources.md) 的增強方向與靜態網站整合模式。需要 API 憑證的資料由排程預先產生；發布方式若從 `main` 根目錄改為 Actions 部署，同步更新本檔與 README。
+
 ## 公會招生區
 
 2026-11-11 已發布《黎明之劍》招生整合，[公開入口為 `#guild`](https://blog.jakeuj.com/wow-forever-professions/#guild)。公會公開資訊與招募文來源統一查 [dawnblade-guild.md](dawnblade-guild.md)。
