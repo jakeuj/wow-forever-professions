@@ -7,8 +7,8 @@
 - 名稱：永恆・專業議事廳／魔獸世界：永恆專業與傳承分配規劃。
 - 專案根目錄：此技能所在 repo 的根目錄；從 `.agents/skills/wow-forever` 向上三層定位，避免固定本機 checkout 路徑。
 - 公開 repo：[jakeuj/wow-forever-professions](https://github.com/jakeuj/wow-forever-professions)。
-- 正式站：[https://blog.jakeuj.com/wow-forever-professions/](https://blog.jakeuj.com/wow-forever-professions/)。
-- GitHub Pages 使用 `main` 根目錄與 `.nojekyll`，沿用帳號既有的 `blog.jakeuj.com` 網域；HTTPS 已啟用。後續發布先讀當前 Pages 設定，保留其來源與網域。
+- 正式站：[https://jakeuj.com/wow-forever-professions/](https://jakeuj.com/wow-forever-professions/)。
+- GitHub Pages 使用 `main` 根目錄與 `.nojekyll`，不設自訂網域，由使用者站網域 `jakeuj.com` 自動掛在 `/wow-forever-professions/`（2026-11-16 起；舊 `blog.jakeuj.com/wow-forever-professions/` 由 Cloudflare 301 過來）；HTTPS 已啟用。後續發布先讀當前 Pages 設定，保留其來源。
 
 這是 GitHub repo／Pages 專案，在目前 repo checkout 修改。網站建置技能可協助設計與 QA，發布仍沿用 GitHub Pages。
 
@@ -31,13 +31,13 @@
 
 方案編號可以調整，分享連結的 ID 維持相容：
 
-- [雙製造小號首選](https://blog.jakeuj.com/wow-forever-professions/#plan=crafting)
-- [雙採集開局](https://blog.jakeuj.com/wow-forever-professions/#plan=gathering&stage=start)
-- [雙採集轉製造的長期配置](https://blog.jakeuj.com/wow-forever-professions/#plan=gathering&stage=final)
-- [直接全專業分工](https://blog.jakeuj.com/wow-forever-professions/#plan=balanced)
-- [聖騎士路線比較](https://blog.jakeuj.com/wow-forever-professions/#plan=paladin)：舊入口預設 A 保留採礦／鍛造，也可用 `route=keep`。
-- [聖騎士 B 主角雙製造](https://blog.jakeuj.com/wow-forever-professions/#plan=paladin&route=crafting)
-- [聖騎士 C 主角雙採集](https://blog.jakeuj.com/wow-forever-professions/#plan=paladin&route=gathering)
+- [雙製造小號首選](https://jakeuj.com/wow-forever-professions/#plan=crafting)
+- [雙採集開局](https://jakeuj.com/wow-forever-professions/#plan=gathering&stage=start)
+- [雙採集轉製造的長期配置](https://jakeuj.com/wow-forever-professions/#plan=gathering&stage=final)
+- [直接全專業分工](https://jakeuj.com/wow-forever-professions/#plan=balanced)
+- [聖騎士路線比較](https://jakeuj.com/wow-forever-professions/#plan=paladin)：舊入口預設 A 保留採礦／鍛造，也可用 `route=keep`。
+- [聖騎士 B 主角雙製造](https://jakeuj.com/wow-forever-professions/#plan=paladin&route=crafting)
+- [聖騎士 C 主角雙採集](https://jakeuj.com/wow-forever-professions/#plan=paladin&route=gathering)
 
 04 內部的路線 A／B／C 與外層 PLAN A／B／C 是不同層級。三條路線都提供五職業、九專業、18 點上限；製造角色數依序為 4／3／3，B 的三位包含聖騎士主角。每條路線列出主角調整、材料流向與適合情境，完整分工見 [professions-and-legacy.md](professions-and-legacy.md#04plan-d聖騎士多路線)。切換路線會同步更新分配表、覆蓋摘要、複製文字及分享網址；裸 `#plan=paladin` 或無效路線回 A。
 
@@ -62,7 +62,7 @@
 
 ## 公會招生區
 
-2026-11-11 已發布《黎明之劍》招生整合，[公開入口為 `#guild`](https://blog.jakeuj.com/wow-forever-professions/#guild)。公會公開資訊與招募文來源統一查 [dawnblade-guild.md](dawnblade-guild.md)。
+2026-11-11 已發布《黎明之劍》招生整合，[公開入口為 `#guild`](https://jakeuj.com/wow-forever-professions/#guild)。公會公開資訊與招募文來源統一查 [dawnblade-guild.md](dawnblade-guild.md)。
 
 - 網站繼續以專業規劃為主；首頁只有一句邀請，完整招生區置於分配表之後、分配原則之前。手機主要導覽為「專業／傳承／公會」，資料依據與原始碼保留在頁尾。
 - 主標「篝火旁還有位置。」搭配完整營火橫幅，保留前景空位；方形劍徽縮為公會識別。文案延續新手教學、回鍋復健、團本開荒與日常組隊。

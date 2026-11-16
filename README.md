@@ -1,6 +1,6 @@
 # 魔獸世界：永恆｜專業與傳承分配規劃
 
-[開啟網站](https://blog.jakeuj.com/wow-forever-professions/)
+[開啟網站](https://jakeuj.com/wow-forever-professions/)
 
 面向《魔獸世界：永恆》玩家的台灣繁體中文專業規劃頁。預設推薦「雙採集主號＋雙製造小號」：法師裁縫／附魔、獵人製皮／煉金、戰士鍛造／工程，搭配德魯伊採草／剝皮與盜賊採礦。三位製造工匠集中六項製造，五種職業涵蓋九項專業；盜賊第二格可彈性保留。
 
@@ -8,9 +8,9 @@
 
 聖騎士方案提供三條可切換、可複製分享的路線：
 
-- [A 保留採礦／鍛造](https://blog.jakeuj.com/wow-forever-professions/#plan=paladin&route=keep)：四位製造角色，小號集中其餘製造；原本 `#plan=paladin` 連結也預設開啟這條。
-- [B 主角鍛造／工程](https://blog.jakeuj.com/wow-forever-professions/#plan=paladin&route=crafting)：聖騎士與法師、獵人共三位雙製造工匠，盜賊供礦。
-- [C 主角採礦／剝皮](https://blog.jakeuj.com/wow-forever-professions/#plan=paladin&route=gathering)：三位小號製造，戰士接手鍛造／工程、德魯伊供草藥。
+- [A 保留採礦／鍛造](https://jakeuj.com/wow-forever-professions/#plan=paladin&route=keep)：四位製造角色，小號集中其餘製造；原本 `#plan=paladin` 連結也預設開啟這條。
+- [B 主角鍛造／工程](https://jakeuj.com/wow-forever-professions/#plan=paladin&route=crafting)：聖騎士與法師、獵人共三位雙製造工匠，盜賊供礦。
+- [C 主角採礦／剝皮](https://jakeuj.com/wow-forever-professions/#plan=paladin&route=gathering)：三位小號製造，戰士接手鍛造／工程、德魯伊供草藥。
 
 三條路線都是五種不同職業、九項專業全覆蓋、18 點製造傳承上限，另列主角專業調整、材料流向與適合情境。
 
@@ -18,7 +18,7 @@
 
 ## 《黎明之劍》公會招生
 
-專業分配表之後設有[公會招生區](https://blog.jakeuj.com/wow-forever-professions/#guild)，面向永恆亞服 PvP 部落玩家。文案依 [2026-11-11 巴哈招生文](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681451)，以新手教學、回鍋復健、日常組隊與預計 2026 年 12 月團本開荒為主。
+專業分配表之後設有[公會招生區](https://jakeuj.com/wow-forever-professions/#guild)，面向永恆亞服 PvP 部落玩家。文案依 [2026-11-11 巴哈招生文](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681451)，以新手教學、回鍋復健、日常組隊與預計 2026 年 12 月團本開荒為主。
 
 主要入口為 [Discord](https://discord.gg/RyTEUNTMMt)，另提供巴哈全文與公會公開聯絡方式：遊戲內私訊 `真田 信村 / 南方 勇者`，BattleTag `御星幻#3967 / amigo#3262`。聯絡欄依使用者 2026-11-13 指定內容更新。
 
