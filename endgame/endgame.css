@@ -30,6 +30,7 @@
 .eg-table thead th { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; color: var(--gold); border-bottom-color: #74603d88; }
 .eg-table tbody th { font-family: var(--serif); font-weight: 600; white-space: nowrap; color: var(--text); }
 .eg-table td.eg-price { white-space: nowrap; color: var(--gold-bright); }
+.eg-table td.eg-nowrap { white-space: nowrap; }
 .eg-table tr.is-skip th, .eg-table tr.is-skip td { color: #8f9a81; }
 
 .eg-tag { display: inline-block; margin-left: 6px; padding: 0 6px; font-size: 10px; line-height: 1.8; vertical-align: 1px; border: 1px solid currentColor; }
@@ -88,7 +89,7 @@
   .eg-table tbody th { padding: 0 0 4px; border: 0; white-space: normal; font-size: 15px; }
   .eg-table td { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 10px; padding: 3px 0; border: 0; font-size: 12px; }
   .eg-table td::before { content: attr(data-label); font-size: 10px; letter-spacing: 1px; color: var(--gold-dim); }
-  .eg-table td.eg-price { white-space: normal; }
+  .eg-table td.eg-price, .eg-table td.eg-nowrap { white-space: normal; }
 }
 
 @media print {

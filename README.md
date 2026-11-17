@@ -32,10 +32,13 @@
 
 ## 終局採購清單（個人整理頁）
 
-[`endgame/`](https://jakeuj.com/wow-forever-professions/endgame/) 是聖騎鐵匠與煉金同伴的終局採購筆記：鐵匠附加物品、依專精挑選的設計圖、聖騎職業套裝、軍團鋼瓶頸與煉金清單，價格為亞服 PvP 部落拍賣場的日期快照。
+兩頁互相連結的終局採購筆記，價格為亞服 PvP 部落拍賣場的日期快照：
 
-- 首頁只在頁尾放連結，不出現在主要導覽與 `sitemap.xml`；頁面設 `noindex`，但網址仍是公開的。
-- 純靜態 HTML，沿用 `style.css`，頁面樣式在 `endgame/endgame.css`；所有連結為相對路徑。
+- [`endgame/`](https://jakeuj.com/wow-forever-professions/endgame/)：聖騎鐵匠的附加物品、依專精挑選的設計圖、聖騎職業套裝、軍團鋼瓶頸與材料。
+- [`alchemy/`](https://jakeuj.com/wow-forever-professions/alchemy/)：分享給煉金同伴的轉化、配方（AH／NPC／商人青睞／看到再收）與材料行情。
+
+- 首頁只在頁尾連到 `endgame/`，`alchemy/` 由 `endgame/` 連入；兩頁都不在主要導覽與 `sitemap.xml`，並設 `noindex`，但網址仍是公開的。
+- 純靜態 HTML，沿用 `style.css`，兩頁共用 `endgame/endgame.css`；所有連結為相對路徑。
 - 價格與角色進度是手動更新的快照，更新時同步頁面上的快照日期。
 
 ## 專案技能

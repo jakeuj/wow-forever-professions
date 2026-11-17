@@ -58,9 +58,9 @@
 
 ## 個人整理頁：終局採購清單
 
-`endgame/index.html`（正式網址 `https://jakeuj.com/wow-forever-professions/endgame/`）是站主的個人筆記，不屬於一般玩家的方案內容。
+`endgame/index.html`（鐵匠，`https://jakeuj.com/wow-forever-professions/endgame/`）與 `alchemy/index.html`（分享給煉金同伴，`.../alchemy/`）是站主的個人筆記，不屬於一般玩家的方案內容；兩頁共用 `endgame/endgame.css`，並互相連結。
 
-- 只從首頁頁尾連結；不加入主要導覽、首頁內文或 `sitemap.xml`。頁面保留 `<meta name="robots" content="noindex">` 與指向自身的 canonical；不要改用 `robots.txt` 封鎖，否則搜尋引擎讀不到 noindex。
+- 首頁只在頁尾連到 `endgame/`，`alchemy/` 由 `endgame/` 連入；不加入主要導覽、首頁內文或 `sitemap.xml`。頁面保留 `<meta name="robots" content="noindex">` 與指向自身的 canonical；不要改用 `robots.txt` 封鎖，否則搜尋引擎讀不到 noindex。
 - 頁面說明網址仍公開。角色名稱、BattleTag、帳號等私人資訊不放進頁面；陣營、職業、等級與專業進度依站主當次提供的內容。
 - 沿用 `../style.css`（版本參數與首頁一致）並以 `endgame/endgame.css` 補樣式；連結與圖示一律相對路徑，以支援 `/wow-forever-professions/` 專案路徑。
 - 內容來源：鍛造與煉金需求讀 [endgame-crafting.md](endgame-crafting.md)，價格依 [market-recipe-value.md](market-recipe-value.md) 的腳本與規則重算。更新時同步頁首快照日期與資料依據區的日期。
