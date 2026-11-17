@@ -1,6 +1,6 @@
 ---
 name: wow-forever
-description: 處理《魔獸世界：永恆》（WoW Forever／wowf）的台服玩法、專業與傳承規劃、相關 GitHub Pages 網站維護與資料串接（Battle.net API、客戶端資料表、Wowhead），以及客戶端安裝與版本管理、插件管理與 Lua 錯誤排查。使用者提到魔獸永恆、_forever_ 或永恆版插件時使用；其他魔獸版本先確認分支。
+description: 處理《魔獸世界：永恆》（WoW Forever／wowf）的台服玩法、專業與傳承規劃、拍賣行情與配方利潤、相關 GitHub Pages 網站維護與資料串接（Battle.net API、客戶端資料表、Wowhead），以及客戶端安裝與版本管理、插件管理與 Lua 錯誤排查。使用者提到魔獸永恆、_forever_ 或永恆版插件時使用；其他魔獸版本先確認分支。
 ---
 
 # 魔獸世界永恆
@@ -75,6 +75,10 @@ GitHub 專用分支、CurseForge 無法提供相容檔案，或使用者明確�
 官方公告與更新內容從 [永恆官網](https://worldofwarcraft.blizzard.com/zh-tw/forever/) 和 [台灣官方新聞](https://worldofwarcraft.blizzard.com/zh-tw/news/) 查證；物品與法術的繁中資料可查 [Wowhead 永恆](https://www.wowhead.com/forever/tw/)；插件行為以作者文件、發佈說明與原始碼為依據。舊經典版資料僅能作待驗證線索，無法核實的永恆細節就標明不確定。
 
 回報先給可採取的結論，再列關鍵版本依據、來源連結與驗證範圍。只要確實讀過本機，就可說明目前已裝的版本；勿把磁碟上的插件目錄存在說成遊戲內運作正常。
+
+## 拍賣行情與配方利潤
+
+問哪些配方值得從拍賣場買、某項製造有沒有賺，或查材料與成品的拍賣行情時，讀 [references/market-recipe-value.md](references/market-recipe-value.md)。該檔附 `scripts/amobi_recipe_value.py`，用阿莫比的掃描資料計算毛利，並涵蓋分陣營價、NPC 配方與判讀規則；結論以當次掃描為準。
 
 ## 公開專業規劃網站
 
