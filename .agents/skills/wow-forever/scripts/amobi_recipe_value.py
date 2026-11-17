@@ -55,8 +55,18 @@ def parse_recipes(page):
         recipe = re.search(
             r'<span class="lm recipe">[^<]*</span><a[^>]*href="/items/(\d+)">([^<]+)</a>'
             r'(?:<small>需要 (\d+)</small>)?', li)
-        if not product or not recipe:
+        if not hd or not recipe:
             continue
+        if not product:
+            # Enchants and other spell-only results have a name but no item to price.
+            name = re.search(r'<span class="nm">([^<]+)</span>', hd.group(1))
+            if not name:
+                continue
+            product = (None, name.group(1), None)
+            product_id, product_name, product_qty = None, html.unescape(name.group(1)), 1
+        else:
+            product_id, product_name = int(product.group(1)), html.unescape(product.group(2))
+            product_qty = int(product.group(3) or 1)
         mats_html = re.search(r'<span class="k">材料</span><span class="v">(.*?)</span></p>', li, re.S)
         mats = []
         if mats_html:
@@ -67,9 +77,9 @@ def parse_recipes(page):
             "recipe_id": int(recipe.group(1)),
             "recipe": html.unescape(recipe.group(2)),
             "skill": int(recipe.group(3)) if recipe.group(3) else None,
-            "product_id": int(product.group(1)),
-            "product": html.unescape(product.group(2)),
-            "product_qty": int(product.group(3) or 1),
+            "product_id": product_id,
+            "product": product_name,
+            "product_qty": product_qty,
             "forever_new": "pf-new" in hd.group(1),
             "mats": mats,
             "effect": text_of(effect.group(1)) if effect else "",

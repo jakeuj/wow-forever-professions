@@ -78,7 +78,7 @@ GitHub 專用分支、CurseForge 無法提供相容檔案，或使用者明確�
 
 ## 拍賣行情、配方利潤與 60 級製造需求
 
-問哪些配方值得從拍賣場買、某項製造有沒有賺，或查材料與成品的拍賣行情時，讀 [references/market-recipe-value.md](references/market-recipe-value.md)。該檔附 `scripts/amobi_recipe_value.py`，用阿莫比的掃描資料計算毛利，並涵蓋分陣營價、NPC 配方與判讀規則；結論以當次掃描為準。
+問哪些配方值得從拍賣場買、哪些配方可以囤著等漲價、某項製造有沒有賺，或查材料與成品的拍賣行情時，讀 [references/market-recipe-value.md](references/market-recipe-value.md)。該檔附 `scripts/amobi_recipe_value.py`，用阿莫比的掃描資料計算毛利，並涵蓋分陣營價、NPC 配方與判讀規則；結論以當次掃描為準。
 
 問 60 級後期該做什麼、團本要哪些消耗品或裝備、配方該先拿哪些時，讀 [references/endgame-crafting.md](references/endgame-crafting.md)。該檔整理團本時程、軍團鋼等材料瓶頸，以及鍛造與煉金的經典版需求和永恆改動，並標註可信度。
 
