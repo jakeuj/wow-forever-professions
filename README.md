@@ -30,6 +30,14 @@
 
 招生文案、聯絡方式與外連均在靜態 HTML 中，無 JavaScript 時仍可閱讀與手動複製；啟用 JavaScript 後顯示五個複製按鈕，成功時按鈕短暫顯示「已複製」並播報所複製的內容。頁內招生入口會捲動並移動焦點至標題，保留目前的方案分享參數。複製失敗時顯示手動選取提示。
 
+## 終局採購清單（個人整理頁）
+
+[`endgame/`](https://jakeuj.com/wow-forever-professions/endgame/) 是聖騎鐵匠與煉金同伴的終局採購筆記：鐵匠附加物品、依專精挑選的設計圖、聖騎職業套裝、軍團鋼瓶頸與煉金清單，價格為亞服 PvP 部落拍賣場的日期快照。
+
+- 首頁只在頁尾放連結，不出現在主要導覽與 `sitemap.xml`；頁面設 `noindex`，但網址仍是公開的。
+- 純靜態 HTML，沿用 `style.css`，頁面樣式在 `endgame/endgame.css`；所有連結為相對路徑。
+- 價格與角色進度是手動更新的快照，更新時同步頁面上的快照日期。
+
 ## 專案技能
 
 共用的 [wow-forever 技能](.agents/skills/wow-forever/SKILL.md) 位於 `.agents/skills/wow-forever`，包含永恆玩法、插件查證、專業與傳承規劃、網站及公會招生維護、官方 API 與公開資料來源參考，以及唯讀插件盤點工具。

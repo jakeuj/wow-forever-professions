@@ -56,6 +56,16 @@
 - 涉及傳承記錄時，確認重新整理後保留進度，且計分按六項專業里程碑各算一次。
 - 發布完成以對應 commit 的 Pages 工作成功及正式頁、受影響資源可讀為準；來源推送成功是中間狀態。
 
+## 個人整理頁：終局採購清單
+
+`endgame/index.html`（正式網址 `https://jakeuj.com/wow-forever-professions/endgame/`）是站主的個人筆記，不屬於一般玩家的方案內容。
+
+- 只從首頁頁尾連結；不加入主要導覽、首頁內文或 `sitemap.xml`。頁面保留 `<meta name="robots" content="noindex">` 與指向自身的 canonical；不要改用 `robots.txt` 封鎖，否則搜尋引擎讀不到 noindex。
+- 頁面說明網址仍公開。角色名稱、BattleTag、帳號等私人資訊不放進頁面；陣營、職業、等級與專業進度依站主當次提供的內容。
+- 沿用 `../style.css`（版本參數與首頁一致）並以 `endgame/endgame.css` 補樣式；連結與圖示一律相對路徑，以支援 `/wow-forever-professions/` 專案路徑。
+- 內容來源：鍛造與煉金需求讀 [endgame-crafting.md](endgame-crafting.md)，價格依 [market-recipe-value.md](market-recipe-value.md) 的腳本與規則重算。更新時同步頁首快照日期與資料依據區的日期。
+- 驗證：桌機與 360px 手機無橫向溢出、手機版表格改為卡片、首頁頁尾連結可進入、頁面的首頁連結回到 `../`。
+
 ## 外部資料整合
 
 加入物品提示框、材料行情、配方清單或公會工匠名冊時，先讀 [public-data-sources.md](public-data-sources.md) 的增強方向與靜態網站整合模式。需要 API 憑證的資料由排程預先產生；發布方式若從 `main` 根目錄改為 Actions 部署，同步更新本檔與 README。

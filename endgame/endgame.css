@@ -1,0 +1,97 @@
+/* Personal endgame shopping list: a blacksmith paladin and an alchemist friend. */
+.eg-hero { padding-block: 64px 40px; border-bottom: 1px solid var(--line); }
+.eg-hero h1 { margin: 0 0 18px; font-family: var(--serif); font-size: clamp(30px, 4vw, 46px); line-height: 1.45; letter-spacing: 2px; }
+.eg-hero h1 span { color: var(--gold-bright); }
+.eg-lead { max-width: 720px; margin: 0; font-size: 14px; line-height: 2; color: #d9d2c0; }
+.eg-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 0; padding: 0; list-style: none; }
+.eg-chips li { padding: 4px 11px; border: 1px solid #74603d88; font-size: 11px; letter-spacing: .5px; color: var(--gold); background: #cfb17a0a; }
+.eg-privacy { display: flex; gap: 12px; align-items: flex-start; margin: 22px 0 0; max-width: 720px; font-size: 11px; line-height: 1.9; color: #8f9a81; }
+.eg-privacy > span { color: var(--gold-dim); font-size: 18px; line-height: 1.3; }
+
+.eg-section { padding-block: 56px; border-bottom: 1px solid var(--line); }
+.eg-section > .section-heading > p { max-width: 420px; }
+.eg-subhead { margin: 34px 0 14px; font-family: var(--serif); font-size: 18px; font-weight: 600; letter-spacing: 1px; color: var(--gold-bright); }
+.eg-note { margin: 14px 0 0; font-size: 12px; line-height: 1.9; color: var(--muted); }
+.eg-note strong { color: var(--text); font-weight: 600; }
+
+/* Timeline from the current character state to the first raids. */
+.eg-timeline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.eg-timeline li { position: relative; padding: 22px 18px 4px 0; }
+.eg-timeline li::before { content: ""; position: absolute; top: -4px; left: 0; width: 7px; height: 7px; background: var(--gold); transform: rotate(45deg); }
+.eg-timeline li.is-now::before { background: var(--gold-bright); box-shadow: 0 0 0 4px #edcf9426; }
+.eg-when { display: block; font-size: 10px; letter-spacing: 1.5px; color: var(--gold); }
+.eg-timeline strong { display: block; margin: 6px 0 6px; font-family: var(--serif); font-size: 16px; font-weight: 600; }
+.eg-timeline p { margin: 0; font-size: 12px; line-height: 1.85; color: var(--muted); }
+
+/* Tables become stacked cards on narrow screens. */
+.eg-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.eg-table caption { text-align: left; font-size: 11px; color: var(--muted); padding-bottom: 10px; }
+.eg-table th, .eg-table td { padding: 13px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; line-height: 1.75; }
+.eg-table thead th { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; color: var(--gold); border-bottom-color: #74603d88; }
+.eg-table tbody th { font-family: var(--serif); font-weight: 600; white-space: nowrap; color: var(--text); }
+.eg-table td.eg-price { white-space: nowrap; color: var(--gold-bright); }
+.eg-table tr.is-skip th, .eg-table tr.is-skip td { color: #8f9a81; }
+
+.eg-tag { display: inline-block; margin-left: 6px; padding: 0 6px; font-size: 10px; line-height: 1.8; vertical-align: 1px; border: 1px solid currentColor; }
+.eg-tag.buy { color: #9fc78d; }
+.eg-tag.watch { color: var(--gold); }
+.eg-tag.skip { color: #c98a7c; }
+.eg-tag.bop { color: #a5aca0; }
+
+/* Spec cards for paladin plans. */
+.eg-spec-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.eg-card { min-width: 0; padding: 22px; border: 1px solid #74603d66; background: linear-gradient(160deg, #ae8b4912, transparent 60%); }
+.eg-card h3 { margin: 0 0 4px; font-family: var(--serif); font-size: 20px; letter-spacing: 2px; color: var(--gold-bright); }
+.eg-card > p { margin: 0 0 14px; font-size: 11px; color: var(--muted); }
+.eg-card ul { margin: 0; padding: 0; list-style: none; }
+.eg-card li { padding: 11px 0; border-top: 1px solid var(--line); font-size: 12px; line-height: 1.85; color: var(--muted); }
+.eg-card li strong { display: block; font-size: 13px; font-weight: 600; color: var(--text); }
+
+.eg-callout { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; margin-top: 30px; padding: 22px 24px; border: 1px solid #9a453e88; background: #9a453e14; }
+.eg-callout > span { font-size: 26px; line-height: 1.2; color: #d58c7f; }
+.eg-callout h3 { margin: 0 0 8px; font-family: var(--serif); font-size: 17px; letter-spacing: 1px; }
+.eg-callout p { margin: 0; font-size: 12px; line-height: 1.95; color: #d6cbbd; }
+
+/* Grouped buy lists. */
+.eg-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; }
+.eg-group { min-width: 0; border-top: 1px solid #74603d88; padding-top: 16px; }
+.eg-group h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; letter-spacing: 1px; }
+.eg-group ul { margin: 0; padding-left: 18px; }
+.eg-group li { margin: 0 0 8px; font-size: 12px; line-height: 1.85; color: var(--muted); }
+.eg-group li strong { color: var(--text); font-weight: 600; }
+
+.eg-note-lead { margin-bottom: 18px; }
+.eg-groups-after { margin-top: 30px; }
+.eg-sources { padding-top: 56px; }
+.eg-back { display: inline-block; margin-top: 26px; }
+
+@media (max-width: 900px) {
+  .eg-timeline { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 8px; }
+  .eg-spec-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .eg-hero { padding-block: 40px 30px; }
+  .eg-lead { font-size: 13px; }
+  .eg-section { padding-block: 40px; }
+  .eg-timeline { grid-template-columns: 1fr; border-top: 0; border-left: 1px solid var(--line); padding-left: 18px; }
+  .eg-timeline li { padding: 4px 0 14px; }
+  .eg-timeline li::before { top: 11px; left: -22px; }
+  .eg-groups { grid-template-columns: 1fr; }
+  .eg-card { padding: 18px 16px; }
+  .eg-callout { grid-template-columns: 1fr; gap: 6px; padding: 18px 16px; }
+
+  .eg-table caption { display: block; width: 100%; }
+  .eg-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .eg-table, .eg-table tbody, .eg-table tr, .eg-table th, .eg-table td { display: block; width: 100%; }
+  .eg-table tr { padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .eg-table tbody th { padding: 0 0 4px; border: 0; white-space: normal; font-size: 15px; }
+  .eg-table td { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 10px; padding: 3px 0; border: 0; font-size: 12px; }
+  .eg-table td::before { content: attr(data-label); font-size: 10px; letter-spacing: 1px; color: var(--gold-dim); }
+  .eg-table td.eg-price { white-space: normal; }
+}
+
+@media print {
+  .eg-section, .eg-hero { padding-block: 20px; }
+  .eg-card, .eg-callout { break-inside: avoid; }
+}
