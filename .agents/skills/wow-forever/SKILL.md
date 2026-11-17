@@ -1,6 +1,6 @@
 ---
 name: wow-forever
-description: 處理《魔獸世界：永恆》（WoW Forever／wowf）的台服玩法、專業與傳承規劃、拍賣行情與配方利潤、相關 GitHub Pages 網站維護與資料串接（Battle.net API、客戶端資料表、Wowhead），以及客戶端安裝與版本管理、插件管理與 Lua 錯誤排查。使用者提到魔獸永恆、_forever_ 或永恆版插件時使用；其他魔獸版本先確認分支。
+description: 處理《魔獸世界：永恆》（WoW Forever／wowf）的台服玩法、專業與傳承規劃、拍賣行情、配方利潤與 60 級製造需求、相關 GitHub Pages 網站維護與資料串接（Battle.net API、客戶端資料表、Wowhead），以及客戶端安裝與版本管理、插件管理與 Lua 錯誤排查。使用者提到魔獸永恆、_forever_ 或永恆版插件時使用；其他魔獸版本先確認分支。
 ---
 
 # 魔獸世界永恆
@@ -76,9 +76,11 @@ GitHub 專用分支、CurseForge 無法提供相容檔案，或使用者明確�
 
 回報先給可採取的結論，再列關鍵版本依據、來源連結與驗證範圍。只要確實讀過本機，就可說明目前已裝的版本；勿把磁碟上的插件目錄存在說成遊戲內運作正常。
 
-## 拍賣行情與配方利潤
+## 拍賣行情、配方利潤與 60 級製造需求
 
 問哪些配方值得從拍賣場買、某項製造有沒有賺，或查材料與成品的拍賣行情時，讀 [references/market-recipe-value.md](references/market-recipe-value.md)。該檔附 `scripts/amobi_recipe_value.py`，用阿莫比的掃描資料計算毛利，並涵蓋分陣營價、NPC 配方與判讀規則；結論以當次掃描為準。
+
+問 60 級後期該做什麼、團本要哪些消耗品或裝備、配方該先拿哪些時，讀 [references/endgame-crafting.md](references/endgame-crafting.md)。該檔整理團本時程、軍團鋼等材料瓶頸，以及鍛造與煉金的經典版需求和永恆改動，並標註可信度。
 
 ## 公開專業規劃網站
 
