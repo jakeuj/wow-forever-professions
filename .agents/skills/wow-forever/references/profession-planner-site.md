@@ -61,7 +61,8 @@
 `endgame/index.html`（鐵匠，`https://jakeuj.com/wow-forever-professions/endgame/`）、`alchemy/index.html`（分享給煉金同伴，`.../alchemy/`）與 `speculation/index.html`（配方期貨，`.../speculation/`）是站主的個人筆記，不屬於一般玩家的方案內容；三頁共用 `endgame/endgame.css`，頁尾互相連結。
 
 - 首頁只在頁尾連到這三頁；不加入主要導覽、首頁內文或 `sitemap.xml`。
-- 配方期貨頁的篩選條件以 [market-recipe-value.md](market-recipe-value.md) 的「配方期貨」一節為準，清單依當次掃描重排。頁面保留 `<meta name="robots" content="noindex">` 與指向自身的 canonical；不要改用 `robots.txt` 封鎖，否則搜尋引擎讀不到 noindex。
+- 配方期貨頁的篩選條件以 [market-recipe-value.md](market-recipe-value.md) 的「配方期貨」一節為準，清單依當次掃描重排。
+- 可在拍賣場買的物品名稱包成 `<span data-ah="遊戲內完整名稱">顯示文字</span>`，由 `endgame/ah-copy.js` 轉成複製按鈕。`data-ah` 填要買的那件東西：設計圖、配方要含「設計圖：」「配方：」等前綴，成品與材料用物品名；一組套裝可用共同前綴（例：「設計圖：祝福鎧甲」）。新增或改名後，以阿莫比的拍賣物品清單與 `/professions/{代號}` 的配方名稱逐一比對，確保完全一致。NPC、商人青睞、聲望取得的項目不加。頁面保留 `<meta name="robots" content="noindex">` 與指向自身的 canonical；不要改用 `robots.txt` 封鎖，否則搜尋引擎讀不到 noindex。
 - 頁面說明網址仍公開。角色名稱、BattleTag、帳號等私人資訊不放進頁面；陣營、職業、等級與專業進度依站主當次提供的內容。
 - 沿用 `../style.css`（版本參數與首頁一致）並以 `endgame/endgame.css` 補樣式；連結與圖示一律相對路徑，以支援 `/wow-forever-professions/` 專案路徑。
 - 內容來源：鍛造與煉金需求讀 [endgame-crafting.md](endgame-crafting.md)，價格依 [market-recipe-value.md](market-recipe-value.md) 的腳本與規則重算。更新時同步頁首快照日期與資料依據區的日期。

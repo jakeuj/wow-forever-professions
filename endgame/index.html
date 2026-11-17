@@ -16,7 +16,8 @@
   <meta property="og:url" content="https://jakeuj.com/wow-forever-professions/endgame/">
   <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
   <link rel="stylesheet" href="../style.css?v=20261117-guild-brand">
-  <link rel="stylesheet" href="./endgame.css?v=20261117-alchemy">
+  <link rel="stylesheet" href="./endgame.css?v=20261117-copy">
+  <script src="../endgame/ah-copy.js?v=20261117-copy" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#blacksmithing">跳至鍛造清單</a>
@@ -36,6 +37,7 @@
         <li>煉金：朋友</li>
         <li>行情快照 2026.11.17</li>
       </ul>
+      <p class="eg-copy-hint" data-ah-hint hidden>⧉ 點物品名稱就會複製遊戲內的完整名稱，到拍賣場搜尋欄貼上即可。</p>
       <p class="eg-privacy"><span aria-hidden="true">✧</span>這是個人整理頁，首頁只在頁尾放連結，也請搜尋引擎不要收錄；但網址本身是公開的，知道的人都看得到。價格取自阿莫比的掛單價，不是成交價，會隨時變動。</p>
     </section>
 
@@ -56,42 +58,42 @@
         <caption>附加物品（部落 AH，2026-11-17）</caption>
         <thead><tr><th scope="col">物品</th><th scope="col">效果</th><th scope="col">需要鍛造</th><th scope="col">部落價</th><th scope="col">什麼時候買</th></tr></thead>
         <tbody>
-          <tr><th scope="row">鐵質平衡錘</th><td data-label="效果">雙手劍、雙手斧、長柄武器攻速 +3%；雙手錘不行</td><td data-label="需要鍛造">165</td><td class="eg-price" data-label="部落價">8 銀</td><td data-label="時機"><span>現在，用雙手劍或斧練功時<span class="eg-tag buy">買</span></span></td></tr>
-          <tr><th scope="row">秘銀馬刺</th><td data-label="效果">靴子提高坐騎速度</td><td data-label="需要鍛造">215</td><td class="eg-price" data-label="部落價">80 銀</td><td data-label="時機"><span>鍛造 215 且有坐騎之後<span class="eg-tag buy">買</span></span></td></tr>
-          <tr><th scope="row">鐵質盾刺</th><td data-label="效果">盾牌格擋時反傷</td><td data-label="需要鍛造">150</td><td class="eg-price" data-label="部落價">28 銀</td><td data-label="時機"><span>只有用盾坦副本時<span class="eg-tag watch">視需要</span></span></td></tr>
-          <tr><th scope="row">秘銀盾刺</th><td data-label="效果">盾牌格擋時反傷，傷害較高</td><td data-label="需要鍛造">215</td><td class="eg-price" data-label="部落價">1.81g</td><td data-label="時機"><span>同上，鍛造 215 之後<span class="eg-tag watch">視需要</span></span></td></tr>
-          <tr class="is-skip"><th scope="row">鋼質武器鏈</th><td data-label="效果">武器無法被繳械</td><td data-label="需要鍛造">190</td><td class="eg-price" data-label="部落價">4g</td><td data-label="時機"><span>終局會選真正的武器附魔<span class="eg-tag skip">不建議</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="鐵質平衡錘">鐵質平衡錘</span></th><td data-label="效果">雙手劍、雙手斧、長柄武器攻速 +3%；雙手錘不行</td><td data-label="需要鍛造">165</td><td class="eg-price" data-label="部落價">8 銀</td><td data-label="時機"><span>現在，用雙手劍或斧練功時<span class="eg-tag buy">買</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="秘銀馬刺">秘銀馬刺</span></th><td data-label="效果">靴子提高坐騎速度</td><td data-label="需要鍛造">215</td><td class="eg-price" data-label="部落價">80 銀</td><td data-label="時機"><span>鍛造 215 且有坐騎之後<span class="eg-tag buy">買</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="鐵質盾刺">鐵質盾刺</span></th><td data-label="效果">盾牌格擋時反傷</td><td data-label="需要鍛造">150</td><td class="eg-price" data-label="部落價">28 銀</td><td data-label="時機"><span>只有用盾坦副本時<span class="eg-tag watch">視需要</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="秘銀盾刺">秘銀盾刺</span></th><td data-label="效果">盾牌格擋時反傷，傷害較高</td><td data-label="需要鍛造">215</td><td class="eg-price" data-label="部落價">1.81g</td><td data-label="時機"><span>同上，鍛造 215 之後<span class="eg-tag watch">視需要</span></span></td></tr>
+          <tr class="is-skip"><th scope="row"><span data-ah="鋼質武器鏈">鋼質武器鏈</span></th><td data-label="效果">武器無法被繳械</td><td data-label="需要鍛造">190</td><td class="eg-price" data-label="部落價">4g</td><td data-label="時機"><span>終局會選真正的武器附魔<span class="eg-tag skip">不建議</span></span></td></tr>
         </tbody>
       </table>
       <p class="eg-note">經典版裡這些都佔用該部位的附魔欄，會覆蓋原本的附魔；永恆還沒確認。秘銀馬刺和秘銀盾刺的設計圖部落要 10 金，成品不到 2 金，<strong>不要買設計圖</strong>。</p>
 
       <h3 class="eg-subhead">設計圖：依專精挑，看到就收</h3>
-      <p class="eg-note eg-note-lead">部落 AH 目前只有<strong>殲滅者（5.01g）</strong>：坦克與戰士常用的單手斧，擊中降低護甲可疊 3 層，自用或賣給坦克都行<span class="eg-tag buy">買</span>。下面其他設計圖目前都沒有掛單，成品除特別標示外都是裝備後綁定，做了可以賣。</p>
+      <p class="eg-note eg-note-lead">部落 AH 目前只有<strong><span data-ah="設計圖：殲滅者">殲滅者</span>（20.01g）</strong>：坦克與戰士常用的單手斧，擊中降低護甲可疊 3 層。原本 5g 那張已被買走，11/17 晚間有人重掛到 20g，等價格回落再買<span class="eg-tag watch">等回落</span>。下面其他設計圖目前都沒有掛單，成品除特別標示外都是裝備後綁定，做了可以賣。</p>
       <div class="eg-spec-grid">
         <article class="eg-card" aria-labelledby="spec-ret">
           <h3 id="spec-ret">懲戒</h3><p>力量、命中、爆擊加法傷</p>
           <ul>
-            <li><strong>堅實頭盔</strong>力量、命中 2%、法傷 +38。黑石塔小怪掉，阿莫比回報約 12%，值得自己刷。</li>
-            <li><strong>勇士腿鎧</strong>力量、爆擊 1%、法傷 +38。來源未知。</li>
-            <li><strong>獅心頭盔・泰坦護腿・奧金斧</strong>經典版團前首選，永恆改成可交易。</li>
-            <li><strong>祝福鎧甲套裝（8 件）</strong>55～56 級，3 件力量 +20、4 件小隊回血。護胸由海加爾山蠕翼伏擊者掉，約 9%。</li>
-            <li><strong>樹林防衛者斧頭</strong>物品等級 65 雙手斧，需要延展自然精華。</li>
+            <li><strong><span data-ah="設計圖：堅實頭盔">堅實頭盔</span></strong>力量、命中 2%、法傷 +38。黑石塔小怪掉，阿莫比回報約 12%，值得自己刷。</li>
+            <li><strong><span data-ah="設計圖：勇士腿鎧">勇士腿鎧</span></strong>力量、爆擊 1%、法傷 +38。來源未知。</li>
+            <li><strong><span data-ah="設計圖：獅心頭盔">獅心頭盔</span>・<span data-ah="設計圖：泰坦護腿">泰坦護腿</span>・<span data-ah="設計圖：奧金斧">奧金斧</span></strong>經典版團前首選，永恆改成可交易。</li>
+            <li><strong><span data-ah="設計圖：祝福鎧甲">祝福鎧甲套裝</span>（8 件）</strong>55～56 級，3 件力量 +20、4 件小隊回血。護胸由海加爾山蠕翼伏擊者掉，約 9%。</li>
+            <li><strong><span data-ah="設計圖：樹林防衛者斧頭">樹林防衛者斧頭</span></strong>物品等級 65 雙手斧，需要延展自然精華。</li>
           </ul>
         </article>
         <article class="eg-card" aria-labelledby="spec-holy">
           <h3 id="spec-holy">神聖</h3><p>治療效果、智力與精神</p>
           <ul>
-            <li><strong>聖劍</strong>主手，治療與法傷 +94。目前只有聯盟 AH 有（35g），部落買不到。</li>
-            <li><strong>救贖胸甲</strong>治療 +40、精神 +33。Blackmaw Hold 小怪掉。</li>
-            <li><strong>殉難者腿鎧</strong>治療 +73。來源未知。</li>
-            <li><strong>長青盾牌</strong>物品等級 65，治療加爆擊 1%。</li>
+            <li><strong><span data-ah="設計圖：聖劍">聖劍</span></strong>主手，治療與法傷 +94。目前只有聯盟 AH 有（35g），部落買不到。</li>
+            <li><strong><span data-ah="設計圖：救贖胸甲">救贖胸甲</span></strong>治療 +40、精神 +33。Blackmaw Hold 小怪掉。</li>
+            <li><strong><span data-ah="設計圖：殉難者腿鎧">殉難者腿鎧</span></strong>治療 +73。來源未知。</li>
+            <li><strong><span data-ah="設計圖：長青盾牌">長青盾牌</span></strong>物品等級 65，治療加爆擊 1%。</li>
           </ul>
         </article>
         <article class="eg-card" aria-labelledby="spec-prot">
           <h3 id="spec-prot">防護</h3><p>耐力、防禦與格擋</p>
           <ul>
-            <li><strong>魔法瑟銀套裝・要塞護手</strong>經典版坦克裝。</li>
-            <li><strong>沉重瑟銀護手・貧化瑟銀脛甲</strong>物品等級 65，需要延展自然精華。</li>
+            <li><strong><span data-ah="設計圖：魔法瑟銀">魔法瑟銀套裝</span>・<span data-ah="設計圖：要塞護手">要塞護手</span></strong>經典版坦克裝。</li>
+            <li><strong><span data-ah="設計圖：沉重瑟銀護手">沉重瑟銀護手</span>・<span data-ah="設計圖：貧化瑟銀脛甲">貧化瑟銀脛甲</span></strong>物品等級 65，需要延展自然精華。</li>
             <li><strong>充盈瑟銀頭盔</strong><span class="eg-tag bop">拾取後綁定</span><br>耐力、防禦加法傷。用 120 商人青睞在貧瘠之地苟馬克換。</li>
             <li><strong>盾刺</strong>用盾坦副本時再裝。</li>
           </ul>
@@ -122,19 +124,19 @@
         <section class="eg-group" aria-labelledby="mats-title">
           <h3 id="mats-title">材料：不用急著囤</h3>
           <ul>
-            <li><strong>瑟銀錠</strong> 34 銀，上架超過 1,000 根；55 級做祝福套或獅心時再買。</li>
-            <li><strong>藍寶石</strong> 約 1.05g，祝福套每件 2 顆。</li>
-            <li><strong>奧金錠</strong> 從 80g 跌到 46g，還在跌。</li>
-            <li><strong>沉重瑟銀礦石</strong> 1.80g，熔成沉重瑟銀錠，正義套每件要 18 根。</li>
+            <li><strong><span data-ah="瑟銀錠">瑟銀錠</span></strong> 34 銀，上架超過 1,000 根；55 級做祝福套或獅心時再買。</li>
+            <li><strong><span data-ah="藍寶石">藍寶石</span></strong> 約 1.05g，祝福套每件 2 顆。</li>
+            <li><strong><span data-ah="奧金錠">奧金錠</span></strong> 從 80g 跌到 46g，還在跌。</li>
+            <li><strong><span data-ah="沉重瑟銀礦石">沉重瑟銀礦石</span></strong> 1.80g，熔成沉重瑟銀錠，正義套每件要 18 根。</li>
           </ul>
         </section>
         <section class="eg-group" aria-labelledby="bs-skip-title">
           <h3 id="bs-skip-title">先別買</h3>
           <ul>
-            <li><strong>藍圖：主熔爐</strong> 500g；據攻略由黑石深淵 Golem Lord Argelmach 掉，自己刷。</li>
-            <li><strong>秘銀符文戰錘、黑鐵粉碎者</strong> 部落都要 8g 以上，聯盟只要 2～2.5g。</li>
+            <li><strong><span data-ah="藍圖：主熔爐">藍圖：主熔爐</span></strong> 500g；據攻略由黑石深淵 Golem Lord Argelmach 掉，自己刷。</li>
+            <li><strong><span data-ah="設計圖：秘銀符文戰錘">秘銀符文戰錘</span>、<span data-ah="設計圖：黑鐵粉碎者">黑鐵粉碎者</span></strong> 部落都要 8g 以上，聯盟只要 2～2.5g。</li>
             <li><strong>黑鐵系與瑟銀、輻光抗性裝</strong> 12/9 的團本只有奧妮克希亞要火抗。</li>
-            <li><strong>寒冰護衛者、精工風暴戰錘</strong> 經典版以 PvP 為主，有閒錢再收。</li>
+            <li><strong><span data-ah="設計圖：寒冰護衛者">寒冰護衛者</span>、<span data-ah="設計圖：精工風暴戰錘">精工風暴戰錘</span></strong> 經典版以 PvP 為主，有閒錢再收。</li>
           </ul>
         </section>
       </div>
@@ -146,11 +148,11 @@
         <section class="eg-group" aria-labelledby="alch-buy">
           <h3 id="alch-buy">部落 AH 先買<span class="eg-tag buy">買</span></h3>
           <ul>
-            <li><strong>轉化軍團鋼</strong>（需 275）25～30g，第一優先。</li>
-            <li><strong>貓鼬藥劑</strong>（需 280）1.20g，近期低點；永恆持續 30 分鐘，用量更大。</li>
-            <li><strong>巨人藥劑</strong>（需 245）4g，做出來是強效力量藥劑。</li>
-            <li><strong>強效火焰防護藥水</strong>（需 290）奧妮克希亞用；部落最近 50.91g 偏貴，可先刷黑石塔火印類怪物。</li>
-            <li><strong>有限無敵藥水</strong> 中立 0.20g、<strong>超強狂亂藥水</strong> 中立 0.01g，順手收。</li>
+            <li><strong><span data-ah="配方：轉化軍團鋼">轉化軍團鋼</span></strong>（需 275）25～30g，第一優先。</li>
+            <li><strong><span data-ah="配方：貓鼬藥劑">貓鼬藥劑</span></strong>（需 280）1.20g，近期低點；永恆持續 30 分鐘，用量更大。</li>
+            <li><strong><span data-ah="配方：巨人藥劑">巨人藥劑</span></strong>（需 245）4g，做出來是強效力量藥劑。</li>
+            <li><strong><span data-ah="配方：強效火焰防護藥水">強效火焰防護藥水</span></strong>（需 290）奧妮克希亞用；部落最近 50.91g 偏貴，可先刷黑石塔火印類怪物。</li>
+            <li><strong><span data-ah="配方：有限無敵藥水">有限無敵藥水</span></strong> 中立 0.20g、<strong><span data-ah="配方：超強狂亂藥水">超強狂亂藥水</span></strong> 中立 0.01g，順手收。</li>
           </ul>
         </section>
         <section class="eg-group" aria-labelledby="alch-npc">
@@ -174,7 +176,7 @@
           <ul>
             <li><strong>海加爾精煉藥劑 4 種</strong> 耐力 +60，在海加爾山、海加爾山之巔、地深獸穴另有命中 +5%、爆擊 +4%、被閃躲招架 -5% 或加速 +5%。</li>
             <li><strong>泰坦、智慧、超級能量、多重抗性精煉藥劑</strong>。</li>
-            <li><strong>藍圖：鍊金實驗室</strong> 在營地就能做精煉藥劑。</li>
+            <li><strong><span data-ah="藍圖：鍊金實驗室">藍圖：鍊金實驗室</span></strong> 在營地就能做精煉藥劑。</li>
           </ul>
         </section>
       </div>
