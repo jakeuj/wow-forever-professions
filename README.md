@@ -18,6 +18,8 @@
 
 ## 《黎明之劍》公會招生
 
+三個頁面的左上角以「黎明之劍 / 專業議事廳」呈現，公會名採淡金色，副標為 `WOW FOREVER · HORDE GUILD`，保留回首頁的導覽功能。
+
 專業分配表之後設有[公會招生區](https://jakeuj.com/wow-forever-professions/#guild)，面向永恆亞服 PvP 部落玩家。文案依 [2026-11-11 巴哈招生文](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681451)，以新手教學、回鍋復健、日常組隊與預計 2026 年 12 月團本開荒為主。
 
 主要入口為 [Discord](https://discord.gg/RyTEUNTMMt)，另提供巴哈全文與公會公開聯絡方式：遊戲內私訊 `真田 信村 / 南方 勇者`，BattleTag `御星幻#3967 / amigo#3262`。聯絡欄依使用者 2026-11-13 指定內容更新。
