@@ -83,10 +83,11 @@ def parse_item_page(page):
     The faction block belongs to whichever realm the page headlines (usually the
     realm that saw the item last), so callers must compare `realm` first.
     """
-    info = {"realm": None, "faction_min": {}, "faction_seen": {}, "vendors": []}
-    realm = re.search(r"(CAMWOW [^・<]+)・[^<]*全掃描", page)
+    info = {"realm": None, "factions": [], "faction_min": {}, "faction_seen": {}, "vendors": []}
+    realm = re.search(r"(CAMWOW [^・<]+)・([^<・]*)・[^<]*全掃描", page)
     if realm:
         info["realm"] = realm.group(1).strip()
+        info["factions"] = [f.strip() for f in realm.group(2).split("＋")]
     block = re.search(r"各陣營拍賣場最近看到的最低一口價</h3><ul>(.*?)</ul>", page, re.S)
     if block:
         for name, money, seen in re.findall(
@@ -173,9 +174,13 @@ def main():
                 cost += unit * m["qty"]
         product = prices.get(r["product_id"])
         value = product[1] * r["product_qty"] if product else None
+        value_low = product[2] * r["product_qty"] if product else None
         page = pages.get(r["recipe_id"], {})
         same_realm = page.get("realm") == args.realm
         faction_min = page.get("faction_min", {}) if same_realm else {}
+        if same_realm and not faction_min and len(page.get("factions", [])) == 1 and listing:
+            # The page omits the per-faction block when only one auction house lists the item.
+            faction_min = {page["factions"][0]: listing[2]}
         reach = None
         if args.faction:
             reachable = [faction_min.get(args.faction), faction_min.get("中立拍賣場")]
@@ -192,24 +197,36 @@ def main():
             "vendors": page.get("vendors", []),
             "item_page_realm": page.get("realm"),
             "product_median": product[1] if product else None,
+            "product_min": product[2] if product else None,
             "product_count": product[3] if product else 0,
             "mat_cost": cost,
             "mats_missing": missing,
             "profit": value * (1 - AH_CUT) - cost if value is not None and not missing else None,
+            "profit_at_min": value_low * (1 - AH_CUT) - cost if value_low is not None and not missing else None,
         })
 
-    rows.sort(key=lambda x: (x["profit"] is None, -(x["profit"] or 0)))
+    # Rank by the more conservative of median- and floor-based profit: one inflated
+    # median listing should not push a recipe to the top.
+    def rank(x):
+        known = [p for p in (x["profit"], x["profit_at_min"]) if p is not None]
+        return (not known, -min(known) if known else 0)
+
+    rows.sort(key=rank)
     if args.json:
         print(json.dumps({"realm": args.realm, "scanned": group.get("lastFull"), "rows": rows}, ensure_ascii=False, indent=1))
         return
 
+    latest = "{}/{}".format(*(int(p) for p in group["latest"].split("-")[1:]))
     print(f"{args.realm}・{args.profession}・最近全掃描 {time.strftime('%Y-%m-%d %H:%M', time.localtime(group['lastFull']))}")
-    print("毛利＝成品中位數×數量×0.95−材料中位數（不限量 NPC 單價較低時取 NPC）；都是掛單價。")
+    print("毛利＝成品（中位數／最低一口價）×數量×0.95−材料中位數（不限量 NPC 單價較低時取 NPC），依兩者較低值排序；都是掛單價。")
     for x in rows:
         line = (f"{x['recipe']}（需 {x['skill']}）配方 中位 {gold(x['recipe_median'])} 最低 {gold(x['recipe_min'])}"
                 f" ×{x['recipe_count']}")
         if x["faction_min"]:
-            line += " | " + " ".join(f"{k[:2]} {gold(v)}" for k, v in x["faction_min"].items() if k in FACTIONS)
+            def seen(k):
+                day = x["faction_seen"].get(k, "").split(" ")[0]
+                return f"（{day} 看到）" if day and day != latest else ""
+            line += " | " + " ".join(f"{k[:2]} {gold(v)}{seen(k)}" for k, v in x["faction_min"].items() if k in FACTIONS)
         elif args.sources and x["recipe_count"] and x["item_page_realm"] != args.realm:
             line += f" | 分陣營價：物品頁顯示的是 {x['item_page_realm'] or '未知伺服器'}，已略過"
         if args.faction:
@@ -217,9 +234,10 @@ def main():
         npc = [v for v in x["vendors"] if v["price"]]
         if npc:
             line += " | NPC " + "、".join(f"{v['zone']} {v['npc']} {gold(v['price'])}{'（限量）' if v['limited'] else ''}" for v in npc)
-        line += (f" | 成品 {x['product']}×{x['product_qty']} {gold(x['product_median'])} 上架 {x['product_count']}"
+        line += (f" | 成品 {x['product']}×{x['product_qty']} 中位 {gold(x['product_median'])} 最低 {gold(x['product_min'])}"
+                 f" 上架 {x['product_count']}"
                  f" | 材料 {gold(x['mat_cost'])}{' 缺價：' + '、'.join(x['mats_missing']) if x['mats_missing'] else ''}"
-                 f" | 毛利 {gold(x['profit'])}{' | 永恆新增' if x['forever_new'] else ''}")
+                 f" | 毛利 中位 {gold(x['profit'])}／最低 {gold(x['profit_at_min'])}{' | 永恆新增' if x['forever_new'] else ''}")
         print(line)
 
 
