@@ -37,7 +37,7 @@ python '<skill-dir>\scripts\inspect_install.py' --root '<WoW 安裝根目錄>' -
 
 依用途挑插件、比對現有組合，或使用者提到巴哈的永恆插件整理／開服前推薦時，讀 [references/addon-selection.md](references/addon-selection.md)。該檔合併兩篇社群主文的候選、功能取捨與已驗證的 AnoUI 語系線索；候選清單本身不保證目前相容。
 
-查 GnomeLevelUp、RestedXP Guide、Shortest Path Forever、Waypoint UI、Baganator／Syndicator、Platynator、Immersion、Leatrix Plus／Maps、DungeonJournal、DungeonsForever 或 Auctionator 的功能、指令、相依插件與繁中支援，或使用 DungeonsForever＋Auctionator 計算專業衝等成本、掃描行情與匯入材料清單時，讀 [references/addon-feature-guide.md](references/addon-feature-guide.md)。該檔含作者發佈與套件內容的查證、操作流程及既有插件的功能重疊。DungeonsForever、ForeverDungeons、DungeonJournal 是不同專案；後者的 Forever 套件目錄為 `ForeverDungeonJournal`，依專案 ID 與目錄辨識。
+查 GnomeLevelUp、RestedXP Guide、Shortest Path Forever、Waypoint UI、Baganator／Syndicator、Platynator、Immersion、Leatrix Plus／Maps、DungeonJournal、DungeonsForever 或 Auctionator 的功能、指令、相依插件與繁中支援，使用 DungeonsForever 查書籍／睡袋／收藏進度，或搭配 Auctionator 計算專業衝等成本、掃描行情與匯入材料清單時，讀 [references/addon-feature-guide.md](references/addon-feature-guide.md)。該檔含作者發佈與套件內容的查證、操作流程及既有插件的功能重疊。DungeonsForever、ForeverDungeons、DungeonJournal 是不同專案；後者的 Forever 套件目錄為 `ForeverDungeonJournal`，依專案 ID 與目錄辨識。
 
 - 開啟作者專案頁和具體發佈檔案頁，核對專案 ID、Forever flavor、支援的遊戲版本、更新日期與變更內容。搜尋標題與網址 slug 只當作線索。
 - 將已安裝 `.toc` 的 `Version`、`Interface`、`X-Curse-Project-ID` 與上游檔案比對。不同專案的版本號不能直接比較大小；明確支援目標分支與相關修正比下載量更有判斷力。

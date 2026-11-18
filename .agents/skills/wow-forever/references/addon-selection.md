@@ -9,7 +9,7 @@
 | [【閒聊】永恆插件整理 11/4](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681058) | `article#cf5505749`；43 個候選。 |
 | [【密技】永恆開服前推薦幾個必備插件分享給拓荒的你（更新中）](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681023) | 目標 `section#post_5505533`，正文為 `article#cf5505533`；作者 niagura，顯示編輯時間 2026-10-28 17:33:28；15 個工具／服務，其中 4 個與前表相同。 |
 
-下方候選表依專案去重後共 54 個：53 個 CurseForge 專案與一個 GitHub 分支。GearInsight 網站是同工具的補充入口，沒有另外計數；額外光環套件網站也不作獨立插件計數。
+下方「社群候選」各表依專案去重後共 54 個：53 個 CurseForge 專案與一個 GitHub 分支。GearInsight 網站是同工具的補充入口，沒有另外計數；額外光環套件網站也不作獨立插件計數。另列的「作者來源補充候選」不納入這兩篇主文的統計。
 
 另有插件功能調查；作者來源、Forever 發佈、相依插件、指令與繁中證據集中於 [插件功能指南](addon-feature-guide.md)。功能指南獨立於下方兩篇主文的 54 個候選統計。
 
@@ -78,6 +78,14 @@ NodeSight 的 `Locales/zhTW.lua` 提供繁中線索；查證過的 `NodeSight/Sp
 - [CurseForge 說明](https://www.curseforge.com/wow/addons/anoui) 指出：只有要匯入／使用附帶職業光環套件時，才需要另外安裝 ForeverAuras；它不是單純安裝 AnoUI 的無條件前置。
 
 評估結論為：可考慮作為全面改造介面的候選，但目前不符合「整套繁中選單」需求；現有專用插件多數仍有用途。這是該版原始碼與作者宣告的判斷，後續版本需重新核對。
+
+## 作者來源補充候選
+
+2026-11-12 依使用者提供的作者專案補充；功能與套件查證見 [插件功能指南第 11 節](addon-feature-guide.md#11-dungeonsforever地城探索與專業手冊)。
+
+| 插件 | 評估用途 |
+| --- | --- |
+| [DungeonsForever 無限副本手冊](https://www.curseforge.com/wow/addons/dungeonsforever) | 地城掉落、任務前置與入口，另有專業、探索及角色規劃模組。`/df` 開啟；依需要選子模組，專業行情功能另搭 Auctionator。與 ForeverDungeons、DungeonJournal 分別辨識；繁中證據以發佈包為準。 |
 
 ## 社群候選：升級與裝備
 

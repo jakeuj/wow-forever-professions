@@ -95,11 +95,15 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 
 ## 11. DungeonsForever：地城、探索與專業手冊
 
+2026-11-12（台灣）重新核對 [作者專案](https://www.curseforge.com/wow/addons/dungeonsforever)、[發佈檔 9550141](https://www.curseforge.com/wow/addons/dungeonsforever/files/9550141) 與該 ZIP，仍為上表的 2.1.87。該檔同列 Forever／Retail、遊戲版本 `1.60.1`／`12.1.7`，沒有 changelog；介紹文字與套件功能不完全同步，依目標分支的實際載入清單判斷。
+
 - `/df` 或小地圖按鈕開啟。提供地城總覽、首領掉落、任務前置與接交位置、入口地圖標記及部分入口路線；營地與商人也有可點選的位置資料。Forever 另有專業概覽、配方、採集、衝等、傳承與營地資訊，探索模組含書籍追蹤與睡袋任務等內容。手冊資料與導航標記不等於自動完成任務或戰鬥警告。
 - **套件模組要分別辨識。** 2.1.87 ZIP 除 `DungeonsForever` 主體外，內含 `DungeonsForeverProf`（專業）、`DungeonsForeverExplore`（探索）、`DungeonsForeverClass`（職業）、`DungeonsForeverGear`（裝備／BiS）、`DungeonsForeverFaction`（聲望）、`DungeonsForeverPvP`、`DungeonsForeverSpell`（技能書）與 `DF_CNLocale`。前述功能子模組均依賴主體，按需載入且可分別停用；`DF_CNLocale` 是供非中文客戶端強制中文的開關，繁中客戶端依原生語系載入。
+- **探索與收藏需啟用 `DungeonsForeverExplore`＋主體。** 書籍頁提供陣營篩選、進度與位置標記，另有睡袋任務步驟、法師研究說明及坐騎／寵物／玩具等收藏資料。此版 `Core/ExploreUI.lua` 與繁中 `Data_Explore.lua` 的獎勵畫面包含 10／20／25 本三檔，比專案介紹只提 10／20 本更完整；回答獎勵或研究玩法時仍須核對當前官方規則，包內部分說明保留測試服註記。
 - 專業衝等需啟用 **`DungeonsForeverProf`＋主體**。專業模組提供固定攻略、材料清單、步驟追蹤，以及搭配 Auctionator 的自動成本路線；可比較採購、自製與配方依賴，方案有最省錢、穩定升級、材料成本、次數最少等。依當前專業的可用模式與配方資料判斷，不能將採集或每項專業都當成相同的製造路線。
-- 主體 `.toc` 列 `Version: 2.1.87`、Interface 含 `16001`，只有 EllesmereUI 為 OptionalDeps。包內專業模組仍列 `2.0.3`、技能書模組列 `2.0.4`；這是同一發佈 ZIP 的實際內容，不能僅因子模組版本不同就判定混裝。Auctionator 是行情計算與直接匯入的整合來源，並非整個地城手冊的必要前置。
-- **繁中證據**：主體 `Locales/zhTW.lua` 檢查 `GetLocale() == "zhTW"`；`.toc` 以 `[AllowLoadTextLocale zhTW]` 載入繁中介面與 `Core/Data/zhTW/` 地城／專業資料。專業模組另載 `Data_ProfRecipes.lua`、`Data_ProfLeveling.lua` 等繁中資料。專案頁仍只寫英文／簡中，這份套件已包含繁中檔案；翻譯品質、字型及所有頁面完整度尚未遊戲內實測。
+- 主體 `.toc` 列 `Version: 2.1.87`、Interface 含 `16001`，只有 EllesmereUI 為 OptionalDeps。包內專業模組仍列 `2.0.3`、技能書模組列 `2.0.4`；這是同一發佈 ZIP 的實際內容，不能僅因子模組版本不同就判定混裝。套件已內嵌 LibDBIcon／LibDataBroker；[Relations 頁](https://www.curseforge.com/wow/addons/dungeonsforever/relations/dependencies) 的 Embedded Library 不代表需要另裝同名插件。Auctionator 是行情計算與直接匯入的整合來源，並非整個地城手冊的必要前置。
+- **繁中證據**：主體 `Locales/zhTW.lua` 檢查 `GetLocale() == "zhTW"`；`.toc` 以 `[AllowLoadTextLocale zhTW]` 載入繁中介面與 `Core/Data/zhTW/` 地城／專業資料。專業模組另載 `Data_ProfRecipes.lua`、`Data_ProfLeveling.lua`，探索模組另載 `Data_Explore.lua` 及收藏等繁中資料。專案頁仍只寫英文／簡中，這份套件已包含繁中檔案；翻譯品質、字型及所有頁面完整度尚未遊戲內實測。
+- **設定儲存層級**：主體與子模組以 `SavedVariables` 宣告 `DungeonsForeverDB`、`DungeonsForeverExploreDB` 等帳號層資料；探索模組再用 `角色名-伺服器` 索引書籍進度（`ExploreUI.lua` 的 `CharKey()`／`Found()`）。備份或排查進度時讀對應的帳號層設定檔，不能把「按角色保存進度」當成 `SavedVariablesPerCharacter`，也不能把不同角色的收書紀錄混用。
 - **相近名稱不是別名**：本款是 yuanyuande 的 `DungeonsForever`（`1709577`）；[ForeverDungeons](https://www.curseforge.com/wow/addons/foreverdungeons) 是 rakfunk_ 的另一專案（`1715833`），整合於遊戲的尋求組隊視窗；DungeonJournal 則是 ExehnTV 的 `1707971`，Forever 目錄為 `ForeverDungeonJournal`。與 DungeonJournal／AtlasLoot 比較掉落與任務覆蓋，與 GearInsight 比較專業、職業及 BiS 模組；依實際需要選用，不能因名稱相近就推論已裝或可全面取代。地城手冊仍不取代 DBM。
 
 ## 12. Auctionator：行情掃描、購物清單與拍賣交易
@@ -152,5 +156,6 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 | 姓名板、任務怪與仇恨顏色 | Platynator／Plater／Threat Plates／整合 UI 選主要來源。 |
 | 讀任務劇情 | Immersion；同步檢查自動接交設定。 |
 | 便利功能、地圖資訊、地城行前查詢 | 分別評估 Leatrix Plus、Leatrix Maps、DungeonJournal／DungeonsForever，按模組關閉重複功能。 |
+| 書籍、睡袋任務與收藏查詢 | DungeonsForever＋探索模組；與 HandyNotes 的書籍／地圖標記逐項比較，先核對目前角色的進度。 |
 | 專業衝等步驟、材料缺口與成本 | DungeonsForever＋專業模組＋Auctionator；先取得完整行情，再核對目標技能、配方與庫存。 |
 | 拍賣行情與材料採買 | Auctionator；背包／跨角色庫存插件另負責已有物資。 |
