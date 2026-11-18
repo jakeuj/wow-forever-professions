@@ -4,7 +4,8 @@
 .mk-label { font-size: 11px; letter-spacing: 1px; color: var(--gold-dim); }
 .mk-controls input[type="search"], .mk-controls select { box-sizing: border-box; width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid #74603d99; border-radius: 0; background: #0b0e0d; color: #ece3cc; font: inherit; font-size: 14px; }
 .mk-controls input[type="search"]:focus-visible, .mk-controls select:focus-visible { outline: 1px solid var(--gold); outline-offset: 1px; }
-.mk-check { grid-column: 1 / -1; display: flex !important; grid-auto-flow: column; align-items: center; gap: 8px; font-size: 12px; color: #c9bfa6; cursor: pointer; }
+.mk-checks { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 22px; }
+.mk-check { display: flex !important; align-items: center; gap: 8px; min-height: 32px; font-size: 12px; color: #c9bfa6; cursor: pointer; }
 .mk-check input { width: 18px; height: 18px; accent-color: #b8975b; }
 .mk-summary { margin: 0 0 10px; font-size: 12px; color: #8f9a81; }
 .mk-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid #74603d55; }
@@ -55,3 +56,20 @@
 .mk-coin.mk-none small { display: none; }
 .mk-spark { display: block; width: 84px; height: 20px; overflow: visible; }
 .mk-spark path { fill: none; stroke: #b8975b; stroke-width: 1.4; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+
+.mk-head { display: flex; align-items: flex-start; gap: 2px; min-width: 0; }
+.mk-head .mk-name { flex: 0 1 auto; min-width: 0; }
+.mk-star { flex: none; width: 32px; height: 26px; margin-top: -1px; padding: 0; border: 0; background: none; color: #6f6046; font-size: 17px; line-height: 26px; cursor: pointer; }
+.mk-star[aria-pressed="true"] { color: #e3b84a; }
+.mk-star:hover, .mk-star:focus-visible { color: var(--gold-bright); }
+.mk-star:focus-visible { outline: 1px solid var(--gold); outline-offset: 0; }
+.mk-favbar, .mk-shared { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 0 0 14px; }
+.mk-favbar p, .mk-shared p { flex: 1 1 260px; margin: 0; font-size: 12px; line-height: 1.7; color: #c9bfa6; }
+.mk-favbar .guild-copy-button:disabled { opacity: .45; }
+.mk-shared { padding: 12px 14px; border: 1px solid #b8975b88; background: #cfb17a0d; }
+.mk-shared p { color: #ece3cc; }
+.mk-shared-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.mk-shared .guild-copy-button:disabled { opacity: .45; }
+.mk-share-field { display: grid; gap: 4px; flex: 1 1 100%; }
+.mk-share-field input { box-sizing: border-box; width: 100%; min-height: 40px; padding: 6px 10px; border: 1px solid #74603d99; border-radius: 0; background: #0b0e0d; color: #ece3cc; font: inherit; font-size: 12px; }
+[data-market-generated] { white-space: normal; overflow-wrap: anywhere; }

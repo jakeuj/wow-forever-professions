@@ -3,6 +3,7 @@
 // official auction API carries (gear, weapons, recipes: things that do not stack) use
 // its hourly prices from auctions.json on the auction-data branch, written by
 // scripts/collect-auctions.py, with a 24-hour change and a 7-day trend line.
+// Starred items are kept in this browser's localStorage; #fav=<id.id...> shares a list.
 (() => {
   const PAGE = 120;
   const QUALITY = ['粗糙', '普通', '優秀', '精良', '史詩', '傳說', '神器', '傳家寶'];
@@ -15,6 +16,16 @@
   const summary = $('[data-market-summary]');
   const more = $('[data-market-more]');
   if (!form || !list) return;
+  const favbar = $('[data-market-favbar]');
+  const favCount = $('[data-fav-count]');
+  const favHint = $('[data-fav-hint]');
+  const favShare = $('[data-fav-share]');
+  const favField = $('[data-fav-field]');
+  const favUrl = $('[data-fav-url]');
+  const sharedBox = $('[data-market-shared]');
+  const sharedText = $('[data-shared-text]');
+  const sharedAdd = $('[data-shared-add]');
+  const sharedExit = $('[data-shared-exit]');
 
   const toast = document.createElement('div');
   toast.className = 'toast';
@@ -53,13 +64,41 @@
   let shown = 0;
   let filtered = [];
   let apiHour = null;
+  let itemIds = new Set();
+
+  // Favorites: item ids in localStorage, which can be missing or blocked (private windows),
+  // so every access is guarded and the page works without it.
+  const FAV_KEY = 'wfp.market.favorites';
+  const parseIds = text => [...new Set(String(text ?? '').split(/[.,\s]+/).map(Number)
+    .filter(id => Number.isInteger(id) && id > 0))].slice(0, 500);
+  const loadFavorites = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+      return Array.isArray(stored) ? parseIds(stored.join('.')) : [];
+    } catch {
+      return [];
+    }
+  };
+  let favorites = new Set(loadFavorites());
+  let favStored = true;
+  const saveFavorites = () => {
+    try {
+      localStorage.setItem(FAV_KEY, JSON.stringify([...favorites].sort((a, b) => a - b)));
+      favStored = true;
+    } catch {
+      favStored = false;
+    }
+  };
+  let shared = null; // ids from a #fav= link, in the order they were shared
 
   const readHash = () => {
     const params = new URLSearchParams(location.hash.slice(1));
-    for (const field of ['q', 'cat', 'quality', 'sort']) {
-      if (params.has(field) && form.elements[field]) form.elements[field].value = params.get(field);
-    }
+    const defaults = { q: '', cat: '', quality: '', sort: 'quality' };
+    for (const [field, value] of Object.entries(defaults)) form.elements[field].value = params.get(field) ?? value;
+    if (!form.elements.sort.value) form.elements.sort.value = 'quality';
     form.elements.latest.checked = params.get('latest') === '1';
+    form.elements.mine.checked = params.get('mine') === '1';
+    shared = params.has('fav') ? parseIds(params.get('fav')) : null;
   };
   const writeHash = () => {
     const params = new URLSearchParams();
@@ -68,6 +107,8 @@
       if (value && !(field === 'sort' && value === 'quality')) params.set(field, value);
     }
     if (form.elements.latest.checked) params.set('latest', '1');
+    if (form.elements.mine.checked) params.set('mine', '1');
+    if (shared) params.set('fav', shared.join('.'));
     const hash = params.toString();
     history.replaceState(null, '', hash ? `#${hash}` : location.pathname + location.search);
   };
@@ -129,7 +170,11 @@
     const cat = form.elements.cat.value;
     const quality = form.elements.quality.value;
     const listedOnly = form.elements.latest.checked;
+    const mineOnly = form.elements.mine.checked;
+    const sharedSet = shared && new Set(shared);
     filtered = items.filter(item => {
+      if (sharedSet && !sharedSet.has(item.id)) return false;
+      if (mineOnly && !favorites.has(item.id)) return false;
       if (q && !item.name.includes(q) && String(item.id) !== q) return false;
       if (cat.startsWith('c') && String(item.class) !== cat.slice(1)) return false;
       if (cat.startsWith('s') && `${item.class}.${item.subclass}` !== cat.slice(1)) return false;
@@ -142,6 +187,27 @@
     shown = 0;
     renderMore();
     writeHash();
+    updateFavorites();
+  };
+
+  const updateFavorites = () => {
+    const count = favorites.size;
+    favCount.textContent = count ? `（${count}）` : '';
+    favbar.hidden = false;
+    favShare.disabled = !count;
+    favHint.textContent = !count
+      ? '點物品名稱旁的 ☆ 收藏；收藏存在這個瀏覽器，也可以複製連結分享給朋友。'
+      : favStored
+        ? `已收藏 ${count} 件，存在這個瀏覽器。`
+        : `已收藏 ${count} 件，但這個瀏覽器不允許儲存，關掉頁面就會消失；請先複製分享連結保存。`;
+    sharedBox.hidden = !shared;
+    if (!shared) return;
+    const known = shared.filter(id => itemIds.has(id)).length;
+    const missing = shared.length - known;
+    const added = shared.every(id => favorites.has(id) || !itemIds.has(id));
+    sharedText.textContent = `這是分享的收藏清單，共 ${known} 件${missing ? `（另有 ${missing} 件目前沒有行情資料）` : ''}。`
+      + (added ? '都已經在你的收藏裡。' : '想留著的話按「加到我的收藏」，會存在這個瀏覽器。');
+    sharedAdd.disabled = added;
   };
 
   // A small step chart of the last 7 days of lowest prices; gaps where the item was gone.
@@ -205,6 +271,27 @@
 
     const main = document.createElement('div');
     main.className = 'mk-main';
+    const head = document.createElement('div');
+    head.className = 'mk-head';
+    const star = document.createElement('button');
+    star.type = 'button';
+    star.className = 'mk-star';
+    const syncStar = () => {
+      const on = favorites.has(item.id);
+      star.textContent = on ? '★' : '☆';
+      star.setAttribute('aria-pressed', String(on));
+      star.setAttribute('aria-label', `收藏「${item.name}」`);
+      star.title = on ? '取消收藏' : '收藏';
+    };
+    syncStar();
+    star.addEventListener('click', () => {
+      const on = !favorites.has(item.id);
+      if (on) favorites.add(item.id); else favorites.delete(item.id);
+      saveFavorites();
+      syncStar();
+      updateFavorites();
+      notify(on ? `已收藏「${item.name}」` : `已取消收藏「${item.name}」`);
+    });
     const name = document.createElement('button');
     name.type = 'button';
     name.className = `mk-name q${item.quality ?? 1}`;
@@ -230,7 +317,8 @@
     amobi.textContent = '阿莫比';
     amobi.setAttribute('aria-label', `${item.name}：在阿莫比看三間拍賣場行情`);
     meta.append(labels.length ? '・' : '', amobi);
-    main.append(name, meta);
+    head.append(name, star);
+    main.append(head, meta);
 
     const price = document.createElement('div');
     price.className = 'mk-price';
@@ -297,6 +385,43 @@
   form.addEventListener('submit', event => { event.preventDefault(); apply(); });
   more.addEventListener('click', renderMore);
 
+  favShare.addEventListener('click', async () => {
+    const ids = [...favorites].sort((a, b) => a - b);
+    const url = `${location.origin}${location.pathname}#fav=${ids.join('.')}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      favField.hidden = true;
+      notify(`已複製分享連結（${ids.length} 件），貼給朋友就能看到這些物品`);
+    } catch {
+      favUrl.value = url;
+      favField.hidden = false;
+      favUrl.focus();
+      favUrl.select();
+      notify('無法自動複製，請手動複製下方的連結');
+    }
+  });
+  sharedAdd.addEventListener('click', () => {
+    const before = favorites.size;
+    shared.filter(id => itemIds.has(id)).forEach(id => favorites.add(id));
+    saveFavorites();
+    const added = favorites.size - before;
+    shared = null;
+    form.elements.mine.checked = true;
+    apply();
+    notify(`已加入 ${added} 件到你的收藏`);
+  });
+  sharedExit.addEventListener('click', () => {
+    shared = null;
+    apply();
+  });
+  // A pasted #fav= or filter link on an open page changes only the hash.
+  // In-page anchors such as #sources also change the hash; only filter links carry "=".
+  window.addEventListener('hashchange', () => {
+    if (!items.length || !location.hash.includes('=')) return;
+    readHash();
+    apply();
+  });
+
   const getJson = url => fetch(url, { cache: 'no-cache' }).then(response => {
     if (!response.ok) throw new Error(response.status);
     return response.json();
@@ -312,6 +437,7 @@
       classes = data.classes;
       subclasses = data.subclasses;
       items = data.items.map(row => Object.fromEntries(data.fields.map((field, i) => [field, row[i]])));
+      itemIds = new Set(items.map(item => item.id));
       // ISO strings carry the owner's +08:00 offset; show them as written, not in the viewer's zone.
       const stamp = iso => iso ? `${iso.slice(0, 10).replaceAll('-', '.')} ${iso.slice(11, 16)}` : '';
       const scan = data.scanStartedAt ? stamp(data.scanStartedAt) : data.latestDay.replaceAll('-', '.');
