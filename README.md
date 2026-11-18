@@ -54,6 +54,18 @@
 - 官方 API 涵蓋率：手動執行的 `.github/workflows/api-probe.yml` 跑技能的 `scripts/forever_api_coverage.py`，把官方 Retail／Classic 文件列出的每個端點換成永恆路徑呼叫一次，結果寫進 Step Summary 與 `api-probe` artifact，不 commit。測試角色放在選填的 repo Secret `FOREVER_PROBE_CHARACTER`（`名字-姓氏`），輸出時會遮掉。本機查詢用技能的 `scripts/forever_api.py`，憑證讀環境變數或 macOS 鑰匙圈；整理結果見技能的 `references/battlenet-api.md`。
 - 練等頁的 HTML 是路線與價格的快照；`leveling/leveling.js` 開頁時讀 `market/data.json`（依物品 ID），重算單價、小計、佔比、階段合計與設計圖價，所以重建行情資料後材料費會跟著更新。路線本身要重排時，執行技能的 `scripts/leveling_route.py --from 200 --market-json market/data.json --json > route.json`，再跑 `python3 scripts/build-leveling-page.py route.json` 填好頁面的路線、材料與設計圖表（標記外的說明文字手改）。路線會扣掉拍賣場買掉的件數，不夠就換配方或自製中間材料。
 
+## 六項製造升級總覽
+
+[`crafting-leveling/`](https://jakeuj.com/wow-forever-professions/crafting-leveling/) 由首頁的「我的製造里程碑」進入。各列是從技能 1 起步的累計金額，優先順序按各階段的追加支出估算。六項都練到 150 的總預算合併共用材料，再按同一批在售量報價。編排路線時優先比較配方來源與當次在售量。
+
+以拍賣小幫手的慢速模式完整掃描台灣 PvP 部落拍賣場，確認無限副本手冊的專業模組已啟用，再在遊戲內輸入 `/reload`。用實際安裝位置取代範例路徑：
+
+```powershell
+python scripts/build-crafting-leveling.py --root 'C:/Games/World of Warcraft'
+```
+
+重建會讀同一輪的 `Auctionator.lua` 與 `DungeonsForeverProf.lua`，使用後者保存的各價位件數。需要指定存檔時加 `--file '<Auctionator.lua 路徑>'`。資料不完整或市場不符時會留下上一份頁面。加入 `--check` 可驗證已產生的 HTML 是否與輸入一致。路線資料依本機無限副本手冊的繁中資料表與 `scripts/crafting-leveling-routes.json` 中已核對的替代段落，估價與排序會一併產生。
+
 ## 專案技能
 
 共用的 [wow-forever 技能](.agents/skills/wow-forever/SKILL.md) 位於 `.agents/skills/wow-forever`，包含永恆玩法、插件查證、專業與傳承規劃、網站及公會招生維護、官方 API 與公開資料來源參考，以及唯讀插件盤點工具。
@@ -74,6 +86,7 @@ python -m http.server 8765 --bind 127.0.0.1
 
 ```sh
 node --test scripts/plans.test.mjs
+python -m unittest discover -s scripts -p test_crafting_leveling.py
 ```
 
 資料集中於 `data.mjs`；`app.js` 處理方案切換、複製與本機進度。分享圖可用 `scripts/make-social-card.py` 重建，需要 Python、Pillow 與 Windows 微軟正黑體。
