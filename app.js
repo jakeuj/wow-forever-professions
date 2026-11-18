@@ -1,4 +1,4 @@
-import { professions, crafting, plans, paladinRoutes, getPaladinRoute, getRows, summarize, normalizeProgress, countPoints } from './data.mjs?v=20261111-guild';
+import { professions, crafting, plans, paladinRoutes, getPaladinRoute, getRows, summarize, normalizeProgress, countPoints } from './data.mjs?v=20261118-warlock-route';
 
 const $ = selector => document.querySelector(selector);
 const storageKey = 'wow-forever-professions:milestones:v1';

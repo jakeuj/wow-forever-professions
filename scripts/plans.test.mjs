@@ -44,6 +44,7 @@ for (const [route, mainProfs, expectedCrafters] of [
   ['keep', ['mining', 'blacksmithing'], 4],
   ['crafting', ['blacksmithing', 'engineering'], 3],
   ['gathering', ['mining', 'skinning'], 3],
+  ['warlock', ['mining', 'blacksmithing'], 5],
 ]) {
   test(`聖騎士 ${route} 路線：主角選擇、五種職業與六製造各一次`, () => {
     const rows = getRows('paladin', 'final', route);
@@ -65,6 +66,14 @@ test('聖騎士 A 到 B 只交換主角採礦與盜賊工程，其餘角色專�
   }
   assert.deepEqual(early.find(row => row.classId === 'rogue').profs, ['engineering']);
   assert.deepEqual(late.find(row => row.classId === 'rogue').profs, ['mining']);
+});
+test('聖騎士 D 路線：術士接裁縫／附魔，法師改草藥／煉金', () => {
+  const rows = getRows('paladin', 'final', 'warlock');
+  assert.deepEqual(rows.find(row => row.classId === 'warlock').profs, ['tailoring', 'enchanting']);
+  assert.deepEqual(rows.find(row => row.classId === 'mage').profs, ['herbalism', 'alchemy']);
+  assert.deepEqual(rows.find(row => row.classId === 'hunter').profs, ['skinning', 'leatherworking']);
+  assert.deepEqual(rows.find(row => row.classId === 'rogue').profs, ['engineering']);
+  assert.equal(rows.some(row => row.classId === 'druid'), false);
 });
 test('舊聖騎士入口及無效路線皆回到保留現況', () => {
   assert.deepEqual(getRows('paladin'), getRows('paladin', 'final', 'keep'));

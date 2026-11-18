@@ -21,7 +21,7 @@
 | 01／PLAN A，首選 | `crafting` | 雙採集主號＋三隻雙製造小號，六製造集中在三位工匠 |
 | 02／PLAN B | `gathering` | 雙採集起手，之後主號剝皮換煉金 |
 | 03／PLAN C | `balanced` | 直接配對採集與製造，建立全專業分工 |
-| 04／PLAN D | `paladin` | 聖騎士多路線：保留現況、主角雙製造、主角雙採集 |
+| 04／PLAN D | `paladin` | 聖騎士多路線：保留現況、主角雙製造、主角雙採集、術士接布甲 |
 
 - 無方案參數時預設 `crafting`。德魯伊主號採草／剝皮、法師裁縫／附魔、獵人製皮／煉金、戰士鍛造／工程，另由盜賊採礦並保留第二格彈性。完整規劃是五職業、九專業、三位製造工匠、18 點上限；可先從主號與法師開始，逐步補齊。
 - 新 01 不使用開局／長期階段切換；主號長期維持雙採集。盜賊以真實的 `mining` 專業計數；「彈性一格」是說明，不作額外專業 ID 或點數來源。
@@ -38,8 +38,9 @@
 - [聖騎士路線比較](https://jakeuj.com/wow-forever-professions/#plan=paladin)：舊入口預設 A 保留採礦／鍛造，也可用 `route=keep`。
 - [聖騎士 B 主角雙製造](https://jakeuj.com/wow-forever-professions/#plan=paladin&route=crafting)
 - [聖騎士 C 主角雙採集](https://jakeuj.com/wow-forever-professions/#plan=paladin&route=gathering)
+- [聖騎士 D 術士接布甲](https://jakeuj.com/wow-forever-professions/#plan=paladin&route=warlock)
 
-04 內部的路線 A／B／C 與外層 PLAN A／B／C 是不同層級。三條路線都提供五職業、九專業、18 點上限；製造角色數依序為 4／3／3，B 的三位包含聖騎士主角。每條路線列出主角調整、材料流向與適合情境，完整分工見 [professions-and-legacy.md](professions-and-legacy.md#04plan-d聖騎士多路線)。切換路線會同步更新分配表、覆蓋摘要、複製文字及分享網址；裸 `#plan=paladin` 或無效路線回 A。
+04 內部的路線 A／B／C／D 與外層 PLAN A／B／C／D 是不同層級。四條路線都提供五職業、九專業、18 點上限；製造角色數依序為 4／3／3／5，B 的三位包含聖騎士主角。D 是 2026-11-18 依站主實際配置（術士已學裁縫／附魔、法師空出）加入的路線，`route=warlock`。每條路線列出主角調整、材料流向與適合情境，完整分工見 [professions-and-legacy.md](professions-and-legacy.md#04plan-d聖騎士多路線)。切換路線會同步更新分配表、覆蓋摘要、複製文字及分享網址；裸 `#plan=paladin` 或無效路線回 A。
 
 ## 修改與驗證重點
 
@@ -52,7 +53,7 @@
 - 新訪客首頁預設 01 雙製造小號，顯示 9／9 專業、3 位製造工匠、18 點上限；三位工匠各自雙製造、六項各一次，主號保留草藥學／剝皮。
 - 02 開局的完整規劃顯示 8／9 專業、4 位製造工匠、15 點上限；長期為 9／9、5 位製造工匠、18 點。既有 `#plan=gathering&stage=final` 仍直接開啟此方案的長期階段。
 - 四個方案的切換與鍵盤左右鍵順序跟畫面一致，聖騎士維持最後；手機版兩列選項且無橫向溢出。
-- 04 的三個路線選項在手機改為單欄；分別開啟或重新整理分享網址能還原選取，其他方案隱藏此選單。
+- 04 的四個路線選項桌機一列四欄、900px 以下兩欄、手機單欄；分別開啟或重新整理分享網址能還原選取，其他方案隱藏此選單。
 - 涉及傳承記錄時，確認重新整理後保留進度，且計分按六項專業里程碑各算一次。
 - 發布完成以對應 commit 的 Pages 工作成功及正式頁、受影響資源可讀為準；來源推送成功是中間狀態。
 
@@ -90,6 +91,6 @@
 - 主要入口為 Discord，次要入口為巴哈全文。公會聯絡人、BattleTag 與網站來源的打招呼訊息各有複製按鈕；複製失敗提供手動選取提示。
 - 招生內容、聯絡方式與外連均在 `index.html`，無 JavaScript 仍可閱讀。複製按鈕由 JavaScript 顯示；頁內招生連結捲動並移動焦點至標題，保留既有 `plan／stage／route` 雜湊。
 - 營火圖使用 `assets/guild-campfire-640.webp`（640×360）與 `assets/guild-campfire-1280.webp`（1280×720）的 `srcset`；`assets/guild-emblem.webp` 為 240×240 劍徽。圖片維持原構圖、設定尺寸並延遲載入。
-- 首頁標題、canonical 與 `social-v3.png` 分享預覽沿用專業規劃主題。這次 HTML、樣式與模組的快取版本為 `20261111-guild`。
+- 首頁標題、canonical 與 `social-v3.png` 分享預覽沿用專業規劃主題。快取版本最近一次於 2026-11-18 加入路線 D 時改為 `20261118-warlock-route`（`index.html` 的樣式與 `app.js`、`app.js` 匯入的 `data.mjs`，以及五個個人頁的樣式）。
 
 初次上線 commit 為 `046fd07bf4d3f770d982784472ff0e107405c8f4`，[Pages 工作成功](https://github.com/jakeuj/wow-forever-professions/actions/runs/43052634666)。已核對正式頁與靜態資源符合該 commit；14 項既有專業測試、桌機與 360px 手機版、四方案與聖騎士三路線、複製與無 JavaScript 內容、進度保存均完成對應驗證。剪貼簿拒絕寫入以模擬 API 驗證實際事件處理器。

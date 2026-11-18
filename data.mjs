@@ -15,6 +15,7 @@ const druid = { classId: 'druid', name: '德魯伊', seal: '德', role: '草藥�
 const hunter = { classId: 'hunter', name: '獵人', seal: '獵', role: '皮料與營地', order: '第三隻副角', profs: ['skinning', 'leatherworking'], reason: '打獸剝皮、製作皮甲與鎖甲，並負責製皮帳篷的用途。' };
 const rogue = { classId: 'rogue', name: '盜賊', seal: '賊', role: '工程與工具', order: '第四隻副角', profs: ['mining', 'engineering'], reason: '礦料自供工程工具；增加控場與工具選擇。' };
 const warrior = { classId: 'warrior', name: '戰士', seal: '戰', role: '武器與護甲', order: '長期工匠', profs: ['mining', 'blacksmithing'], reason: '採礦直接供應鍛造，製作自用武器與護甲。' };
+const warlock = { classId: 'warlock', name: '術士', seal: '術', role: '布甲與拆裝', order: '現有小號', profs: ['tailoring', 'enchanting'], reason: '裁縫做包與布甲，附魔拆可寄綠裝；與法師版本的用途相同。' };
 const paladin = { classId: 'paladin', name: '聖騎士', seal: '聖', role: '保留既有投入', order: '現有主角', profs: ['mining', 'blacksmithing'], reason: '礦料直接供應武器與護甲製作；維持主角的採礦／鍛造。' };
 export const paladinRoutes = {
   keep: {
@@ -65,6 +66,22 @@ export const paladinRoutes = {
       { ...druid, order: '草藥採集角', role: '草藥與彈性格', profs: ['herbalism'], flexibleSlot: true, reason: '草藥供應獵人煉金；第二格可留空或依玩法選擇。' },
     ],
   },
+  warlock: {
+    letter: 'D', label: '術士接布甲', pair: '採礦／鍛造', short: '法師改學草藥／煉金',
+    title: '術士接裁縫／附魔，法師改練煉金。',
+    description: '聖騎士保留採礦／鍛造，裁縫／附魔由術士負責，空出的法師改學草藥／煉金。每位工匠各自搭配材料：法師採草、獵人剝皮、聖騎士供礦給盜賊工程。',
+    change: '聖騎士不更換專業；裁縫／附魔放在術士，法師改學草藥／煉金。',
+    flow: '法師自己採草練煉金，轉化的軍團鋼與奧金寄給聖騎士鍛造；聖騎士的礦也供盜賊工程；獵人自己剝皮做製皮；布料與可寄綠裝交術士。',
+    fit: '已讓術士學裁縫／附魔、法師空出來的玩家。煉金成品多半可郵寄，交給用不到製造綁定裝的布甲職業；製皮與工程留給會用到成品的獵人與盜賊。',
+    note: '五種職業、九項專業全部涵蓋，五位角色都有製造，合計最多 18 點。煉金 275 可學轉化軍團鋼，正好供應聖騎士 300 級鍛造；盜賊的第二格可學採礦自給，或留空。',
+    rows: [
+      { ...paladin, reason: '維持採礦／鍛造；礦料供自己與盜賊工程，並接收法師轉化的軍團鋼。' },
+      warlock,
+      { ...mage, order: '煉金小號', role: '草藥與煉金', profs: ['herbalism', 'alchemy'], reason: '自己採草練煉金，先衝 275 拿轉化：軍團鋼；藥水、藥劑與金屬錠都能寄給其他角色。' },
+      { ...hunter, order: '後續工匠', reason: '打獸剝皮直接供應製皮，皮甲與鎖甲成品自己也穿得到。' },
+      { ...rogue, order: '最後補齊', role: '工程與彈性格', profs: ['engineering'], flexibleSlot: true, reason: '接收聖騎士的礦料發展工程，第二格可學採礦自給或留空。' },
+    ],
+  },
 };
 export function getPaladinRoute(routeId = 'keep') {
   return Object.hasOwn(paladinRoutes, routeId) ? paladinRoutes[routeId] : paladinRoutes.keep;
@@ -96,8 +113,8 @@ export const plans = {
     rows: [mage, druid, hunter, warrior, rogue],
   },
   paladin: {
-    label: '聖騎士多路線', tag: 'PLAN D · 聖騎士路線比較', title: '從現有採礦／鍛造出發，考慮三條分工路線。',
-    description: '可先保留現況、改成主角雙製造，或把製造移交小號。三條路線都提供完整的全帳號分工，切換比較需要更換的專業與供料方式。',
+    label: '聖騎士多路線', tag: 'PLAN D · 聖騎士路線比較', title: '從現有採礦／鍛造出發，考慮四條分工路線。',
+    description: '可先保留現況、改成主角雙製造、把製造移交小號，或由術士接布甲、法師改煉金。四條路線都提供完整的全帳號分工，切換比較需要更換的專業與供料方式。',
     note: paladinRoutes.keep.note,
     rows: paladinRoutes.keep.rows,
   },
