@@ -1,0 +1,80 @@
+// Leveling page: recompute material costs from the market page's data (../market/data.json,
+// built from the owner's Auctionator scan). The HTML already holds a snapshot, so the page
+// reads fine without JavaScript or when the data cannot be loaded.
+// Rows: <tr data-lv-id="item id" data-lv-qty="n" data-lv-price="snapshot copper">; tables with
+// data-lv-phase also carry data-lv-vendor (copper returned by selling the crafted items).
+(() => {
+  const phases = document.querySelectorAll('[data-lv-phase]');
+  if (!phases.length) return;
+
+  const trim = text => text.replace(/\.0$/, '');
+  const unit = c => (c >= 10000 ? `${(c / 10000).toFixed(2)}g` : `${trim((c / 100).toFixed(1))} 銀`);
+  const total = c => (c >= 10000 ? `${(c / 10000).toFixed(1)}g` : unit(c));
+  const setText = (root, selector, text) => root.querySelectorAll(selector).forEach(node => { node.textContent = text; });
+  const shortTag = () => Object.assign(document.createElement('span'), { className: 'eg-tag skip', textContent: '不夠' });
+  const dateChip = document.querySelector('[data-lv-date]');
+
+  const apply = data => {
+    const f = data.fields;
+    const [iId, iPrice, iCount] = ['id', 'price', 'count'].map(k => f.indexOf(k));
+    const live = new Map(data.items.filter(r => r[iPrice]).map(r => [r[iId], { price: r[iPrice], count: r[iCount] }]));
+
+    phases.forEach(table => {
+      const body = table.querySelector('tbody');
+      const rows = [...body.querySelectorAll('tr[data-lv-id]')].map(row => {
+        const hit = live.get(Number(row.dataset.lvId));
+        const qty = Number(row.dataset.lvQty);
+        const price = hit ? hit.price : Number(row.dataset.lvPrice);
+        const cell = row.querySelector('[data-lv-unit]');
+        cell.textContent = unit(price);
+        if (!hit) cell.append(Object.assign(document.createElement('span'), { className: 'lv-stale', textContent: '沿用快照' }));
+        if (hit && hit.count != null) {
+          setText(row, '[data-lv-listed]', hit.count.toLocaleString('en-US'));
+          const tag = row.querySelector('[data-lv-short]');
+          tag.replaceChildren(...(hit.count < qty ? [shortTag()] : []));
+        }
+        return { row, sub: price * qty };
+      });
+      const sum = rows.reduce((acc, r) => acc + r.sub, 0);
+      rows.sort((a, b) => b.sub - a.sub).forEach(({ row, sub }) => {
+        const share = sum ? (sub / sum) * 100 : 0;
+        setText(row, '[data-lv-sub]', total(sub));
+        setText(row, '[data-lv-pct]', `${Math.round(share)}%`);
+        row.querySelector('.lv-share').style.setProperty('--share', `${share.toFixed(1)}%`);
+        body.append(row);
+      });
+      const net = sum - Number(table.dataset.lvVendor || 0);
+      setText(table, '[data-lv-total]', total(sum));
+      setText(table, 'tfoot [data-lv-net]', total(net));
+      const card = document.querySelector(`[data-lv-card="${table.dataset.lvPhase}"]`);
+      if (card) {
+        setText(card, '[data-lv-gross]', total(sum));
+        setText(card, '[data-lv-net]', total(net));
+      }
+    });
+
+    let planTotal = 0;
+    document.querySelectorAll('.lv-plans tr[data-lv-id]').forEach(row => {
+      const hit = live.get(Number(row.dataset.lvId));
+      setText(row, '[data-lv-unit]', hit ? unit(hit.price) : '部落沒貨');
+      setText(row, '[data-lv-listed]', hit ? `${hit.count ?? '?'} 件` : '—');
+      if (hit && row.hasAttribute('data-lv-buy')) planTotal += hit.price;
+    });
+    if (planTotal) setText(document, '[data-lv-plan-total]', total(planTotal));
+
+    const stamp = data.scanStartedAt || data.savedAt;
+    if (dateChip && stamp) {
+      dateChip.textContent = `${data.scanStartedAt ? '完整掃描' : '部落掃描'} ${stamp.slice(0, 16).replace('T', ' ').replace(/-/g, '.')}`;
+    }
+  };
+
+  fetch('../market/data.json', { cache: 'no-cache' })
+    .then(response => {
+      if (!response.ok) throw new Error(String(response.status));
+      return response.json();
+    })
+    .then(apply)
+    .catch(() => {
+      if (dateChip) dateChip.textContent += '（讀不到最新行情，顯示快照）';
+    });
+})();

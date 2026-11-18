@@ -1,0 +1,37 @@
+/* Blacksmithing leveling page: budget cards, route table and material cost bars.
+   Base layout and tables come from ../endgame/endgame.css. */
+.lv-card > p { margin-bottom: 10px; }
+.lv-figures { display: grid; gap: 0; margin: 0; }
+.lv-figures > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
+.lv-figures dt { font-size: 11px; color: var(--muted); }
+.lv-figures dd { margin: 0; font-size: 15px; color: var(--gold-bright); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.lv-figures .lv-net dt { color: var(--gold); }
+.lv-figures .lv-net dd { font-family: var(--serif); font-size: 24px; font-weight: 600; }
+.lv-card-note { margin: 12px 0 0; font-size: 11px; line-height: 1.85; color: var(--muted); }
+
+.lv-route { margin-top: 34px; }
+.lv-sub { display: block; margin-top: 2px; font-size: 11px; color: var(--muted); }
+
+.lv-mats + .lv-mats { margin-top: 38px; }
+.lv-mats td[data-lv-unit], .lv-mats td[data-lv-sub] { font-variant-numeric: tabular-nums; }
+.lv-mats tfoot th, .lv-mats tfoot td { padding-top: 14px; border-top: 1px solid #74603d88; border-bottom: 0; font-weight: 600; color: var(--text); }
+.lv-mats tfoot td[data-lv-total] { font-size: 15px; }
+.lv-share-cell { width: 26%; }
+.lv-share { position: relative; display: block; min-width: 110px; height: 22px; background: #cfb17a0f; }
+.lv-share::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--share, 0%); background: linear-gradient(90deg, #ae8b4999, #edcf94cc); }
+.lv-share > span { position: relative; padding-left: 7px; font-size: 11px; line-height: 22px; color: var(--text); font-variant-numeric: tabular-nums; }
+.lv-stale { margin-left: 6px; font-size: 10px; color: var(--muted); }
+
+@media (min-width: 901px) {
+  .eg-timeline.lv-timeline { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .lv-notes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .lv-share-cell { width: 100%; }
+  .lv-share { min-width: 0; }
+  .lv-mats tfoot tr { padding: 12px 0 0; border-bottom: 0; }
+  .lv-mats tfoot th { padding: 0 0 4px; border: 0; font-size: 15px; }
+  .lv-mats tfoot td { padding: 3px 0; border: 0; }
+  .lv-figures .lv-net dd { font-size: 21px; }
+}

@@ -7,7 +7,7 @@
   const items = document.querySelectorAll('[data-ah]');
   if (!items.length) return;
 
-  const PAGES = ['endgame', 'alchemy', 'speculation'];
+  const PAGES = ['endgame', 'leveling', 'alchemy', 'speculation'];
 
   const toast = document.createElement('div');
   toast.className = 'toast';
@@ -48,7 +48,7 @@
 
   // Read the lists before the spans below turn into buttons.
   const pageLists = collectLists(document);
-  const currentPage = (location.pathname.match(/\/(endgame|alchemy|speculation)\/(?:index\.html)?$/) || [])[1];
+  const currentPage = (location.pathname.match(/\/(endgame|leveling|alchemy|speculation)\/(?:index\.html)?$/) || [])[1];
 
   items.forEach(item => {
     const name = item.dataset.ah;
@@ -122,8 +122,8 @@
     return button;
   };
   const copyPage = makeButton('複製這頁清單');
-  const copyAll = makeButton('複製三頁全部');
-  const download = makeButton('下載三頁 .txt');
+  const copyAll = makeButton('複製全部頁面');
+  const download = makeButton('下載全部 .txt');
   const howto = document.createElement('p');
   howto.className = 'eg-lists-note';
   howto.textContent = '在拍賣場打開「拍賣小幫手」的「購買」分頁，按左下「匯入」，貼上後再按「匯入」。同名清單會整份換成新的，你自己建的其他清單不受影響；搜尋全部就能看到沒貨的項目。';
@@ -157,7 +157,7 @@
   copyAll.addEventListener('click', async () => {
     try {
       const lists = await allLists();
-      await copyText(listsText(lists), `三頁共 ${lists.size} 份清單`);
+      await copyText(listsText(lists), `全部頁面共 ${lists.size} 份清單`);
     } catch {
       notify('讀不到另外兩頁，先改複製這頁的清單');
       await copyText(listsText(pageLists), `這頁的 ${pageLists.size} 份清單`);
