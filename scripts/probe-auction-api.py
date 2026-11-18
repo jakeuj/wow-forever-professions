@@ -107,27 +107,25 @@ def house_list(index):
 
 
 def lowest_prices(auctions, commodities):
-    """item id -> (lowest unit price, lowest whole-listing buyout, listings, quantity)."""
+    """item id -> (lowest buyout / quantity, lowest buyout, largest quantity in one listing)."""
     best = {}
+
+    def add(item, unit, whole, quantity):
+        old = best.get(item)
+        best[item] = (unit, whole, quantity) if old is None else \
+            (min(unit, old[0]), min(whole, old[1]), max(quantity, old[2]))
+
     for row in auctions or []:
         buyout = row.get("buyout")
         item = (row.get("item") or {}).get("id")
-        if not buyout or item is None:
-            continue
-        quantity = row.get("quantity") or 1
-        unit = buyout / quantity
-        old = best.get(item)
-        best[item] = (min(unit, old[0]), min(buyout, old[1]), old[2] + 1, old[3] + quantity) if old \
-            else (unit, buyout, 1, quantity)
+        if buyout and item is not None:
+            quantity = row.get("quantity") or 1
+            add(item, buyout / quantity, buyout, quantity)
     for row in commodities or []:
         unit = row.get("unit_price")
         item = (row.get("item") or {}).get("id")
-        if not unit or item is None:
-            continue
-        quantity = row.get("quantity") or 1
-        old = best.get(item)
-        best[item] = (min(unit, old[0]), min(unit, old[1]), old[2] + 1, old[3] + quantity) if old \
-            else (unit, unit, 1, quantity)
+        if unit and item is not None:
+            add(item, unit, unit, row.get("quantity") or 1)
     return best
 
 
@@ -141,14 +139,19 @@ def load_scan(path):
 
 def compare(prices, scan):
     shared = [i for i in scan if i in prices]
-    if not shared:
-        return {"shared": 0, "unit_same": 0, "stack_same": 0, "unit_near": 0}
+    # Only listings of more than one unit tell whether buyout is per unit or for the whole stack.
+    stacked = [i for i in shared if prices[i][2] > 1]
     same = lambda a, b: round(a) == b
+    rate = lambda items, k: sum(same(prices[i][k], scan[i]) for i in items) / len(items) if items else 0
     return {
         "shared": len(shared),
-        "unit_same": sum(same(prices[i][0], scan[i]) for i in shared) / len(shared),
-        "stack_same": sum(same(prices[i][1], scan[i]) for i in shared) / len(shared),
-        "unit_near": sum(abs(prices[i][0] - scan[i]) <= 0.05 * scan[i] for i in shared) / len(shared),
+        "unit_same": rate(shared, 0),
+        "stack_same": rate(shared, 1),
+        "unit_near": sum(abs(prices[i][0] - scan[i]) <= 0.05 * scan[i] for i in shared) / len(shared)
+        if shared else 0,
+        "stacked": len(stacked),
+        "stacked_total_same": rate(stacked, 0),  # buyout is the stack total
+        "stacked_unit_same": rate(stacked, 1),  # buyout is already per unit
     }
 
 
@@ -191,9 +194,9 @@ def probe_region(region, token, ruleset, scan, lines):
     if not houses:
         lines.append(f"Ruleset {ruleset} has no auction house list.\n")
         return result
-    lines.append("| House | Name | Listings | Items | Last-Modified | Items also in scan | Same lowest price "
-                 "(unit) | Same (whole listing) | Within 5% (unit) |")
-    lines.append("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+    lines.append("| House | Name | Ruleset | Listings | Stacks (max) | Items | Last-Modified | Items also in scan "
+                 "| Same lowest price (unit) | Same (whole listing) | Within 5% (unit) |")
+    lines.append("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     for house in houses:
         hid = house["id"]
         base = f"/data/wow/ruleset/{ruleset}/auctions/{hid}"
@@ -202,8 +205,12 @@ def probe_region(region, token, ruleset, scan, lines):
         c_rows = (commodities["payload"] or {}).get("commodities")
         prices = lowest_prices(a_rows, c_rows)
         match = compare(prices, scan)
+        owner = (auctions["payload"] or {}).get("ruleset")
         info = {
             "id": hid, "name": text(house.get("name")),
+            "ruleset": owner.get("id", text(owner.get("name"))) if isinstance(owner, dict) else owner,
+            "stack_listings": sum((row.get("quantity") or 1) > 1 for row in a_rows or []),
+            "max_quantity": max([row.get("quantity") or 1 for row in a_rows or []], default=0),
             "auctions_status": auctions["status"], "commodities_status": commodities["status"],
             "auctions": len(a_rows or []), "commodities": len(c_rows or []),
             "items": len(prices), "bytes": auctions["bytes"] + commodities["bytes"],
@@ -215,7 +222,8 @@ def probe_region(region, token, ruleset, scan, lines):
         listings = f"{info['auctions']:,} + {info['commodities']:,}"
         if auctions["status"] != 200 or commodities["status"] != 200:
             listings += f" (HTTP {auctions['status']}/{commodities['status']})"
-        lines.append(f"| {hid} | {info['name'] or '—'} | {listings} | {info['items']:,} | "
+        lines.append(f"| {hid} | {info['name'] or '—'} | {info['ruleset'] if info['ruleset'] is not None else '—'} | "
+                     f"{listings} | {info['stack_listings']:,} ({info['max_quantity']}) | {info['items']:,} | "
                      f"{info['last_modified'] or '—'} | {match['shared']:,} | {pct(match['unit_same'])} | "
                      f"{pct(match['stack_same'])} | {pct(match['unit_near'])} |")
     ranked = sorted(result["houses"], key=lambda h: (h["unit_same"], h["shared"]), reverse=True)
@@ -227,6 +235,12 @@ def probe_region(region, token, ruleset, scan, lines):
                      f"{pct(top['unit_same'])} of {top['shared']:,} shared items at the same lowest unit price"
                      + (f"; next best is house {runner['id']} at {pct(runner['unit_same'])}." if runner else ".")
                      + "\n")
+        if top["stacked"]:
+            lines.append(f"Of its {top['stacked']:,} shared items listed in stacks, {pct(top['stacked_total_same'])} "
+                         f"match if `buyout` is the stack total and {pct(top['stacked_unit_same'])} if it is "
+                         "already per unit.\n")
+        else:
+            lines.append("No shared item is listed in stacks, so `buyout` per unit vs per stack is still open.\n")
     lines.append(f"API calls in this region: {api.calls}.\n")
     return result
 

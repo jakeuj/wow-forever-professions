@@ -34,7 +34,7 @@
 ### 連線與驗證
 
 - Token（官方文件）：`POST https://oauth.battle.net/token`，`grant_type=client_credentials`，以 client ID／secret 做 Basic 驗證；中國區另需中國註冊的 client。到 [Battle.net 開發者入口](https://community.developer.battle.net/) 建立 client，並遵守其 API 使用條款。
-- 主機：台灣區為 `https://tw.api.blizzard.com`，加 `locale=zh_TW`。亞服角色屬於 TW 區是依 ruleset 與玩家分布推斷，首次串接時以已知角色確認。
+- 主機：台灣區為 `https://tw.api.blizzard.com`，加 `locale=zh_TW`。亞服拍賣資料在 TW 區已實測確認（見[拍賣場](#拍賣場)）；角色資料仍待以已知角色確認。
 - Namespace 可放在 `?namespace=` 或 `Battlenet-Namespace` 標頭。
 - 速率（官方文件，通用）：每個 client 每小時 36,000 次、每秒 100 次。
 - Client secret 只能放在伺服器端或 CI Secrets。帳號角色清單 `/profile/user/wow` 需要使用者授權碼流程（`wow.profile` scope 與回呼網址），純靜態網站做不到。
@@ -87,6 +87,14 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 - 部分拍賣場沒有 `auctions` 欄位（112、115、118），視為選填。最大的單間約 5～7 萬筆、9 MB。
 - 舊的 `/data/wow/auctions/commodities` 回 404。
 - 物品資料缺漏：某一間拍賣場的 1,515 種物品中，652 種（43%）在 `static-forever` 的 `/data/wow/item/{id}` 回 404。名稱改用客戶端資料表；Retail 物品 API 可補名稱與品質，但屬性可能與永恆不同。
+
+TW 區實測（2026-11-18，`scripts/probe-auction-api.py`，在 GitHub Actions 手動執行 `auction-probe.yml`）：
+
+- ruleset 1、2 的索引是同一組 15 間，名稱只有「聯盟拍賣場」「部落拍賣場」「黑水灣拍賣場」，看不出屬於哪個 ruleset；單間回應另有 `ruleset` 欄位。
+- 有掛單的是 110、111（聯盟）、113、114（部落）、116、117（黑水灣），其餘 9 間是空的。
+- **亞服 PvP 部落是 113**：與站主當天在部落拍賣場用拍賣小幫手完整掃描的結果相比，1,840 件共同物品中有 80% 的最低一口價完全相同，其他拍賣場只有 6～12%。
+- 掛單全在 `auctions`；`/commodities` 回 200 但清單是空的。113 約 8,750 筆、1.9 MB。整區 15 間各抓一次共 35 次請求，約 40 秒。
+- `buyout` 是單價還是整疊總價、資料多久更新一次（`Last-Modified`），等下一次探測確認。
 
 ### 尚不可用
 
