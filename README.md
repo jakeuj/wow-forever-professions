@@ -39,12 +39,14 @@
 - [`endgame/`](https://jakeuj.com/wow-forever-professions/endgame/)：聖騎鐵匠的附加物品、依專精挑選的設計圖、聖騎職業套裝、軍團鋼瓶頸與材料。
 - [`alchemy/`](https://jakeuj.com/wow-forever-professions/alchemy/)：分享給煉金同伴的轉化、配方（AH／NPC／商人青睞／看到再收）與材料行情。
 - [`speculation/`](https://jakeuj.com/wow-forever-professions/speculation/)：配方期貨清單，依經典版經驗整理會漲的條件、可囤與不要囤的配方。
+- [`market/`](https://jakeuj.com/wow-forever-professions/market/)：部落拍賣行情，列出站主用拍賣小幫手完整掃描的每件物品最低一口價，可依名稱、類型、品質查詢與排序。
 
-- 首頁只在頁尾連到這三頁，三頁也互相連結；都不在主要導覽與 `sitemap.xml`，並設 `noindex`，但網址仍是公開的。
+- 首頁只在頁尾連到這四頁，四頁也互相連結；都不在主要導覽與 `sitemap.xml`，並設 `noindex`，但網址仍是公開的。
 - 純靜態 HTML，沿用 `style.css`，三頁共用 `endgame/endgame.css`；所有連結為相對路徑。
 - 物品名稱以 `<span data-ah="遊戲內完整名稱">` 標記，`endgame/ah-copy.js` 會把它們變成點一下就複製的按鈕，方便貼到拍賣場搜尋；剪貼簿被拒時改為選取文字。沒有 JavaScript 時仍是一般文字。
 - 標了 `data-ah-list="清單名稱"` 的表格或區塊會變成拍賣小幫手（Auctionator）的購物清單；頁首面板可複製這頁、複製三頁全部或下載 `.txt`，到插件「購買」分頁按「匯入」貼上。名稱加引號做完全比對，套裝前綴加 `data-ah-prefix`；`.is-skip` 的列不列入。
 - 價格與角色進度是手動更新的快照，更新時同步頁面上的快照日期。
+- 行情頁讀 `market/data.json`。在遊戲內完整掃描後輸入 `/reload`，再執行 `python3 scripts/build-market-data.py` 重建：價格來自本機的拍賣小幫手存檔，名稱與分類來自 wago.tools 的永恆客戶端資料表，客戶端沒有的名稱與所有圖示取自 Wowhead；查詢結果有快取，已知物品沿用上一份 `data.json`。
 
 ## 專案技能
 

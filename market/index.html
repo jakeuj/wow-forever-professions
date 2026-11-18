@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111514">
+  <meta name="robots" content="noindex">
+  <title>部落拍賣行情｜永恆・專業議事廳</title>
+  <meta name="description" content="《魔獸世界：永恆》亞服 PvP 部落拍賣場的最低一口價，來自站主用拍賣小幫手（Auctionator）完整掃描的結果，可依名稱、類型與品質查詢。">
+  <link rel="canonical" href="https://jakeuj.com/wow-forever-professions/market/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_TW">
+  <meta property="og:site_name" content="永恆・專業議事廳">
+  <meta property="og:title" content="部落拍賣行情｜魔獸世界：永恆">
+  <meta property="og:description" content="亞服 PvP 部落拍賣場完整掃描的最低一口價，不用進遊戲也能查。">
+  <meta property="og:url" content="https://jakeuj.com/wow-forever-professions/market/">
+  <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
+  <link rel="stylesheet" href="../style.css?v=20261117-guild-brand">
+  <link rel="stylesheet" href="../endgame/endgame.css?v=20261118-lists">
+  <link rel="stylesheet" href="./market.css?v=20261118-market">
+  <script src="./market.js?v=20261118-market" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#prices">跳至行情列表</a>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="回黎明之劍・專業議事廳首頁"><img src="../assets/crest.svg" alt="" width="34" height="38"><span><span class="brand-guild">黎明之劍</span><span class="brand-divider"> / </span>專業議事廳<small>WOW FOREVER · HORDE GUILD</small></span></a>
+    <nav aria-label="本頁導覽"><a href="#prices"><span class="nav-full">行情列表</span><span class="nav-short">行情</span></a><a href="../speculation/"><span class="nav-full">配方期貨</span><span class="nav-short">期貨</span></a><a class="nav-secondary" href="#sources">資料依據</a></nav>
+  </header>
+
+  <main id="top">
+    <section class="eg-hero section-wrap" aria-labelledby="market-title">
+      <p class="eyebrow"><span class="tiny-diamond" aria-hidden="true"></span>AUCTION HOUSE · HORDE FULL SCAN</p>
+      <h1 id="market-title">部落拍賣<span>行情</span></h1>
+      <p class="eg-lead">站主在部落拍賣場用拍賣小幫手完整掃描，這裡列出每件物品最近看到的最低一口價，不用進遊戲也能查。</p>
+      <ul class="eg-chips" aria-label="資料條件">
+        <li>部落・亞服 PvP（台灣）</li>
+        <li data-market-scan>掃描日期讀取中</li>
+        <li data-market-total>物品數讀取中</li>
+      </ul>
+      <p class="eg-privacy"><span aria-hidden="true">✧</span>這是個人整理頁，首頁只在頁尾放連結，也請搜尋引擎不要收錄；網址本身是公開的。價格是掛單價，不是成交價；掃描之後可能已經被買走。對面陣營與中立拍賣場的價格請看阿莫比。</p>
+    </section>
+
+    <section id="prices" class="eg-section section-wrap" aria-labelledby="prices-title">
+      <div class="section-heading"><div><p class="eyebrow">01 / PRICES</p><h2 id="prices-title">拍賣場上的物品。</h2></div><p>點物品名稱可以複製遊戲內的完整名稱，到拍賣場搜尋欄貼上。</p></div>
+      <form class="mk-controls" data-market-form hidden>
+        <label class="mk-search"><span class="mk-label">名稱</span><input type="search" name="q" placeholder="物品名稱，例如：貓鼬" autocomplete="off" enterkeyhint="search"></label>
+        <label><span class="mk-label">類型</span><select name="cat"><option value="">全部類型</option></select></label>
+        <label><span class="mk-label">品質</span><select name="quality"><option value="">全部品質</option><option value="5">傳說</option><option value="4">史詩</option><option value="3">精良</option><option value="2">優秀</option><option value="1">普通</option><option value="0">粗糙</option></select></label>
+        <label><span class="mk-label">排序</span><select name="sort"><option value="quality">品質高到低</option><option value="price-desc">價格高到低</option><option value="price-asc">價格低到高</option><option value="drop">跌最多</option><option value="count">上架最多</option><option value="name">名稱</option></select></label>
+        <label class="mk-check"><input type="checkbox" name="latest"><span>只看最新一次掃描</span></label>
+      </form>
+      <p class="mk-summary" data-market-summary aria-live="polite">行情讀取中…</p>
+      <noscript><p class="mk-summary">這頁需要 JavaScript 才能顯示行情列表。</p></noscript>
+      <ol class="mk-list" data-market-list></ol>
+      <button type="button" class="guild-copy-button mk-more" data-market-more hidden>顯示更多</button>
+    </section>
+
+    <section id="sources" class="section-wrap sources-section eg-sources" aria-labelledby="sources-title">
+      <div class="section-heading"><div><p class="eyebrow">02 / SOURCES & ASSUMPTIONS</p><h2 id="sources-title">依據與限制。</h2></div><span class="verified-date" data-market-generated>資料讀取中</span></div>
+      <div class="source-list">
+        <a href="https://www.curseforge.com/wow/addons/auctionator" target="_blank" rel="noopener noreferrer"><span>CURSEFORGE</span><strong>拍賣小幫手（Auctionator）</strong><span>插件 ↗</span></a>
+        <a href="https://wago.tools/" target="_blank" rel="noopener noreferrer"><span>WAGO.TOOLS</span><strong>永恆客戶端物品資料表（繁中）</strong><span>資料表 ↗</span></a>
+        <a href="https://www.wowhead.com/forever/tw/" target="_blank" rel="noopener noreferrer"><span>WOWHEAD</span><strong>客戶端沒有的物品名稱與圖示</strong><span>資料庫 ↗</span></a>
+        <a href="https://wowamobi.com/market" target="_blank" rel="noopener noreferrer"><span>阿莫比</span><strong>聯盟、部落、中立三間拍賣場的行情</strong><span>資料站 ↗</span></a>
+      </div>
+      <div class="scope-note"><span aria-hidden="true">✧</span><p>價格是站主在部落拍賣場用拍賣小幫手完整掃描看到的最低一口價；拍賣小幫手不分陣營拍賣場，這裡只放在主城掃描的結果。標「M/D 看到」的是最近一次掃描沒看到、之前看到的價格，多半已經賣掉。漲跌是和前一個掃描日的最低價比較。物品名稱與分類來自永恆客戶端資料表，客戶端沒有的名稱與所有圖示取自 Wowhead；少數永恆新增物品在這些資料裡還沒有中文名稱，會顯示成「[英文名稱]」，遊戲內的名稱可能不同；物品名稱與圖示的版權屬於 Blizzard Entertainment。</p></div>
+      <a class="text-link eg-back" href="../">回到專業與傳承分配規劃 <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer section-wrap"><a class="brand footer-brand" href="../"><img src="../assets/crest.svg" alt="" width="26" height="30"><span>永恆・專業議事廳</span></a><p>由 jakeuj 整理 · 個人規劃筆記，非 Blizzard 官方網站</p><nav class="footer-links" aria-label="頁尾導覽"><a href="../">專業規劃首頁</a><a href="../endgame/">鐵匠清單</a><a href="../alchemy/">煉金清單</a><a href="../speculation/">配方期貨</a><a href="#sources">資料依據</a><a href="https://github.com/jakeuj/wow-forever-professions" target="_blank" rel="noopener noreferrer">原始碼 ↗</a></nav></footer>
+</body>
+</html>

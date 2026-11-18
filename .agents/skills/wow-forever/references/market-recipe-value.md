@@ -66,6 +66,7 @@ python3 '<skill-dir>/scripts/auctionator_prices.py' --from-html speculation/inde
 - 掃描裡沒有的物品，是掃描時那間拍賣場沒有掛單。
 - 檔案中目前伺服器的資料是 CBOR 壓縮字串，字串欄位是位元組字串；版面改變時腳本會報錯，再對照插件 `Source/Variables/Main.lua` 與 `Source/Database/Mixin.lua` 修正。
 - 插件「購物」分頁的「匯出結果」只匯出當次搜尋結果的 CSV，不含整個資料庫。
+- 個人網站的[部落拍賣行情頁](https://jakeuj.com/wow-forever-professions/market/)由同一份存檔產生，重建方式見 [profession-planner-site.md](profession-planner-site.md)；站主掃描後要更新網站時，同時重建它。
 - **購物清單匯入**：「購買」分頁左下「匯入」接受一行一份清單的 `清單名稱^"物品名稱"^"物品名稱"`；整個詞用雙引號包起來是完全比對，不加引號是包含比對（套裝前綴用）。同名清單會整份取代，其他清單不受影響。搜尋清單不需要物品有掛單，所以遊戲內收藏加不進去的沒貨配方可以用它盯。臨時要給清單時照這個格式輸出，放進 `text` 程式碼區塊方便複製；個人頁的清單由頁面標記產生，見 [profession-planner-site.md](profession-planner-site.md)。
 
 ### 收藏清單截圖

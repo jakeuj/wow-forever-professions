@@ -58,9 +58,9 @@
 
 ## 個人整理頁：終局採購清單
 
-`endgame/index.html`（鐵匠，`https://jakeuj.com/wow-forever-professions/endgame/`）、`alchemy/index.html`（分享給煉金同伴，`.../alchemy/`）與 `speculation/index.html`（配方期貨，`.../speculation/`）是站主的個人筆記，不屬於一般玩家的方案內容；三頁共用 `endgame/endgame.css`，頁尾互相連結。
+`endgame/index.html`（鐵匠，`https://jakeuj.com/wow-forever-professions/endgame/`）、`alchemy/index.html`（分享給煉金同伴，`.../alchemy/`）、`speculation/index.html`（配方期貨，`.../speculation/`）與 `market/index.html`（部落拍賣行情，`.../market/`）是站主的個人筆記，不屬於一般玩家的方案內容；四頁共用 `endgame/endgame.css`，頁尾互相連結。
 
-- 首頁只在頁尾連到這三頁；不加入主要導覽、首頁內文或 `sitemap.xml`。
+- 首頁只在頁尾連到這四頁；不加入主要導覽、首頁內文或 `sitemap.xml`。
 - 配方期貨頁的篩選條件以 [market-recipe-value.md](market-recipe-value.md) 的「配方期貨」一節為準，清單依當次掃描重排。
 - 可在拍賣場買的物品名稱包成 `<span data-ah="遊戲內完整名稱">顯示文字</span>`，由 `endgame/ah-copy.js` 轉成複製按鈕。`data-ah` 填要買的那件東西：設計圖、配方要含「設計圖：」「配方：」等前綴，成品與材料用物品名；一組套裝可用共同前綴（例：「設計圖：祝福鎧甲」），並加 `data-ah-prefix`。新增或改名後，以阿莫比的拍賣物品清單與 `/professions/{代號}` 的配方名稱逐一比對，確保完全一致。NPC、商人青睞、聲望取得的項目不加。
 - 要買或要盯的表格與區塊加 `data-ah-list="頁別-用途"`（目前：鐵匠-附加物品／設計圖／材料、煉金-配方／看到就收／材料、期貨-A買／B小量／C觀望），`ah-copy.js` 會在頁首產生拍賣小幫手購物清單面板：複製這頁、複製三頁全部（讀另外兩頁的 HTML）與下載 `.txt`。同名清單在插件內匯入時會整份取代，所以清單名稱改了要告訴站主刪掉舊的；`.is-skip` 的列、「先別買」與 NPC 區塊不加。格式見 [market-recipe-value.md](market-recipe-value.md) 的拍賣小幫手一節。
@@ -69,6 +69,7 @@
 - 沿用 `../style.css`（版本參數與首頁一致）並以 `endgame/endgame.css` 補樣式；連結與圖示一律相對路徑，以支援 `/wow-forever-professions/` 專案路徑。
 - 內容來源：鍛造與煉金需求讀 [endgame-crafting.md](endgame-crafting.md)，價格依 [market-recipe-value.md](market-recipe-value.md) 的腳本與規則重算。更新時同步頁首快照日期與資料依據區的日期。
 - 站主在遊戲內完整掃描或傳來拍賣場截圖時，依 [market-recipe-value.md](market-recipe-value.md) 的「遊戲內資料與阿莫比對照」更新：部落價以遊戲內為準（完整掃描用 `scripts/auctionator_prices.py --from-html` 讀三頁的所有可複製名稱），再用 `scripts/amobi_item_prices.py --from-html` 補上中立與聯盟價格，以及遊戲內資料之前已經被買走的低價。頁面標明哪些是遊戲內、哪些是阿莫比與掃描時間。
+- 行情頁：`market/market.js` 讀 `market/data.json`，由 repo 的 `scripts/build-market-data.py` 從拍賣小幫手存檔產生（先請站主完整掃描並 `/reload`）。名稱、品質與分類用 wago.tools 的永恆客戶端資料表（版本取安裝目錄 `.build.info` 的 wowf），客戶端沒有的名稱（約四成）與所有圖示用 Wowhead 的永恆繁中 tooltip 資料；已知物品沿用上一份 `data.json`，所以平常只查新物品。網站不讀阿莫比的端點，只在每列連到阿莫比的物品頁。拍賣小幫手不分陣營，頁面只放主城掃描的結果。
 - 驗證：桌機與 360px 手機無橫向溢出、手機版表格改為卡片、首頁頁尾連結可進入、頁面的首頁連結回到 `../`。
 
 ## 外部資料整合
