@@ -26,6 +26,15 @@
   const sharedText = $('[data-shared-text]');
   const sharedAdd = $('[data-shared-add]');
   const sharedExit = $('[data-shared-exit]');
+  const ahBox = $('[data-market-ah]');
+  const ahFav = $('[data-ah-fav]');
+  const ahAll = $('[data-ah-all]');
+  const ahDownload = $('[data-ah-download]');
+  const ahField = $('[data-ah-field]');
+  const ahText = $('[data-ah-text]');
+  const ahImportText = $('[data-ah-import-text]');
+  const ahImport = $('[data-ah-import]');
+  const ahImportResult = $('[data-ah-import-result]');
 
   const toast = document.createElement('div');
   toast.className = 'toast';
@@ -68,7 +77,7 @@
 
   // Favorites: item ids in localStorage, which can be missing or blocked (private windows),
   // so every access is guarded and the page works without it.
-  const FAV_KEY = 'wfp.market.favorites';
+  const FAV_KEY = 'wfp.market.favorites'; // endgame/ah-copy.js reads it for the full list export
   const parseIds = text => [...new Set(String(text ?? '').split(/[.,\s]+/).map(Number)
     .filter(id => Number.isInteger(id) && id > 0))].slice(0, 500);
   const loadFavorites = () => {
@@ -195,6 +204,8 @@
     favCount.textContent = count ? `（${count}）` : '';
     favbar.hidden = false;
     favShare.disabled = !count;
+    ahBox.hidden = false;
+    ahFav.disabled = !count;
     favHint.textContent = !count
       ? '點物品名稱旁的 ☆ 收藏；收藏存在這個瀏覽器，也可以複製連結分享給朋友。'
       : favStored
@@ -414,6 +425,94 @@
     shared = null;
     apply();
   });
+  // Auctionator shopping lists: the starred items as one exact-match list, alone or with the
+  // lists of the other personal pages (helpers from endgame/ah-copy.js).
+  const shopping = window.wfpShoppingLists;
+  const favoriteList = () => {
+    const names = items.filter(item => favorites.has(item.id)).map(item => item.name)
+      .sort((a, b) => a.localeCompare(b, 'zh-Hant-TW'));
+    const terms = shopping ? shopping.exactTerms(names) : [...new Set(names)].map(name => `"${name}"`);
+    return new Map(terms.length ? [[shopping ? shopping.FAV_LIST : '行情-收藏', terms]] : []);
+  };
+  const listText = lists => [...lists].map(([name, terms]) => [name, ...terms].join('^')).join('\n');
+  const everyList = async () => {
+    if (!shopping) return favoriteList();
+    try {
+      return await shopping.allLists([...favoriteList().values()][0] || []);
+    } catch {
+      notify('讀不到其他頁面，只用這頁的收藏');
+      return favoriteList();
+    }
+  };
+  const copyLists = async (lists, label) => {
+    const text = listText(lists);
+    try {
+      await navigator.clipboard.writeText(text);
+      ahField.hidden = true;
+      notify(`已複製${label}，到拍賣小幫手「購買」分頁按「匯入」貼上`);
+    } catch {
+      ahText.value = text;
+      ahField.hidden = false;
+      ahText.focus();
+      ahText.select();
+      notify('無法自動複製，已選取匯入文字，請按 Ctrl+C 或 ⌘C');
+    }
+  };
+  ahFav.addEventListener('click', () => copyLists(favoriteList(), `收藏清單（${favorites.size} 件）`));
+  ahAll.addEventListener('click', async () => {
+    const lists = await everyList();
+    copyLists(lists, `全部 ${lists.size} 份清單`);
+  });
+  ahDownload.addEventListener('click', async () => {
+    const lists = await everyList();
+    const url = URL.createObjectURL(new Blob([listText(lists) + '\n'], { type: 'text/plain;charset=utf-8' }));
+    const link = Object.assign(document.createElement('a'), { href: url, download: 'auctionator-shopping-lists.txt' });
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  // Import: Auctionator's export ("清單^\"名稱\"^名稱;進階條件…" per line) or one name per line.
+  // Quoted names must match exactly; bare ones also star every item whose name contains them.
+  const importTerms = text => text.split(/\r?\n/).flatMap(line => {
+    const parts = line.split('^');
+    return (parts.length > 1 ? parts.slice(1) : parts).map(part => {
+      const term = part.split(';')[0].trim();
+      const exact = term.length > 1 && term.startsWith('"') && term.endsWith('"');
+      return { text: exact ? term.slice(1, -1).trim() : term, exact };
+    });
+  }).filter(term => term.text);
+  ahImport.addEventListener('click', () => {
+    const byName = new Map();
+    items.forEach(item => byName.set(item.name, [...(byName.get(item.name) || []), item.id]));
+    const matched = new Set();
+    const missed = [];
+    for (const { text, exact } of importTerms(ahImportText.value)) {
+      let ids = byName.get(text) || [];
+      if (!ids.length && !exact) ids = items.filter(item => item.name.includes(text)).map(item => item.id);
+      if (ids.length) ids.forEach(id => matched.add(id)); else if (!missed.includes(text)) missed.push(text);
+    }
+    if (!matched.size && !missed.length) {
+      ahImportResult.textContent = '沒有讀到物品名稱，請貼上拍賣小幫手匯出的文字，或一行一個名稱。';
+      return;
+    }
+    const before = favorites.size;
+    matched.forEach(id => favorites.add(id));
+    saveFavorites();
+    const added = favorites.size - before;
+    ahImportResult.textContent = `對到 ${matched.size} 件，新收藏 ${added} 件。`
+      + (missed.length ? `${missed.length} 個名稱在行情資料裡找不到（多半是掃描時沒貨）：${missed.slice(0, 8).join('、')}${missed.length > 8 ? '…' : ''}` : '');
+    if (added) {
+      shared = null;
+      form.elements.mine.checked = true;
+      apply();
+      notify(`已加入 ${added} 件到收藏`);
+    } else {
+      updateFavorites();
+    }
+  });
+
   // A pasted #fav= or filter link on an open page changes only the hash.
   // In-page anchors such as #sources also change the hash; only filter links carry "=".
   window.addEventListener('hashchange', () => {

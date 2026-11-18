@@ -2,12 +2,13 @@
 // Markup: <span data-ah="配方：貓鼬藥劑">貓鼬藥劑</span>; without JavaScript it stays plain text.
 // Containers marked data-ah-list="清單名稱" also become Auctionator shopping lists
 // ("清單^\"名稱\"^..." per line); data-ah-prefix keeps a set prefix unquoted, and rows
-// marked .is-skip are left out.
+// marked .is-skip are left out. Items starred on the market page join the full export as
+// one more list, and window.wfpShoppingLists shares these helpers with market/market.js.
 (() => {
-  const items = document.querySelectorAll('[data-ah]');
-  if (!items.length) return;
-
   const PAGES = ['endgame', 'leveling', 'alchemy', 'speculation'];
+  const FAV_KEY = 'wfp.market.favorites'; // written by market/market.js
+  const FAV_LIST = '行情-收藏';
+  const ADDON_URL = 'https://www.curseforge.com/wow/addons/auctionator';
 
   const toast = document.createElement('div');
   toast.className = 'toast';
@@ -45,10 +46,50 @@
     return lists;
   };
   const listsText = lists => [...lists].map(([name, terms]) => [name, ...terms].join('^')).join('\n');
+  const exactTerms = names => [...new Set(names)].map(name => `"${name}"`);
 
   // Read the lists before the spans below turn into buttons.
   const pageLists = collectLists(document);
   const currentPage = (location.pathname.match(/\/(endgame|leveling|alchemy|speculation)\/(?:index\.html)?$/) || [])[1];
+
+  // Names of the items starred on the market page (ids in localStorage, names in its data.json).
+  const favoriteNames = async () => {
+    let ids = [];
+    try {
+      ids = JSON.parse(localStorage.getItem(FAV_KEY) || '[]');
+    } catch {
+      return [];
+    }
+    if (!Array.isArray(ids) || !ids.length) return [];
+    const response = await fetch(new URL('../market/data.json', location.href));
+    if (!response.ok) return [];
+    const data = await response.json();
+    const id = data.fields.indexOf('id'), name = data.fields.indexOf('name');
+    const names = new Map(data.items.map(row => [row[id], row[name]]));
+    return ids.map(item => names.get(item)).filter(Boolean).sort((a, b) => a.localeCompare(b, 'zh-Hant-TW'));
+  };
+
+  // Every page's lists plus the starred items; pass favoriteTerms to use ones already in hand.
+  const allLists = async favoriteTerms => {
+    const merged = new Map();
+    for (const page of PAGES) {
+      let lists = pageLists;
+      if (page !== currentPage) {
+        const response = await fetch(new URL(`../${page}/`, location.href));
+        if (!response.ok) throw new Error(`${page}: ${response.status}`);
+        lists = collectLists(new DOMParser().parseFromString(await response.text(), 'text/html'));
+      }
+      lists.forEach((terms, name) => merged.set(name, terms));
+    }
+    const favorites = favoriteTerms || exactTerms(await favoriteNames().catch(() => []));
+    if (favorites.length) merged.set(FAV_LIST, favorites);
+    return merged;
+  };
+
+  window.wfpShoppingLists = { FAV_LIST, ADDON_URL, listsText, exactTerms, allLists };
+
+  const items = document.querySelectorAll('[data-ah]');
+  if (!items.length) return;
 
   items.forEach(item => {
     const name = item.dataset.ah;
@@ -92,20 +133,6 @@
   document.querySelectorAll('[data-ah-hint]').forEach(node => { node.hidden = false; });
   if (!pageLists.size || !hint) return;
 
-  const allLists = async () => {
-    const merged = new Map();
-    for (const page of PAGES) {
-      let lists = pageLists;
-      if (page !== currentPage) {
-        const response = await fetch(new URL(`../${page}/`, location.href));
-        if (!response.ok) throw new Error(`${page}: ${response.status}`);
-        lists = collectLists(new DOMParser().parseFromString(await response.text(), 'text/html'));
-      }
-      lists.forEach((terms, name) => merged.set(name, terms));
-    }
-    return merged;
-  };
-
   const panel = document.createElement('div');
   panel.className = 'eg-lists';
   const title = document.createElement('p');
@@ -126,7 +153,11 @@
   const download = makeButton('下載全部 .txt');
   const howto = document.createElement('p');
   howto.className = 'eg-lists-note';
-  howto.textContent = '在拍賣場打開「拍賣小幫手」的「購買」分頁，按左下「匯入」，貼上後再按「匯入」。同名清單會整份換成新的，你自己建的其他清單不受影響；搜尋全部就能看到沒貨的項目。';
+  howto.textContent = `在拍賣場打開「拍賣小幫手」的「購買」分頁，按左下「匯入」，貼上後再按「匯入」。同名清單會整份換成新的，你自己建的其他清單不受影響；搜尋全部就能看到沒貨的項目。「全部頁面」也會帶上在部落行情頁收藏的物品（清單「${FAV_LIST}」）。`;
+  const addon = document.createElement('p');
+  addon.className = 'eg-lists-note';
+  const addonLink = Object.assign(document.createElement('a'), { href: ADDON_URL, target: '_blank', rel: 'noopener noreferrer', textContent: 'CurseForge 下載 ↗' });
+  addon.append('還沒裝的話：拍賣小幫手（Auctionator）是免費的拍賣場插件，可以完整掃描整間拍賣場、記錄每天的最低價，並用購物清單一次搜尋多樣物品；', addonLink, '，用 CurseForge App 安裝時遊戲選 World of Warcraft 的永恆（Forever）版本。');
   const details = document.createElement('details');
   const summary = document.createElement('summary');
   summary.textContent = '顯示這頁的匯入文字';
@@ -137,7 +168,7 @@
   textarea.value = listsText(pageLists);
   textarea.setAttribute('aria-label', '這頁的拍賣小幫手匯入文字');
   details.append(summary, textarea);
-  panel.append(title, actions, howto, details);
+  panel.append(title, actions, howto, addon, details);
   hint.after(panel);
 
   const copyText = async (text, label) => {
@@ -159,7 +190,7 @@
       const lists = await allLists();
       await copyText(listsText(lists), `全部頁面共 ${lists.size} 份清單`);
     } catch {
-      notify('讀不到另外兩頁，先改複製這頁的清單');
+      notify('讀不到其他頁面，先改複製這頁的清單');
       await copyText(listsText(pageLists), `這頁的 ${pageLists.size} 份清單`);
     }
   });
@@ -169,7 +200,7 @@
       lists = await allLists();
     } catch {
       lists = pageLists;
-      notify('讀不到另外兩頁，只下載這頁的清單');
+      notify('讀不到其他頁面，只下載這頁的清單');
     }
     const url = URL.createObjectURL(new Blob([listsText(lists) + '\n'], { type: 'text/plain;charset=utf-8' }));
     const link = Object.assign(document.createElement('a'), { href: url, download: 'auctionator-shopping-lists.txt' });

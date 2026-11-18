@@ -73,3 +73,16 @@
 .mk-share-field { display: grid; gap: 4px; flex: 1 1 100%; }
 .mk-share-field input { box-sizing: border-box; width: 100%; min-height: 40px; padding: 6px 10px; border: 1px solid #74603d99; border-radius: 0; background: #0b0e0d; color: #ece3cc; font: inherit; font-size: 12px; }
 [data-market-generated] { white-space: normal; overflow-wrap: anywhere; }
+.mk-ah { margin: 0 0 16px; padding: 12px 14px; border: 1px solid #74603d66; background: #0b0e0d80; }
+.mk-ah-title { margin: 0 0 8px; font-size: 12px; letter-spacing: 1px; color: var(--gold); }
+.mk-ah-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.mk-ah .guild-copy-button:disabled { opacity: .45; }
+.mk-ah-note, .mk-ah-more p { margin: 10px 0 0; font-size: 11px; line-height: 1.9; color: #8f9a81; }
+.mk-ah-more { margin-top: 10px; }
+.mk-ah-more summary { min-height: 32px; display: flex; align-items: center; font-size: 12px; color: #c9bfa6; cursor: pointer; }
+.mk-ah-more summary:hover { color: var(--gold-bright); }
+.mk-ah-more a { color: var(--gold); text-decoration: underline dotted; text-underline-offset: 3px; }
+.mk-ah-more .mk-share-field, .mk-ah > .mk-share-field { margin: 10px 0; }
+.mk-ah-more .guild-copy-button { margin-top: 2px; }
+.mk-ah-result { color: #c9bfa6 !important; }
+.mk-share-field textarea { box-sizing: border-box; width: 100%; padding: 6px 10px; border: 1px solid #74603d99; border-radius: 0; background: #0b0e0d; color: #ece3cc; font: inherit; font-size: 12px; line-height: 1.6; resize: vertical; }

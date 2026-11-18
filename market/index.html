@@ -16,9 +16,10 @@
   <meta property="og:url" content="https://jakeuj.com/wow-forever-professions/market/">
   <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
   <link rel="stylesheet" href="../style.css?v=20261117-guild-brand">
-  <link rel="stylesheet" href="../endgame/endgame.css?v=20261118-lists">
-  <link rel="stylesheet" href="./market.css?v=20261118-favorites">
-  <script src="./market.js?v=20261118-favorites" defer></script>
+  <link rel="stylesheet" href="../endgame/endgame.css?v=20261118-ah-lists">
+  <link rel="stylesheet" href="./market.css?v=20261118-ah-lists">
+  <script src="../endgame/ah-copy.js?v=20261118-ah-lists" defer></script>
+  <script src="./market.js?v=20261118-ah-lists" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#prices">跳至行情列表</a>
@@ -61,6 +62,27 @@
         <p data-fav-hint></p>
         <button type="button" class="guild-copy-button" data-fav-share>複製分享連結</button>
         <label class="mk-share-field" data-fav-field hidden><span class="mk-label">分享連結（無法自動複製，請手動複製）</span><input type="text" readonly data-fav-url></label>
+      </div>
+      <div class="mk-ah" data-market-ah hidden>
+        <p class="mk-ah-title">拍賣小幫手購物清單</p>
+        <div class="mk-ah-actions">
+          <button type="button" class="guild-copy-button" data-ah-fav>複製收藏清單</button>
+          <button type="button" class="guild-copy-button" data-ah-all>複製全部清單</button>
+          <button type="button" class="guild-copy-button" data-ah-download>下載 .txt</button>
+        </div>
+        <p class="mk-ah-note">「收藏清單」是這頁收藏的物品，清單名稱「行情-收藏」；「全部清單」再加上站主鐵匠、煉金、配方期貨、鍛造練等頁的購物清單。在拍賣場打開拍賣小幫手的「購買」分頁，按左下「匯入」，貼上後再按「匯入」；同名清單會整份換成新的。</p>
+        <label class="mk-share-field" data-ah-field hidden><span class="mk-label">匯入文字（無法自動複製，請手動複製）</span><textarea readonly rows="4" data-ah-text></textarea></label>
+        <details class="mk-ah-more">
+          <summary>從拍賣小幫手匯入到收藏</summary>
+          <p>在拍賣小幫手「購買」分頁按「匯出」，把清單文字貼在這裡；也可以一行貼一個物品名稱。加了引號的名稱要完全相同，沒加引號的會收藏所有名稱含有這段文字的物品。</p>
+          <label class="mk-share-field"><span class="mk-label">清單文字</span><textarea rows="4" data-ah-import-text placeholder="期貨-A買^&quot;配方：貓鼬藥劑&quot;^&quot;設計圖：瑟銀頭盔&quot;"></textarea></label>
+          <button type="button" class="guild-copy-button" data-ah-import>加入收藏</button>
+          <p class="mk-ah-result" data-ah-import-result aria-live="polite"></p>
+        </details>
+        <details class="mk-ah-more">
+          <summary>拍賣小幫手是什麼？</summary>
+          <p>拍賣小幫手（Auctionator）是免費的拍賣場插件：可以完整掃描整間拍賣場、記錄每天的最低價，並用「購物清單」一次搜尋多樣物品，沒貨的也能留在清單裡盯著。到 <a href="https://www.curseforge.com/wow/addons/auctionator" target="_blank" rel="noopener noreferrer">CurseForge 下載 ↗</a>，用 CurseForge App 安裝時遊戲選 World of Warcraft 的永恆（Forever）版本；裝好後拍賣場下方會多出「購買／銷售／取消／拍賣小幫手」分頁，繁中介面就叫「拍賣小幫手」。</p>
+        </details>
       </div>
       <p class="mk-summary" data-market-summary aria-live="polite">行情讀取中…</p>
       <noscript><p class="mk-summary">這頁需要 JavaScript 才能顯示行情列表。</p></noscript>
