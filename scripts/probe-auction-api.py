@@ -1,0 +1,268 @@
+#!/usr/bin/env python3
+"""Probe the Battle.net auction API for WoW Forever and find the house we scan.
+
+Reads BLIZZARD_CLIENT_ID and BLIZZARD_CLIENT_SECRET from the environment (repo
+Secrets in GitHub Actions; never commit them), lists the rulesets and the auction
+house index, downloads every house once, and compares each house's lowest unit
+prices with the owner's Horde scan in market/data.json. The house whose prices
+match the scan best is the one the scan was taken at.
+
+    BLIZZARD_CLIENT_ID=... BLIZZARD_CLIENT_SECRET=... python3 scripts/probe-auction-api.py
+
+Prints a Markdown report (also appended to $GITHUB_STEP_SUMMARY when set) and,
+with --out, writes the findings as JSON. The access token is never printed.
+"""
+
+import argparse
+import base64
+import gzip
+import json
+import os
+from pathlib import Path
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
+REPO = Path(__file__).resolve().parent.parent
+TOKEN_URL = "https://oauth.battle.net/token"
+LOCALES = {"tw": "zh_TW", "kr": "ko_KR", "us": "en_US", "eu": "en_GB"}
+USER_AGENT = "wow-forever-professions-auction-probe"
+
+
+def fetch(url, headers=None, data=None, timeout=180):
+    """Return (status, headers, body); 404 comes back as a status, other errors retry."""
+    headers = {"User-Agent": USER_AGENT, "Accept-Encoding": "gzip", **(headers or {})}
+    for attempt in range(4):
+        req = urllib.request.Request(url, data=data, headers=headers)
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                body = resp.read()
+                if resp.headers.get("Content-Encoding") == "gzip":
+                    body = gzip.decompress(body)
+                return resp.status, resp.headers, body
+        except urllib.error.HTTPError as error:
+            if error.code in (400, 401, 403, 404) or attempt == 3:
+                return error.code, error.headers, error.read()
+        except (urllib.error.URLError, TimeoutError):
+            if attempt == 3:
+                raise
+        time.sleep(2 ** (attempt + 1))
+    raise AssertionError("unreachable")
+
+
+def get_token(client_id, client_secret):
+    basic = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+    status, _, body = fetch(TOKEN_URL, {"Authorization": f"Basic {basic}",
+                                        "Content-Type": "application/x-www-form-urlencoded"},
+                            data=b"grant_type=client_credentials", timeout=30)
+    if status != 200:
+        # The error body names the problem (e.g. invalid_client) and holds no secret.
+        sys.exit(f"token request failed: HTTP {status} {body[:300].decode('utf-8', 'replace')}")
+    token = json.loads(body)["access_token"]
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print(f"::add-mask::{token}")  # hide it from the log even if something echoes it
+    return token
+
+
+class Api:
+    def __init__(self, region, token):
+        self.base = f"https://{region}.api.blizzard.com"
+        self.query = {"namespace": f"dynamic-forever-{region}", "locale": LOCALES.get(region, "en_US")}
+        self.auth = {"Authorization": f"Bearer {token}"}
+        self.calls = 0
+
+    def get(self, path):
+        url = f"{self.base}{path}?{urllib.parse.urlencode(self.query)}"
+        self.calls += 1
+        status, headers, body = fetch(url, self.auth)
+        payload = None
+        if status == 200:
+            payload = json.loads(body)
+        return {"url": url, "status": status, "payload": payload, "bytes": len(body),
+                "last_modified": headers.get("Last-Modified") if headers else None}
+
+
+def strip_links(value):
+    if isinstance(value, dict):
+        return {k: strip_links(v) for k, v in value.items() if k != "_links"}
+    if isinstance(value, list):
+        return [strip_links(v) for v in value]
+    return value
+
+
+def text(value):
+    if isinstance(value, dict):  # localized fields can come back as {"zh_TW": "..."}
+        return next(iter(value.values()), "") if value else ""
+    return "" if value is None else str(value)
+
+
+def house_list(index):
+    """The index's list of houses, whatever the key is called."""
+    for value in (index or {}).values():
+        if isinstance(value, list) and value and isinstance(value[0], dict) and "id" in value[0]:
+            return value
+    return []
+
+
+def lowest_prices(auctions, commodities):
+    """item id -> (lowest unit price, lowest whole-listing buyout, listings, quantity)."""
+    best = {}
+    for row in auctions or []:
+        buyout = row.get("buyout")
+        item = (row.get("item") or {}).get("id")
+        if not buyout or item is None:
+            continue
+        quantity = row.get("quantity") or 1
+        unit = buyout / quantity
+        old = best.get(item)
+        best[item] = (min(unit, old[0]), min(buyout, old[1]), old[2] + 1, old[3] + quantity) if old \
+            else (unit, buyout, 1, quantity)
+    for row in commodities or []:
+        unit = row.get("unit_price")
+        item = (row.get("item") or {}).get("id")
+        if not unit or item is None:
+            continue
+        quantity = row.get("quantity") or 1
+        old = best.get(item)
+        best[item] = (min(unit, old[0]), min(unit, old[1]), old[2] + 1, old[3] + quantity) if old \
+            else (unit, unit, 1, quantity)
+    return best
+
+
+def load_scan(path):
+    data = json.loads(path.read_text(encoding="utf-8"))
+    fields = data["fields"]
+    rows = [dict(zip(fields, row)) for row in data["items"]]
+    latest = {r["id"]: r["price"] for r in rows if r["day"] == data["latestDay"] and r["price"]}
+    return latest, data.get("scanStartedAt") or data["latestDay"]
+
+
+def compare(prices, scan):
+    shared = [i for i in scan if i in prices]
+    if not shared:
+        return {"shared": 0, "unit_same": 0, "stack_same": 0, "unit_near": 0}
+    same = lambda a, b: round(a) == b
+    return {
+        "shared": len(shared),
+        "unit_same": sum(same(prices[i][0], scan[i]) for i in shared) / len(shared),
+        "stack_same": sum(same(prices[i][1], scan[i]) for i in shared) / len(shared),
+        "unit_near": sum(abs(prices[i][0] - scan[i]) <= 0.05 * scan[i] for i in shared) / len(shared),
+    }
+
+
+def pct(value):
+    return f"{value * 100:.0f}%"
+
+
+def probe_region(region, token, ruleset, scan, lines):
+    api = Api(region, token)
+    result = {"region": region, "namespace": api.query["namespace"], "rulesets": [], "houses": []}
+
+    rulesets = api.get("/data/wow/ruleset/index")
+    lines.append(f"## {region.upper()} `{api.query['namespace']}`\n")
+    if rulesets["status"] != 200:
+        lines.append(f"Ruleset index: HTTP {rulesets['status']}; skipping this region.\n")
+        result["error"] = f"ruleset index HTTP {rulesets['status']}"
+        return result
+    lines.append("| Ruleset | Name | Status | Houses in index |\n| --- | --- | --- | --- |")
+    index_ids = {}
+    for entry in house_list(rulesets["payload"]):
+        rid = entry["id"]
+        detail = api.get(f"/data/wow/ruleset/{rid}")["payload"] or {}
+        index = api.get(f"/data/wow/ruleset/{rid}/auctions/")
+        ids = [h["id"] for h in house_list(index["payload"])]
+        index_ids[rid] = ids
+        if rid == ruleset:
+            result["index"] = strip_links(index["payload"])
+        status = text(detail.get("status"))  # {"type": "UP", ...} or a plain string
+        result["rulesets"].append({"id": rid, "name": text(entry.get("name")), "status": status,
+                                   "index_status": index["status"], "houses": ids})
+        lines.append(f"| {rid} | {text(entry.get('name'))} | {status or '—'} | "
+                     f"{len(ids)} (HTTP {index['status']}) |")
+    same_sets = len({tuple(sorted(v)) for v in index_ids.values()}) == 1
+    lines.append(f"\nEvery ruleset lists the same houses: **{'yes' if same_sets else 'no'}**.\n")
+
+    lines.append(f"### Ruleset {ruleset} houses\n")
+    lines.append("<details><summary>Index (links removed)</summary>\n\n```json\n"
+                 + json.dumps(result.get("index"), ensure_ascii=False, indent=1)[:4000] + "\n```\n</details>\n")
+    houses = house_list(result.get("index"))
+    if not houses:
+        lines.append(f"Ruleset {ruleset} has no auction house list.\n")
+        return result
+    lines.append("| House | Name | Listings | Items | Last-Modified | Items also in scan | Same lowest price "
+                 "(unit) | Same (whole listing) | Within 5% (unit) |")
+    lines.append("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+    for house in houses:
+        hid = house["id"]
+        base = f"/data/wow/ruleset/{ruleset}/auctions/{hid}"
+        auctions, commodities = api.get(base), api.get(f"{base}/commodities")
+        a_rows = (auctions["payload"] or {}).get("auctions")
+        c_rows = (commodities["payload"] or {}).get("commodities")
+        prices = lowest_prices(a_rows, c_rows)
+        match = compare(prices, scan)
+        info = {
+            "id": hid, "name": text(house.get("name")),
+            "auctions_status": auctions["status"], "commodities_status": commodities["status"],
+            "auctions": len(a_rows or []), "commodities": len(c_rows or []),
+            "items": len(prices), "bytes": auctions["bytes"] + commodities["bytes"],
+            "last_modified": auctions["last_modified"],
+            "commodities_last_modified": commodities["last_modified"],
+            "keys": sorted((auctions["payload"] or {}).keys()), **match,
+        }
+        result["houses"].append(info)
+        listings = f"{info['auctions']:,} + {info['commodities']:,}"
+        if auctions["status"] != 200 or commodities["status"] != 200:
+            listings += f" (HTTP {auctions['status']}/{commodities['status']})"
+        lines.append(f"| {hid} | {info['name'] or '—'} | {listings} | {info['items']:,} | "
+                     f"{info['last_modified'] or '—'} | {match['shared']:,} | {pct(match['unit_same'])} | "
+                     f"{pct(match['stack_same'])} | {pct(match['unit_near'])} |")
+    ranked = sorted(result["houses"], key=lambda h: (h["unit_same"], h["shared"]), reverse=True)
+    if ranked and ranked[0]["shared"]:
+        top = ranked[0]
+        runner = ranked[1] if len(ranked) > 1 else None
+        result["best"] = top["id"]
+        lines.append(f"\nBest match with the scan: **house {top['id']}** {top['name']} — "
+                     f"{pct(top['unit_same'])} of {top['shared']:,} shared items at the same lowest unit price"
+                     + (f"; next best is house {runner['id']} at {pct(runner['unit_same'])}." if runner else ".")
+                     + "\n")
+    lines.append(f"API calls in this region: {api.calls}.\n")
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--regions", default="tw", help="comma-separated API regions to probe (tw, kr, us, eu)")
+    parser.add_argument("--ruleset", type=int, default=1, help="ruleset whose houses to download (TW: 1 = PvP)")
+    parser.add_argument("--scan", type=Path, default=REPO / "market/data.json", help="market page data to match")
+    parser.add_argument("--out", type=Path, help="write the findings as JSON")
+    args = parser.parse_args()
+
+    client_id = os.environ.get("BLIZZARD_CLIENT_ID")
+    client_secret = os.environ.get("BLIZZARD_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        sys.exit("set BLIZZARD_CLIENT_ID and BLIZZARD_CLIENT_SECRET (in CI they come from repo Secrets)")
+
+    scan, scan_time = load_scan(args.scan)
+    started = time.time()
+    token = get_token(client_id, client_secret)
+    lines = [f"# Auction API probe\n",
+             f"Compared with the Horde scan from {scan_time} ({len(scan):,} items seen in the latest scan day).\n"]
+    report = {"scan": scan_time, "scanItems": len(scan), "regions": []}
+    for region in [r.strip() for r in args.regions.split(",") if r.strip()]:
+        report["regions"].append(probe_region(region, token, args.ruleset, scan, lines))
+    lines.append(f"Finished in {time.time() - started:.0f} s.")
+
+    markdown = "\n".join(lines) + "\n"
+    print(markdown)
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:
+        with open(summary, "a", encoding="utf-8") as f:
+            f.write(markdown)
+    if args.out:
+        args.out.write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+
+if __name__ == "__main__":
+    main()

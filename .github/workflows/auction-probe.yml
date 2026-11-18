@@ -1,0 +1,40 @@
+# Manual check of the Battle.net auction API for WoW Forever: lists the rulesets
+# and auction houses, downloads each house once and matches it against the Horde
+# scan in market/data.json. Results go to the run summary and a JSON artifact;
+# nothing is committed. Credentials come from repo Secrets.
+name: Auction API probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      regions:
+        description: "API regions, comma-separated (tw, kr, us, eu)"
+        default: "tw"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: auction-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe the auction API
+        env:
+          BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
+          BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
+          REGIONS: ${{ inputs.regions }}
+        run: python3 scripts/probe-auction-api.py --regions "$REGIONS" --out auction-probe.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: auction-probe
+          path: auction-probe.json
+          if-no-files-found: ignore
+          retention-days: 14
