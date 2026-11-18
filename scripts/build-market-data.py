@@ -113,6 +113,8 @@ def main():
     realm = max(realms, key=lambda k: len(realms[k]) if isinstance(realms[k], dict) else 0)
     scan = {int(k): v for k, v in realms[realm].items() if re.fullmatch(r"\d+", str(k)) and isinstance(v, dict)}
 
+    started = ap.full_scan_started(save)
+    scan_started = datetime.datetime.fromtimestamp(started).astimezone().isoformat(timespec="minutes") if started else None
     build = args.build or installed_build(args.root)
     sparse = {int(r["ID"]): r for r in client_table(args.cache, build, "ItemSparse")}
     classes_of = {int(r["ID"]): (int(r["ClassID"]), int(r["SubclassID"])) for r in client_table(args.cache, build, "Item")}
@@ -172,6 +174,7 @@ def main():
     used_subclasses = {f"{r[3]}.{r[4]}" for r in rows}
     data = {
         "generatedAt": datetime.datetime.now().astimezone().isoformat(timespec="minutes"),
+        "scanStartedAt": scan_started,
         "savedAt": datetime.datetime.fromtimestamp(save.stat().st_mtime).astimezone().isoformat(timespec="minutes"),
         "latestDay": day_iso(latest_day),
         "faction": args.faction,

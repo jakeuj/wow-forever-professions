@@ -194,6 +194,24 @@ def load_price_db(path):
     return realms
 
 
+def full_scan_started(path):
+    """When the last full scan started (Unix seconds), or None.
+
+    Auctionator sets TimeOfLastReplicateScan (modern AH) or TimeOfLastGetAllScan
+    (legacy AH) in AUCTIONATOR_SAVEDVARS when a full scan starts.
+    """
+    text = path.read_bytes().decode("latin-1")
+    m = re.search(r"^AUCTIONATOR_SAVEDVARS\s*=\s*", text, re.M)
+    if not m:
+        return None
+    reader = LuaReader(text)
+    reader.i = m.end()
+    state = reader.value()
+    times = [state.get(k) for k in ("TimeOfLastReplicateScan", "TimeOfLastGetAllScan")]
+    times = [t for t in times if isinstance(t, (int, float))]
+    return max(times) if times else None
+
+
 def day_label(day):
     return (DAY0 + datetime.timedelta(days=int(day))).strftime("%m/%d")
 
@@ -247,11 +265,13 @@ def main():
     shown = rows if args.all or not wanted else [r for r in rows if r["name"] in wanted]
     missing = sorted(wanted - {r["name"] for r in rows}) if wanted else []
     saved = datetime.datetime.fromtimestamp(path.stat().st_mtime).strftime("%Y-%m-%d %H:%M")
+    started = full_scan_started(path)
+    scan = datetime.datetime.fromtimestamp(started).strftime("%Y-%m-%d %H:%M") if started else None
 
     if args.json:
-        print(json.dumps({"realm_key": realm, "saved": saved, "items": shown, "not_in_scan": missing}, ensure_ascii=False, indent=1))
+        print(json.dumps({"realm_key": realm, "full_scan_started": scan, "saved": saved, "items": shown, "not_in_scan": missing}, ensure_ascii=False, indent=1))
         return
-    print(f"Auctionator・資料庫 {realm}・{len(rows)} 件物品・存檔 {saved}（掛單價，非成交價）")
+    print(f"Auctionator・資料庫 {realm}・{len(rows)} 件物品・完整掃描 {scan or '未記錄'}・存檔 {saved}（掛單價，非成交價）")
     for r in sorted(shown, key=lambda r: r["name"]):
         trend = " → ".join(f"{d} {av.gold(p)}" for d, p in list(r["history"].items())[-4:])
         count = f"・{r['available']} 件" if r["available"] else ""

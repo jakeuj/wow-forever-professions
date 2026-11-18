@@ -215,9 +215,14 @@
       classes = data.classes;
       subclasses = data.subclasses;
       items = data.items.map(row => Object.fromEntries(data.fields.map((field, i) => [field, row[i]])));
-      $('[data-market-scan]').textContent = `完整掃描 ${data.latestDay.replaceAll('-', '.')}`;
+      // ISO strings carry the owner's +08:00 offset; show them as written, not in the viewer's zone.
+      const stamp = iso => iso ? `${iso.slice(0, 10).replaceAll('-', '.')} ${iso.slice(11, 16)}` : '';
+      const scan = data.scanStartedAt ? stamp(data.scanStartedAt) : data.latestDay.replaceAll('-', '.');
+      const saved = data.savedAt ? stamp(data.savedAt) : '';
+      const savedShort = saved.slice(0, 10) === scan.slice(0, 10) ? saved.slice(11) : saved;
+      $('[data-market-scan]').textContent = `完整掃描 ${scan}`;
       $('[data-market-total]').textContent = `${items.length.toLocaleString('zh-TW')} 件物品`;
-      $('[data-market-generated]').textContent = `掃描 / ${data.latestDay.replaceAll('-', '.')}・客戶端 ${data.build}`;
+      $('[data-market-generated]').textContent = `完整掃描 / ${scan}${saved ? `・存檔 ${savedShort}` : ''}・客戶端 ${data.build}`;
       fillCategories();
       readHash();
       form.hidden = false;
