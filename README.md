@@ -41,9 +41,10 @@
 - [`alchemy/`](https://jakeuj.com/wow-forever-professions/alchemy/)：分享給煉金同伴的轉化、配方（AH／NPC／商人青睞／看到再收）與材料行情。
 - [`speculation/`](https://jakeuj.com/wow-forever-professions/speculation/)：配方期貨清單，依經典版經驗整理會漲的條件、可囤與不要囤的配方。
 - [`leveling/`](https://jakeuj.com/wow-forever-professions/leveling/)：鍛造 200→300 的最省路線，列出每段配方與次數，以及每種材料的數量、單價、小計與佔比長條。
+- [`alchemy-leveling/`](https://jakeuj.com/wow-forever-professions/alchemy-leveling/)：煉金 1→300 路線，照 wowf.io 的配方順序、用部落掃描價重算，列出每段次數、配方來源（拍賣場或 NPC）與每種材料的數量、單價、小計與佔比；材料費同樣由 `leveling/leveling.js` 讀 `market/data.json` 重算
 - [`market/`](https://jakeuj.com/wow-forever-professions/market/)：部落拍賣行情，可依名稱、類型、品質查詢與排序。裝備、武器、配方用官方拍賣 API 的每小時最低一口價，附 24 小時漲跌與 7 天走勢；材料、藥水這類能堆疊的物品官方沒有提供，用站主拍賣小幫手完整掃描的價格。點名稱旁的 ☆ 可以收藏（存在瀏覽器的 localStorage），再複製 `#fav=物品ID.物品ID…` 的連結分享。
 
-- 首頁只在頁尾連到這五頁，各頁也互相連結；都不在主要導覽與 `sitemap.xml`，並設 `noindex`，但網址仍是公開的。
+- 首頁只在頁尾連到這六頁，各頁也互相連結；都不在主要導覽與 `sitemap.xml`，並設 `noindex`，但網址仍是公開的。
 - 純靜態 HTML，沿用 `style.css`，各頁共用 `endgame/endgame.css`；所有連結為相對路徑。
 - 物品名稱以 `<span data-ah="遊戲內完整名稱">` 標記，`endgame/ah-copy.js` 會把它們變成點一下就複製的按鈕，方便貼到拍賣場搜尋；剪貼簿被拒時改為選取文字。沒有 JavaScript 時仍是一般文字。
 - 標了 `data-ah-list="清單名稱"` 的表格或區塊會變成拍賣小幫手（Auctionator）的購物清單；頁首面板可複製這頁、複製全部頁面或下載 `.txt`，到插件「購買」分頁按「匯入」貼上。名稱加引號做完全比對，套裝前綴加 `data-ah-prefix`；`.is-skip` 的列不列入。行情頁收藏的物品是另一份清單「行情-收藏」，「全部頁面」會一起帶上；行情頁也能把拍賣小幫手匯出的清單貼回來加入收藏。
