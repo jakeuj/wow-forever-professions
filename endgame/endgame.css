@@ -108,3 +108,10 @@
   .eg-section, .eg-hero { padding-block: 20px; }
   .eg-card, .eg-callout { break-inside: avoid; }
 }
+.eg-lists { max-width: 720px; margin: 14px 0 0; padding: 14px 16px; border: 1px solid #74603d66; background: #cfb17a06; }
+.eg-lists-title { margin: 0; font-size: 12px; line-height: 1.8; color: var(--gold); overflow-wrap: anywhere; }
+.eg-lists-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 0; }
+.eg-lists-note { margin: 10px 0 0; font-size: 11px; line-height: 1.9; color: #8f9a81; }
+.eg-lists details { margin: 8px 0 0; font-size: 11px; color: var(--gold-dim); }
+.eg-lists summary { cursor: pointer; }
+.eg-lists-text { display: block; box-sizing: border-box; width: 100%; margin: 8px 0 0; padding: 8px; border: 1px solid #74603d66; background: #0000004d; color: var(--gold-bright); font: 11px/1.7 ui-monospace, SFMono-Regular, Menlo, monospace; resize: vertical; }

@@ -16,8 +16,8 @@
   <meta property="og:url" content="https://jakeuj.com/wow-forever-professions/endgame/">
   <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
   <link rel="stylesheet" href="../style.css?v=20261117-guild-brand">
-  <link rel="stylesheet" href="./endgame.css?v=20261117-copy">
-  <script src="../endgame/ah-copy.js?v=20261117-copy" defer></script>
+  <link rel="stylesheet" href="./endgame.css?v=20261118-lists">
+  <script src="../endgame/ah-copy.js?v=20261118-lists" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#blacksmithing">跳至鍛造清單</a>
@@ -54,8 +54,8 @@
 
     <section id="blacksmithing" class="eg-section section-wrap" aria-labelledby="bs-title">
       <div class="section-heading"><div><p class="eyebrow">02 / BLACKSMITHING</p><h2 id="bs-title">鐵匠才能用的，買成品就好。</h2></div><p>這些物品要有鍛造技能才能使用，非鐵匠用不了，所以成品通常比設計圖便宜得多。</p></div>
-      <table class="eg-table">
-        <caption>附加物品（部落 AH，2026-11-17）</caption>
+      <table class="eg-table" data-ah-list="鐵匠-附加物品">
+        <caption>附加物品（部落 AH，2026-11-18）</caption>
         <thead><tr><th scope="col">物品</th><th scope="col">效果</th><th scope="col">需要鍛造</th><th scope="col">部落價</th><th scope="col">什麼時候買</th></tr></thead>
         <tbody>
           <tr><th scope="row"><span data-ah="鐵質平衡錘">鐵質平衡錘</span></th><td data-label="效果">雙手劍、雙手斧、長柄武器攻速 +3%；雙手錘不行</td><td data-label="需要鍛造">165</td><td class="eg-price" data-label="部落價">部落沒貨（11/17 8 銀）</td><td data-label="時機"><span>現在，用雙手劍或斧練功時<span class="eg-tag buy">買</span></span></td></tr>
@@ -68,15 +68,15 @@
       <p class="eg-note">經典版裡這些都佔用該部位的附魔欄，會覆蓋原本的附魔；永恆還沒確認。秘銀馬刺和秘銀盾刺的設計圖部落 11/18 還要 4～8 金，成品不到 2 金，<strong>不要買設計圖</strong>。</p>
 
       <h3 class="eg-subhead">設計圖：依專精挑，看到就收</h3>
-      <p class="eg-note eg-note-lead">值得收的是<strong><span data-ah="設計圖：殲滅者">殲滅者</span></strong>：坦克與戰士常用的單手斧，擊中降低護甲可疊 3 層。5g 那張被買走後有人重掛到 20.01g，11/18 部落 AH 又沒貨了，下次出現 20g 以下再收<span class="eg-tag watch">等掛單</span>。下面其他設計圖目前也都沒有掛單，成品除特別標示外都是裝備後綁定，做了可以賣。</p>
-      <div class="eg-spec-grid">
+      <p class="eg-note eg-note-lead" data-ah-list="鐵匠-設計圖">值得收的是<strong><span data-ah="設計圖：殲滅者">殲滅者</span></strong>：坦克與戰士常用的單手斧，擊中降低護甲可疊 3 層。5g 那張被買走後有人重掛到 20.01g，11/18 部落 AH 又沒貨了，下次出現 20g 以下再收<span class="eg-tag watch">等掛單</span>。下面其他設計圖目前也都沒有掛單，成品除特別標示外都是裝備後綁定，做了可以賣。</p>
+      <div class="eg-spec-grid" data-ah-list="鐵匠-設計圖">
         <article class="eg-card" aria-labelledby="spec-ret">
           <h3 id="spec-ret">懲戒</h3><p>力量、命中、爆擊加法傷</p>
           <ul>
             <li><strong><span data-ah="設計圖：堅實頭盔">堅實頭盔</span></strong>力量、命中 2%、法傷 +38。黑石塔小怪掉，阿莫比回報約 12%，值得自己刷。</li>
             <li><strong><span data-ah="設計圖：勇士腿鎧">勇士腿鎧</span></strong>力量、爆擊 1%、法傷 +38。來源未知。</li>
             <li><strong><span data-ah="設計圖：獅心頭盔">獅心頭盔</span>・<span data-ah="設計圖：泰坦護腿">泰坦護腿</span>・<span data-ah="設計圖：奧金斧">奧金斧</span></strong>經典版團前首選，永恆改成可交易。</li>
-            <li><strong><span data-ah="設計圖：祝福鎧甲">祝福鎧甲套裝</span>（8 件）</strong>55～56 級，3 件力量 +20、4 件小隊回血。護胸由海加爾山蠕翼伏擊者掉，約 9%。</li>
+            <li><strong><span data-ah="設計圖：祝福鎧甲" data-ah-prefix>祝福鎧甲套裝</span>（8 件）</strong>55～56 級，3 件力量 +20、4 件小隊回血。護胸由海加爾山蠕翼伏擊者掉，約 9%。</li>
             <li><strong><span data-ah="設計圖：樹林防衛者斧頭">樹林防衛者斧頭</span></strong>物品等級 65 雙手斧，需要延展自然精華。</li>
           </ul>
         </article>
@@ -92,7 +92,7 @@
         <article class="eg-card" aria-labelledby="spec-prot">
           <h3 id="spec-prot">防護</h3><p>耐力、防禦與格擋</p>
           <ul>
-            <li><strong><span data-ah="設計圖：魔法瑟銀">魔法瑟銀套裝</span>・<span data-ah="設計圖：要塞護手">要塞護手</span></strong>經典版坦克裝。</li>
+            <li><strong><span data-ah="設計圖：魔法瑟銀" data-ah-prefix>魔法瑟銀套裝</span>・<span data-ah="設計圖：要塞護手">要塞護手</span></strong>經典版坦克裝。</li>
             <li><strong><span data-ah="設計圖：沉重瑟銀護手">沉重瑟銀護手</span>・<span data-ah="設計圖：貧化瑟銀脛甲">貧化瑟銀脛甲</span></strong>物品等級 65，需要延展自然精華。</li>
             <li><strong>充盈瑟銀頭盔</strong><span class="eg-tag bop">拾取後綁定</span><br>耐力、防禦加法傷。用 120 商人青睞在貧瘠之地苟馬克換。</li>
             <li><strong>盾刺</strong>用盾坦副本時再裝。</li>
@@ -121,7 +121,7 @@
       </div>
 
       <div class="eg-groups eg-groups-after">
-        <section class="eg-group" aria-labelledby="mats-title">
+        <section class="eg-group" aria-labelledby="mats-title" data-ah-list="鐵匠-材料">
           <h3 id="mats-title">材料：不用急著囤</h3>
           <ul>
             <li><strong><span data-ah="瑟銀錠">瑟銀錠</span></strong> 16 銀，部落有 400 多根；55 級做祝福套或獅心時再買。</li>
