@@ -107,6 +107,7 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 - 提供物品提示框拍賣價格、完整掃描、篩選搜尋與歷史、購物清單、上架防低價及壓價掃描／取消；製造介面可顯示材料成本與利潤，搜尋所需材料。共用專案頁含 Retail 等分支功能，實際選項依 Forever 套件判斷；作者特別標明的 Retail 自動掃描行為不能直接當成 Forever 的預設。
 - 在拍賣場的 Auctionator 分頁按 **完整掃描（Full Scan）** 更新資料，再到購物清單搜尋材料；確認數量與單價後購買。掃描價是該市場的歷史觀測，不代表當下仍有同價存貨，也不會自動完成採買。`/atr` 或 `/auctionator` 顯示指令說明，`/atr version` 查版本；設定由遊戲設定中的 Auctionator 開啟。
 - 345 的 `.toc` 列 `Version: 345`、Interface 含 `16001`，只有 LibAHTab 為 OptionalDeps；`Locales/Manifest.xml` 確實載入 `Locales/zhTW.lua`，含完整掃描、購物清單等繁中詞條。基本買賣／掃描不依賴 DungeonsForever。此版 [發佈說明](https://www.curseforge.com/wow/addons/auctionator/files/9548985) 修正 Forever 製造利潤及壓價百分比；回報利潤異常時先核對版本，再查價格來源。
+- 繁中介面叫「拍賣小幫手」，拍賣場下方多出「購買／銷售／取消／拍賣小幫手」分頁，購物清單在「購買」分頁。購物清單的匯入格式、讀完整掃描存檔（`/reload` 或登出後才寫入）與價格資料庫不分陣營拍賣場的限制，見 [market-recipe-value.md](market-recipe-value.md#拍賣小幫手auctionator完整掃描)；以上依 347 版原始碼與 2026-11-18 實測。
 - 與 DungeonsForever 的分工是「Auctionator 蒐集行情並管理採買；專業模組計算衝等步驟與缺口」。Baganator／Syndicator、BagSync 的庫存查詢不能直接當成拍賣行情來源；分解估價也需另查材料價格與產出假設。
 
 ## DungeonsForever 與 Auctionator 專業衝等操作
