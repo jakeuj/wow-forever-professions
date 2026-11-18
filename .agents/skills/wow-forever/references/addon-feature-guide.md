@@ -112,12 +112,14 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 
 ## DungeonsForever 與 Auctionator 專業衝等操作
 
-以下依 **DungeonsForever 2.1.87＋Auctionator 345** 的載入清單及 `DungeonsForeverProf/Core/ProfessionUI.lua`、`ProfRouteAuto.lua`、`ProfFollow.lua`、`AuctionatorBridge.lua` 查證。這是檔案層流程，尚未進遊戲驗證。
+以下依 **DungeonsForever 2.1.87＋Auctionator 345** 的載入清單及 `DungeonsForeverProf/Core/ProfessionUI.lua`、`ProfRouteAuto.lua`、`ProfFollow.lua`、`AuctionatorBridge.lua` 查證，介面文字取自 2.1.112 的 `Locales/zhTW.lua` 與 Auctionator 347 的 `Locales/zhTW.lua`。2026-11-18 站主以 DungeonsForever 2.1.112＋Auctionator 347 進遊戲實測：開慢速掃描模式、完整掃描一次後，專業練級路線規劃會把拍賣行價格算進路線。
+
+價格來自 `Auctionator.API.v1.GetAuctionPriceByItemID`／`GetAuctionAgeByItemID`，也就是遊戲裡拍賣小幫手的資料，掃完不必 `/reload`；DungeonsForever 另外保存最近一次完整掃描的快照（含件數），依角色與市場核對，超過 2 天就要求重掃。站主的[鍛造練等頁](https://jakeuj.com/wow-forever-professions/leveling/#addons)有給一般玩家看的步驟。
 
 1. **確認模組。** CurseForge 選 Forever／本機 `_forever_`，在插件列表確認 `DungeonsForever`、`DungeonsForeverProf`、`Auctionator` 已啟用；若剛改啟用狀態，重載介面。主體能開地城頁不代表專業模組也已啟用。
-2. **取得完整行情。** 需要新掃描時，在「設定選項 → 插件 → Auctionator → 進階」檢查並啟用較慢的備用／複製掃描模式，再到拍賣場按完整掃描，等待完成。DungeonsForever 的提示用語為「預設使用較慢的備用掃描模式」；這版專業功能需要可驗證的完整掃描快照，摘要掃描不能替代。已有有效快照可沿用；不使用專業功能時，插件建議切回摘要模式。
-3. **計算目標路線。** `/df` 開專業手冊，依目標專業選擇衝等頁，例如鍛造，核對讀到的目前技能與已學配方，設定目標技能；為傳承規劃時依需求設為 150／225／300。選「自動計算」與「最省錢」比較當次可行成本；缺資料或該專業只支援固定路線時，依提示查閱固定攻略，待補齊行情、配方與學習條件後重算。
-4. **核對並匯入缺口。** 開背包與銀行，確認已有材料、需向 NPC 購買、自製中間材料及拍賣採購缺口；先確認圖紙與學習費是否有資料，再按「一鍵匯入」。`AuctionatorBridge` 使用 `Auctionator.API.v1.CreateShoppingList`，清單依專業命名；只匯入拍賣採購缺口，NPC 貨物與自製材料不匯入，**同名清單會被覆寫**。回 Auctionator 選該清單，逐項核對價格與實際數量再買；空清單先確認是否確實無缺口。
+2. **取得完整行情。** 需要新掃描時，在「設定選項 → 插件 → Auctionator → 進階」的「慢速掃描模式」勾選「預設改成使用另一種速度較慢的掃描模式」（複製模式），再到拍賣場「拍賣小幫手」分頁按完整掃描，等待完成。DungeonsForever 的提示用語為「預設使用較慢的備用掃描模式」；這版專業功能需要可驗證的完整掃描快照，摘要掃描不能替代。已有有效快照可沿用；不使用專業功能時，插件建議切回摘要模式。
+3. **計算目標路線。** `/df` 開專業手冊，依目標專業選擇衝等頁，例如鍛造，核對讀到的目前技能與已學配方，設定目標技能；為傳承規劃時依需求設為 150／225／300。「路線方案」選「最省錢」再按「自動計算」，比較當次可行成本；缺資料或該專業只支援固定路線時，依提示查閱固定攻略，待補齊行情、配方與學習條件後重算。
+4. **核對並匯入缺口。** 開背包與銀行，確認已有材料、需向 NPC 購買、自製中間材料及拍賣採購缺口；先確認圖紙與學習費是否有資料，再按「一鍵導入購物清單」。`AuctionatorBridge` 使用 `Auctionator.API.v1.CreateShoppingList`，清單依專業命名；只匯入拍賣採購缺口，NPC 貨物與自製材料不匯入，**同名清單會被覆寫**。回 Auctionator 選該清單，逐項核對價格與實際數量再買；空清單先確認是否確實無缺口。
 5. **依實際進度調整。** 開專業製作介面，按路線與步驟追蹤製作；學配方、升階、技能點與材料變化後重新核對，行情有變則重新掃描並計算。黃色／綠色配方不保證每次升點，預估回收與淨成本也不保證成交；「最省錢」是依可用資料的方案估算，不能保證零浪費或全市場最低價。
 
 ### 常見狀況

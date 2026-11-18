@@ -35,3 +35,9 @@
   .lv-mats tfoot td { padding: 3px 0; border: 0; }
   .lv-figures .lv-net dd { font-size: 21px; }
 }
+
+.lv-addons ol { margin: 0; padding-left: 20px; }
+.lv-addons a { color: var(--gold); text-decoration: underline dotted; text-underline-offset: 3px; }
+.lv-addons a:hover { color: var(--gold-bright); }
+.lv-addons code, .lv-addon-note code { padding: 0 4px; border: 1px solid #74603d66; background: #0b0e0d; font-size: .92em; }
+.lv-addon-note { margin: 18px 0 0; font-size: 12px; line-height: 1.9; color: #8f9a81; }

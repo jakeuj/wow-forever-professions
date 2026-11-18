@@ -100,7 +100,7 @@ curl -s https://raw.githubusercontent.com/jakeuj/wow-forever-professions/auction
 
 ## 練等路線與成本
 
-問「從 N 練到 300 怎麼練最省、要準備多少錢」時，用部落掃描價排路線，不直接照抄攻略站的路線：
+問「從 N 練到 300 怎麼練最省、要準備多少錢」時，用部落掃描價排路線，不直接照抄攻略站的路線。玩家要在遊戲裡照自己的庫存與當下行情排，改用無限副本手冊（DungeonsForever）搭配拍賣小幫手，步驟見 [addon-feature-guide.md](addon-feature-guide.md#dungeonsforever-與-auctionator-專業衝等操作)；兩邊總價差很多時，先查行情是否變動。
 
 ```sh
 python3 '<skill-dir>/scripts/leveling_route.py' --profession blacksmithing --from 200 --to 300
