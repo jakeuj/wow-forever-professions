@@ -1,0 +1,42 @@
+# Manual check of which official WoW API endpoints work for WoW Forever: reads the
+# Retail and Classic endpoint lists from the developer portal, calls each one in the
+# Forever namespaces and writes a table to the run summary plus a JSON artifact.
+# Nothing is committed. Credentials come from repo Secrets; FOREVER_PROBE_CHARACTER
+# (name-surname of a Lv10+ character) is optional and is masked in the output.
+name: API coverage probe
+
+on:
+  workflow_dispatch:
+    inputs:
+      regions:
+        description: "API regions, comma-separated (tw, kr, us, eu)"
+        default: "tw"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: api-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Probe the API
+        env:
+          BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
+          BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
+          FOREVER_PROBE_CHARACTER: ${{ secrets.FOREVER_PROBE_CHARACTER }}
+          REGIONS: ${{ inputs.regions }}
+        run: python3 .agents/skills/wow-forever/scripts/forever_api_coverage.py --regions "$REGIONS" --out api-probe.json
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: api-probe
+          path: api-probe.json
+          if-no-files-found: ignore
+          retention-days: 14
