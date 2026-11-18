@@ -1,7 +1,8 @@
 // Leveling page: recompute material costs from the market page's data (../market/data.json,
 // built from the owner's Auctionator scan). The HTML already holds a snapshot, so the page
 // reads fine without JavaScript or when the data cannot be loaded.
-// Rows: <tr data-lv-id="item id" data-lv-qty="n" data-lv-price="snapshot copper">; tables with
+// Rows: <tr data-lv-id="item id" data-lv-qty="n bought at auction" data-lv-price="snapshot copper"
+// [data-lv-fixed="copper for NPC-bought units" data-lv-other="their count"]>; tables with
 // data-lv-phase also carry data-lv-vendor (copper returned by selling the crafted items).
 (() => {
   const phases = document.querySelectorAll('[data-lv-phase]');
@@ -24,16 +25,19 @@
       const rows = [...body.querySelectorAll('tr[data-lv-id]')].map(row => {
         const hit = live.get(Number(row.dataset.lvId));
         const qty = Number(row.dataset.lvQty);
+        // data-lv-fixed: copper for the units bought from NPCs, which the scan does not price.
+        const fixed = Number(row.dataset.lvFixed || 0);
+        if (!qty) return { row, sub: fixed };
         const price = hit ? hit.price : Number(row.dataset.lvPrice);
         const cell = row.querySelector('[data-lv-unit]');
-        cell.textContent = unit(price);
+        cell.textContent = unit(Math.round((price * qty + fixed) / (qty + (fixed ? Number(row.dataset.lvOther || 0) : 0) || 1)));
         if (!hit) cell.append(Object.assign(document.createElement('span'), { className: 'lv-stale', textContent: '沿用快照' }));
         if (hit && hit.count != null) {
           setText(row, '[data-lv-listed]', hit.count.toLocaleString('en-US'));
           const tag = row.querySelector('[data-lv-short]');
           tag.replaceChildren(...(hit.count < qty ? [shortTag()] : []));
         }
-        return { row, sub: price * qty };
+        return { row, sub: price * qty + fixed };
       });
       const sum = rows.reduce((acc, r) => acc + r.sub, 0);
       rows.sort((a, b) => b.sub - a.sub).forEach(({ row, sub }) => {

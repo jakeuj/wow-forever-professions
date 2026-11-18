@@ -41,3 +41,5 @@
 .lv-addons a:hover { color: var(--gold-bright); }
 .lv-addons code, .lv-addon-note code { padding: 0 4px; border: 1px solid #74603d66; background: #0b0e0d; font-size: .92em; }
 .lv-addon-note { margin: 18px 0 0; font-size: 12px; line-height: 1.9; color: #8f9a81; }
+.lv-made { margin: 8px 0 22px; font-size: 12px; line-height: 1.8; color: var(--muted); }
+.lv-made > span { margin-right: 6px; color: var(--gold-dim); }

@@ -6,16 +6,23 @@ wowamobi.com; prices and listing counts from the owner's Auctionator full scan
 (or the market page's data.json). Trainer recipes have no "requires N" on Amobi,
 so their learn skill comes from data/wowf-learn-skill-<profession>.json.
 
-Each skill point goes to the recipe with the lowest expected net cost:
-(reagents - vendor sell price) / chance, where the chance is 1 below yellow and
-(grey - skill) / (grey - yellow) from yellow to grey. A plan that saves less than
-its price over the route is dropped. Prices are listing prices, never sale prices.
+Skill points are walked in order. Each goes to the recipe with the lowest expected
+net cost, (reagents - vendor sell price) / chance, where the chance is 1 below yellow
+and (grey - skill) / (grey - yellow) from yellow to grey. Reagents come from the
+cheapest source with stock left: the Horde listings (used up as the route buys them),
+unlimited NPC vendors, or a trainer recipe already learned at that skill. Units beyond
+the listings cost SHORT_PENALTY times the lowest price, so the route moves to another
+recipe when it can and otherwise reports the shortfall. A plan that saves less than
+its price over the route is dropped. Each segment also gets a spare-craft count
+(90th percentile minus the expected crafts). Prices are lowest listing prices, never
+sale prices; buying in bulk costs more than the listed total suggests.
 """
 
 import argparse
 import datetime
 import html
 import json
+import math
 from pathlib import Path
 import re
 import sys
@@ -26,6 +33,8 @@ import amobi_recipe_value as av  # noqa: E402
 import auctionator_prices as ap  # noqa: E402
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
+SHORT_PENALTY = 3  # price factor for units beyond the listed count when choosing recipes
+P90 = 1.2816  # z for the 90th percentile of the craft count
 SELL = re.compile(r'class="wl w sell">售價：(.*?)</div>', re.S)
 
 
@@ -130,83 +139,134 @@ def main():
             pages[item_id] = info
         return pages[item_id]
 
-    def buy(item_id):
-        """Cheapest way to buy one: (copper, where) or (None, why)."""
+    def sources(item_id):
+        """Ways to buy the item, cheapest first: (copper per unit, listed count or None, label, kind)."""
         options = []
         if item_id in scan:
-            options.append((scan[item_id][0], f"{args.faction}拍賣場 {scan[item_id][1] or '?'} 件"))
+            price, count = scan[item_id]
+            options.append((price, count, f"{args.faction}拍賣場", "ah"))
         info = page(item_id)
         for v in info["vendors"]:
             if not v["limited"] and v["unit_price"]:
-                options.append((v["unit_price"], f"NPC {v['npc']}（{v['zone']}）"))
+                options.append((v["unit_price"], None, f"NPC {v['npc']}（{v['zone']}）", "npc"))
         seen = info["faction_seen"].get("中立拍賣場", "")
         if args.neutral and "中立拍賣場" in info["faction_min"] and seen[:5] in recent_days:
-            options.append((info["faction_min"]["中立拍賣場"], f"中立 {seen}"))
-        return min(options) if options else (None, "沒貨")
+            options.append((info["faction_min"]["中立拍賣場"], None, f"中立拍賣場 {seen}", "neutral"))
+        return sorted(options, key=lambda o: o[0])
 
+    # Trainer recipes that make a reagent; usable once the route has reached their orange skill.
     producers = {}
     for r in recipes:
-        if r["learn"] == "trainer" and r["item_id"] and (r["orange"] or 999) <= args.start and not r["blocked"]:
+        if r["learn"] == "trainer" and r["item_id"] and r["orange"] is not None and not r["blocked"]:
             producers.setdefault(r["item_id"], []).append(r)
-    memo = {}
-    def mat_cost(item_id, depth=0):
-        if item_id in memo:
-            return memo[item_id]
-        best = buy(item_id)
+
+    def quote(item_id, qty, skill, stock, depth=0):
+        """Cheapest way to get qty units at this skill with the auction stock left.
+
+        Returns (cost for choosing, parts) or None. Parts are leaf purchases
+        (item id, label, kind, quantity, copper per unit, quantity beyond the listings).
+        Units the listings cannot cover cost SHORT_PENALTY times the lowest price, so
+        the route only keeps a short material when nothing else comes close."""
+        options = []
+        for unit, limit, label, kind in sources(item_id):
+            left = max(0, stock.get(item_id, limit)) if kind == "ah" and limit is not None else None
+            options.append((unit, left, label, kind, None))
         if depth < 3:
             for r in producers.get(item_id, []):
-                c = craft_cost(r, depth + 1)
-                if c is not None and (best[0] is None or c / r["qty"] < best[0]):
-                    best = (c / r["qty"], f"自製（{r['name']}）")
-        memo[item_id] = best
-        return best
-    def craft_cost(r, depth=0):
-        total = 0
-        for item_id, _, qty in r["mats"]:
-            c, _ = mat_cost(item_id, depth)
-            if c is None:
+                if r["orange"] <= skill:
+                    one = quote_recipe(r, 1 / r["qty"], skill, stock, depth + 1)
+                    if one is not None:
+                        options.append((one[0], None, f"自製（{r['name']}）", "craft", r))
+        options.sort(key=lambda o: o[0])
+        need, cost, parts = qty, 0, []
+        for unit, left, label, kind, r in options:
+            if need <= 1e-9:
+                break
+            take = need if left is None else min(need, left)
+            if take <= 0:
+                continue
+            if kind == "craft":
+                made = quote_recipe(r, take / r["qty"], skill, stock, depth + 1)
+                cost, parts = cost + made[0], parts + made[1] + [(item_id, label, "made", take, 0, 0)]
+            else:
+                cost += unit * take
+                parts.append((item_id, label, kind, take, unit, 0))
+            need -= take
+        if need > 1e-9:
+            listed = next((o for o in options if o[3] == "ah"), None)
+            if listed is None:
                 return None
-            total += c * qty
-        return total
+            cost += listed[0] * SHORT_PENALTY * need
+            parts.append((item_id, listed[2], "ah", need, listed[0], need))
+        return cost, parts
+
+    def quote_recipe(r, crafts, skill, stock, depth=0):
+        cost, parts = 0, []
+        for item_id, _, qty in r["mats"]:
+            got = quote(item_id, qty * crafts, skill, stock, depth)
+            if got is None:
+                return None
+            cost, parts = cost + got[0], parts + got[1]
+        return cost, parts
 
     def chance(r, s):
         if r["orange"] is None or s < r["orange"] or s >= r["grey"]:
             return 0
         return 1 if s < r["yellow"] else (r["grey"] - s) / (r["grey"] - r["yellow"])
 
+    full_stock = {i: c for i, (_, c) in scan.items() if c is not None}
     pool, missing_plans = [], []
     for r in recipes:
         if r["blocked"] or r["grey"] <= args.start or (r["orange"] or 999) >= args.end:
             continue
-        cost = craft_cost(r)
-        if cost is None:
+        priced = quote_recipe(r, 1, max(args.start, r["orange"] or args.start), full_stock)
+        if priced is None:
             continue
-        r["cost"] = cost
+        r["cost"] = sum(take * unit for _, _, _, take, unit, _ in priced[1])
         r["sell"] = 0 if args.no_vendor_sale or not r["item_id"] else page(r["item_id"])["sell"] * r["qty"]
-        r["net"] = cost - r["sell"]
+        r["net"] = r["cost"] - r["sell"]
         if r["learn"] in ("trainer", "auto"):
             r["acquire"], r["acquire_from"] = 0, "訓練師"
         else:
-            r["acquire"], r["acquire_from"] = buy(r["recipe_id"])
-            if r["acquire"] is None:
+            plan = next(iter(sources(r["recipe_id"])), None)
+            if plan is None:
                 missing_plans.append(r)
                 continue
+            r["acquire"], r["acquire_from"] = plan[0], plan[2]
         pool.append(r)
 
     def route(candidates):
+        """Walk the skill points in order; each takes the recipe with the lowest expected net
+        cost at the stock still listed, then uses that stock up."""
+        stock = dict(full_stock)
         steps = []
         for s in range(args.start, args.end):
-            options = [(r["net"] / chance(r, s), r["name"]) for r in candidates if chance(r, s) > 0]
-            if not options:
+            best = None
+            for r in candidates:
+                p = chance(r, s)
+                if p <= 0:
+                    continue
+                got = quote_recipe(r, 1 / p, s, stock)
+                if got is None:
+                    continue
+                score = got[0] - r["sell"] / p
+                if best is None or score < best[0]:
+                    best = (score, r, p, got[1])
+            if best is None:
                 return None
-            steps.append(min(options))
+            for item_id, _, kind, take, _, short in best[3]:
+                if kind == "ah" and item_id in stock:
+                    stock[item_id] = max(0, stock[item_id] - (take - short))
+            steps.append({"skill": s, "score": best[0], "recipe": best[1], "chance": best[2], "parts": best[3]})
         return steps
+
     active = list(pool)
     while True:
         steps = route(active)
         if steps is None:
             sys.exit("no obtainable recipe covers every skill point; try --neutral")
-        used = {name for _, name in steps}
+        used = {st["recipe"]["name"] for st in steps}
+        total = sum(st["score"] for st in steps)
         worst = None
         for r in active:
             if r["acquire"] <= 0 or r["name"] not in used:
@@ -214,63 +274,79 @@ def main():
             alt = route([x for x in active if x is not r])
             if alt is None:
                 continue
-            saving = sum(e for e, _ in alt) - sum(e for e, _ in steps)
+            saving = sum(st["score"] for st in alt) - total
             if saving < r["acquire"] and (worst is None or r["acquire"] - saving > worst[0]):
                 worst = (r["acquire"] - saving, r)
         if not worst:
             break
         active.remove(worst[1])
 
-    by_name = {r["name"]: r for r in active}
-    segments = []
-    for s, (_, name) in zip(range(args.start, args.end), steps):
+    segments, phases = [], {}
+    for st in steps:
+        r, s, p = st["recipe"], st["skill"], st["chance"]
         phase = 1 if s < args.gate else 2
-        if segments and segments[-1]["recipe"] == name and segments[-1]["phase"] == phase:
-            segments[-1]["to"] = s + 1
-        else:
-            segments.append({"recipe": name, "from": s, "to": s + 1, "phase": phase})
+        if not (segments and segments[-1]["recipe"] == r["name"] and segments[-1]["phase"] == phase):
+            segments.append({"recipe": r["name"], "from": s, "to": s, "phase": phase, "crafts": 0, "var": 0,
+                             "spend": 0, "r": r})
+        seg = segments[-1]
+        seg["to"] = s + 1
+        seg["crafts"] += 1 / p
+        seg["var"] += (1 - p) / p ** 2
+        seg["spend"] += sum(take * unit for _, _, _, take, unit, _ in st["parts"])
+        ph = phases.setdefault(phase, {"phase": phase, "gross": 0, "vendor": 0, "need": {}, "made": {}})
+        ph["vendor"] += r["sell"] / p
+        for item_id, label, kind, take, unit, short in st["parts"]:
+            if kind == "made":  # an intermediate crafted from the leaf purchases listed alongside
+                made = ph["made"].setdefault(item_id, {"id": item_id, "qty": 0, "how": label})
+                made["qty"] += take
+                continue
+            m = ph["need"].setdefault(item_id, {"id": item_id, "name": None, "ah_qty": 0, "ah_unit": None,
+                                                "other_qty": 0, "other_cost": 0, "from": [], "short": 0})
+            if kind == "ah":
+                m["ah_qty"] += take
+                m["ah_unit"] = unit
+                m["short"] += short
+            else:
+                m["other_qty"] += take
+                m["other_cost"] += take * unit
+            if label not in m["from"]:
+                m["from"].append(label)
 
-    def expand(item_id, name, qty, need):
-        cost, how = mat_cost(item_id)
-        if how.startswith("自製"):
-            r = next(x for x in producers[item_id] if x["name"] in how)
-            for mid, mname, mq in r["mats"]:
-                expand(mid, mname, qty * mq / r["qty"], need)
-        else:
-            need.setdefault(item_id, {"id": item_id, "name": name, "qty": 0, "unit": cost, "from": how})
-            need[item_id]["qty"] += qty
-
-    phases = {}
+    names = {item_id: name for r in recipes for item_id, name, _ in r["mats"]}
     for seg in segments:
-        r = by_name[seg["recipe"]]
-        crafts = sum(1 / chance(r, s) for s in range(seg["from"], seg["to"]))
-        seg.update(crafts=round(crafts, 1), cost=r["cost"], sell=r["sell"], mats=[[n, q] for _, n, q in r["mats"]],
-                   item_id=r["item_id"], learn=r["acquire_from"], plan=r["recipe"] if r["acquire"] else None,
-                   plan_id=r["recipe_id"] if r["acquire"] else None, plan_price=r["acquire"],
-                   yellow=r["yellow"], grey=r["grey"], orange=r["orange"])
-        ph = phases.setdefault(seg["phase"], {"phase": seg["phase"], "gross": 0, "vendor": 0, "need": {}})
-        ph["gross"] += r["cost"] * crafts
-        ph["vendor"] += r["sell"] * crafts
-        for item_id, name, qty in r["mats"]:
-            expand(item_id, name, qty * crafts, ph["need"])
+        r = seg.pop("r")
+        seg["spare"] = math.ceil(P90 * math.sqrt(seg.pop("var")))
+        seg.update(crafts=round(seg["crafts"], 1), cost=round(seg.pop("spend") / seg["crafts"]), sell=r["sell"],
+                   mats=[[n, q] for _, n, q in r["mats"]], item_id=r["item_id"], learn=r["acquire_from"],
+                   plan=r["recipe"] if r["acquire"] else None, plan_id=r["recipe_id"] if r["acquire"] else None,
+                   plan_price=r["acquire"], yellow=r["yellow"], grey=r["grey"], orange=r["orange"])
     for ph in phases.values():
-        mats = sorted(ph.pop("need").values(), key=lambda m: -m["qty"] * m["unit"])
-        for m in mats:
-            m["qty"] = round(m["qty"])
-            m["subtotal"] = m["qty"] * m["unit"]
+        mats = []
+        for m in ph.pop("need").values():
+            m["name"] = names.get(m["id"], str(m["id"]))
+            m["ah_qty"], m["other_qty"], m["short"] = round(m["ah_qty"]), round(m["other_qty"]), round(m["short"])
+            m["other_cost"] = round(m["other_cost"])
+            m["qty"] = m["ah_qty"] + m["other_qty"]
+            m["subtotal"] = m["ah_qty"] * (m["ah_unit"] or 0) + m["other_cost"]
+            m["unit"] = round(m["subtotal"] / m["qty"]) if m["qty"] else 0
             m["listed"] = scan.get(m["id"], (None, None))[1]
-            m["short"] = m["listed"] is not None and m["listed"] < m["qty"]
-        ph["materials"] = mats
+            if m["qty"]:
+                mats.append(m)
+        ph["materials"] = sorted(mats, key=lambda m: -m["subtotal"])
+        ph["made"] = [{"id": m["id"], "name": names.get(m["id"], str(m["id"])), "qty": math.ceil(m["qty"] - 1e-9),
+                       "how": m["how"]} for m in ph["made"].values()]
         ph["gross"] = sum(m["subtotal"] for m in mats)  # what the rounded shopping list costs
+        ph["vendor"] = round(ph["vendor"])
         ph["net"] = ph["gross"] - ph["vendor"]
     better_missing = []
     for r in missing_plans:
-        points = [s for s, (e, _) in zip(range(args.start, args.end), steps)
-                  if chance(r, s) > 0 and r["net"] / chance(r, s) < 0.8 * e]
-        if points:
+        points = [st["skill"] for st in steps
+                  if chance(r, st["skill"]) > 0 and r["net"] / chance(r, st["skill"]) < 0.8 * st["score"]]
+        if len(points) >= 3:  # one or two points near a colour change are noise
             info = page(r["recipe_id"])
             seen = "；".join(f"{k} {av.gold(v)}（{info['faction_seen'].get(k, '')}）" for k, v in info["faction_min"].items())
-            better_missing.append({"plan": r["recipe"], "from": min(points), "to": max(points) + 1, "net": r["net"], "last_seen": seen})
+            better_missing.append({"plan": r["recipe"], "plan_id": r["recipe_id"], "from": min(points),
+                                   "to": max(points) + 1, "net": r["net"], "last_seen": seen})
 
     result = {"profession": args.profession, "from": args.start, "to": args.end, "gate": args.gate,
               "prices": scan_label, "segments": segments, "phases": [phases[k] for k in sorted(phases)],
@@ -281,20 +357,23 @@ def main():
     g = lambda c: f"{c / 10000:.2f}g"
     print(f"{args.profession} {args.start}→{args.end}・價格：{scan_label}・掛單價，非成交價")
     for seg in segments:
-        print(f"{seg['from']}→{seg['to']} {seg['recipe']} 約 {seg['crafts']:.0f} 次｜每次材料 {g(seg['cost'])}、賣店 {g(seg['sell'])}｜"
+        print(f"{seg['from']}→{seg['to']} {seg['recipe']} 約 {seg['crafts']:.0f} 次（多備 {seg['spare']} 次）｜"
+              f"每次材料 {g(seg['cost'])}、賣店 {g(seg['sell'])}｜"
               f"{seg['plan'] + ' ' + g(seg['plan_price']) + '（' + seg['learn'] + '）' if seg['plan'] else seg['learn']}｜"
               + "、".join(f"{n}×{q}" for n, q in seg["mats"]))
     for ph in result["phases"]:
         label = f"到 {args.gate}" if ph["phase"] == 1 else f"{args.gate} 以後（要先學下一階）"
         print(f"\n階段 {ph['phase']}（{label}）：材料 {g(ph['gross'])}、賣店收回 {g(ph['vendor'])}、淨 {g(ph['net'])}")
         for m in ph["materials"]:
-            short = "，不夠" if m["short"] else ""
-            print(f"  {m['name']} ×{m['qty']}（{g(m['unit'])}，{m['from']}{short}）= {g(m['subtotal'])}")
+            listed = f"，掛單 {m['listed']} 件" if m["listed"] is not None else ""
+            short = f"，缺 {m['short']} 件" if m["short"] else ""
+            print(f"  {m['name']} ×{m['qty']}（{g(m['unit'])}，{'、'.join(m['from'])}{listed}{short}）= {g(m['subtotal'])}")
+        for m in ph["made"]:
+            print(f"  （{m['name']} ×{m['qty']} {m['how']}，材料已算在上面）")
     if better_missing:
         print("\n目前買不到、但比路線便宜的配方：")
         for m in better_missing:
             print(f"  {m['plan']} 可用在 {m['from']}–{m['to']}，每次淨 {g(m['net'])}；{m['last_seen'] or '阿莫比沒紀錄'}")
-
 
 if __name__ == "__main__":
     main()

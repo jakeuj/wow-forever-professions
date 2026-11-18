@@ -49,7 +49,7 @@
 - 價格與角色進度是手動更新的快照，更新時同步頁面上的快照日期。
 - 行情頁讀 `market/data.json`。在遊戲內完整掃描後輸入 `/reload`，再執行 `python3 scripts/build-market-data.py` 重建：價格來自本機的拍賣小幫手存檔，名稱與分類來自 wago.tools 的永恆客戶端資料表，客戶端沒有的名稱與所有圖示取自 Wowhead；查詢結果有快取，已知物品沿用上一份 `data.json`。
 - 官方拍賣價：`.github/workflows/auction-collect.yml` 每小時執行 `scripts/collect-auctions.py`，把亞服 PvP 部落拍賣場（TW 區 113 號）的最低一口價寫進 `auction-data` 分支的 `auctions.json`：最近 7 天逐小時，更早每天留一個最低價，保留 90 天。行情頁從 `raw.githubusercontent.com` 讀這個檔，所以 `main` 不會每小時多一個 commit，Pages 也不用重建；讀不到或比掃描舊 3 小時以上時，整頁改用掃描價格。憑證放在 repo Secrets 的 `BLIZZARD_CLIENT_ID`、`BLIZZARD_CLIENT_SECRET`；手動執行的 `auction-probe.yml` 可重新確認哪一間是部落拍賣場。公開 repo 的排程在 60 天沒有活動後會被 GitHub 停用，到 Actions 分頁重新啟用即可。
-- 練等頁的 HTML 是路線與價格的快照；`leveling/leveling.js` 開頁時讀 `market/data.json`（依物品 ID），重算單價、小計、佔比、階段合計與設計圖價，所以重建行情資料後材料費會跟著更新。路線本身要重排時，執行技能的 `scripts/leveling_route.py --from 200`（加 `--json` 給頁面），再更新 HTML。
+- 練等頁的 HTML 是路線與價格的快照；`leveling/leveling.js` 開頁時讀 `market/data.json`（依物品 ID），重算單價、小計、佔比、階段合計與設計圖價，所以重建行情資料後材料費會跟著更新。路線本身要重排時，執行技能的 `scripts/leveling_route.py --from 200 --market-json market/data.json --json > route.json`，再跑 `python3 scripts/build-leveling-page.py route.json` 填好頁面的路線、材料與設計圖表（標記外的說明文字手改）。路線會扣掉拍賣場買掉的件數，不夠就換配方或自製中間材料。
 
 ## 專案技能
 
