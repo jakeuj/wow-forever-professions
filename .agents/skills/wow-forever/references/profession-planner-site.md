@@ -69,9 +69,9 @@
 - 沿用 `../style.css`（版本參數與首頁一致）並以 `endgame/endgame.css` 補樣式；連結與圖示一律相對路徑，以支援 `/wow-forever-professions/` 專案路徑。
 - 內容來源：鍛造與煉金需求讀 [endgame-crafting.md](endgame-crafting.md)，價格依 [market-recipe-value.md](market-recipe-value.md) 的腳本與規則重算。更新時同步頁首快照日期與資料依據區的日期。
 - 站主在遊戲內完整掃描或傳來拍賣場截圖時，依 [market-recipe-value.md](market-recipe-value.md) 的「遊戲內資料與阿莫比對照」更新：部落價以遊戲內為準（完整掃描用 `scripts/auctionator_prices.py --from-html` 讀三頁的所有可複製名稱），再用 `scripts/amobi_item_prices.py --from-html` 補上中立與聯盟價格，以及遊戲內資料之前已經被買走的低價。頁面標明哪些是遊戲內、哪些是阿莫比與掃描時間。
-- 行情頁：`market/market.js` 讀 `market/data.json`，由 repo 的 `scripts/build-market-data.py` 從拍賣小幫手存檔產生（先請站主完整掃描並 `/reload`）。名稱、品質與分類用 wago.tools 的永恆客戶端資料表（版本取安裝目錄 `.build.info` 的 wowf），客戶端沒有的名稱（約四成）與所有圖示用 Wowhead 的永恆繁中 tooltip 資料；已知物品沿用上一份 `data.json`，所以平常只查新物品。網站不讀阿莫比的端點，只在每列連到阿莫比的物品頁。拍賣小幫手不分陣營，頁面只放主城掃描的結果。
+- 行情頁：`market/market.js` 讀 `market/data.json`，由 repo 的 `scripts/build-market-data.py` 從拍賣小幫手存檔產生（先請站主完整掃描並 `/reload`）。名稱、品質與分類用 wago.tools 的永恆客戶端資料表（版本取安裝目錄 `.build.info` 的 wowf），客戶端沒有的名稱（約四成）與所有圖示用 Wowhead 的永恆繁中 tooltip 資料；已知物品沿用上一份 `data.json`，所以平常只查新物品。網站不讀阿莫比的端點，只在每列連到阿莫比的物品頁。拍賣小幫手不分陣營，頁面只放主城掃描的結果。官方 API 有的物品（不能堆疊的裝備、武器、配方）改用 `auction-data` 分支的 `auctions.json`（`scripts/collect-auctions.py` 每小時寫入，格式見腳本說明），顯示「官方 HH:MM」、24 小時漲跌與 7 天走勢線，沒貨時變淡並標「M/D H 時起沒貨」；官方資料讀不到或比掃描舊 3 小時以上時整頁用掃描價格。本機預覽可加 `?auctions=<測試檔>` 改讀測試資料。
 - 練等頁：路線、次數與材料總量是 [market-recipe-value.md](market-recipe-value.md) 的「練等路線與成本」腳本算出的快照；`leveling/leveling.js` 依物品 ID 讀 `market/data.json` 重算單價、小計、佔比長條、階段合計、總覽卡與設計圖價（行情沒有的材料沿用快照並標「沿用快照」），頁首時間跟著行情資料的完整掃描時間。賣店收回金額固定寫在 `data-lv-vendor`。價格大變、技能進度或等級門檻改變時，重跑腳本（`--json`）再改 HTML 的路線與數量。
-- 驗證：桌機與 360px 手機無橫向溢出、手機版表格改為卡片、首頁頁尾連結可進入、頁面的首頁連結回到 `../`。行情頁另確認頁首的掃描日期與件數、搜尋與類型篩選、排序、網址雜湊還原條件、「顯示更多」、點名稱複製，以及圖示載入。
+- 驗證：桌機與 360px 手機無橫向溢出、手機版表格改為卡片、首頁頁尾連結可進入、頁面的首頁連結回到 `../`。行情頁另確認頁首的掃描日期、件數與官方 API 時間，搜尋與類型篩選、排序、「只看現在有貨」、網址雜湊還原條件、「顯示更多」、點名稱複製、圖示與走勢線，以及官方資料讀不到時改用掃描價格。
 
 ## 外部資料整合
 

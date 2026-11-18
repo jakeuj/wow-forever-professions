@@ -47,6 +47,11 @@
 @media (max-width: 420px) {
   .mk-row { grid-template-columns: 32px minmax(0, 1fr); gap: 4px 10px; }
   .mk-icon { width: 32px; height: 32px; grid-row: span 2; }
-  .mk-price { grid-column: 2; justify-items: start; text-align: left; grid-auto-flow: column; justify-content: start; align-items: baseline; gap: 8px; }
+  .mk-price { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; text-align: left; }
   .mk-detail { white-space: normal; }
 }
+
+.eg-chips li[hidden] { display: none; }
+.mk-coin.mk-none small { display: none; }
+.mk-spark { display: block; width: 84px; height: 20px; overflow: visible; }
+.mk-spark path { fill: none; stroke: #b8975b; stroke-width: 1.4; stroke-linejoin: round; vector-effect: non-scaling-stroke; }

@@ -182,7 +182,7 @@ API 與客戶端都缺的資料（掉落、任務、NPC 位置、人口、行情
 - GitHub Actions 排程取得 token，憑證放在 repo Secrets，產出彙總 JSON 給網站讀取。
 - 每份 JSON 記錄 `fetchedAt`、build 或 namespace、來源 URL；請求失敗時保留上一份資料，並在網站顯示資料時間。
 - 拍賣原始回應每間最大約 9 MB、共 15 間，只在 CI 記憶體內處理，repo 只存彙總結果。物品名稱以客戶端繁中資料為主。
-- 目前 Pages 從 `main` 根目錄發布。要產生資料檔時，需在「bot 定期 commit 到 `main`」與「改由 Actions 建置部署」之間擇一，並同步更新 README 的發布說明。
+- Pages 仍從 `main` 根目錄發布。拍賣資料採第三種做法：排程把彙總結果 commit 到獨立的 `auction-data` 分支，網站從 `raw.githubusercontent.com` 讀（回應帶 `Access-Control-Allow-Origin: *`、快取 5 分鐘、支援 gzip），`main` 的歷史與 Pages 建置都不受影響。實作是 `scripts/collect-auctions.py` 與 `.github/workflows/auction-collect.yml`，API 共用 `scripts/blizzard_api.py`；README 有發布說明。
 - 永恆的拍賣資料每小時更新（見[拍賣場](#拍賣場)），以回應的 `Last-Modified` 判斷有沒有新資料。
 
 ## 授權與隱私

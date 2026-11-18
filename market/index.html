@@ -6,19 +6,19 @@
   <meta name="theme-color" content="#111514">
   <meta name="robots" content="noindex">
   <title>部落拍賣行情｜永恆・專業議事廳</title>
-  <meta name="description" content="《魔獸世界：永恆》亞服 PvP 部落拍賣場的最低一口價，來自站主用拍賣小幫手（Auctionator）完整掃描的結果，可依名稱、類型與品質查詢。">
+  <meta name="description" content="《魔獸世界：永恆》亞服 PvP 部落拍賣場的最低一口價：裝備、武器、配方用官方拍賣 API 每小時更新並附 7 天走勢，材料與藥水來自站主用拍賣小幫手（Auctionator）完整掃描的結果。">
   <link rel="canonical" href="https://jakeuj.com/wow-forever-professions/market/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="zh_TW">
   <meta property="og:site_name" content="永恆・專業議事廳">
   <meta property="og:title" content="部落拍賣行情｜魔獸世界：永恆">
-  <meta property="og:description" content="亞服 PvP 部落拍賣場完整掃描的最低一口價，不用進遊戲也能查。">
+  <meta property="og:description" content="亞服 PvP 部落拍賣場的最低一口價與 7 天走勢，不用進遊戲也能查。">
   <meta property="og:url" content="https://jakeuj.com/wow-forever-professions/market/">
   <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
   <link rel="stylesheet" href="../style.css?v=20261117-guild-brand">
   <link rel="stylesheet" href="../endgame/endgame.css?v=20261118-lists">
-  <link rel="stylesheet" href="./market.css?v=20261118-market-time">
-  <script src="./market.js?v=20261118-market-time" defer></script>
+  <link rel="stylesheet" href="./market.css?v=20261118-api-trend">
+  <script src="./market.js?v=20261118-api-trend" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#prices">跳至行情列表</a>
@@ -31,11 +31,12 @@
     <section class="eg-hero section-wrap" aria-labelledby="market-title">
       <p class="eyebrow"><span class="tiny-diamond" aria-hidden="true"></span>AUCTION HOUSE · HORDE FULL SCAN</p>
       <h1 id="market-title">部落拍賣<span>行情</span></h1>
-      <p class="eg-lead">站主在部落拍賣場用拍賣小幫手完整掃描，這裡列出每件物品最近看到的最低一口價，不用進遊戲也能查。</p>
+      <p class="eg-lead">裝備、武器、配方這類不能堆疊的物品，用官方拍賣 API 每小時更新最低一口價，附 24 小時漲跌與 7 天走勢；材料、藥水這類能堆疊的物品官方沒有提供，沿用站主在部落拍賣場用拍賣小幫手完整掃描的價格。</p>
       <ul class="eg-chips" aria-label="資料條件">
         <li>部落・亞服 PvP（台灣）</li>
         <li data-market-scan>掃描日期讀取中</li>
         <li data-market-total>物品數讀取中</li>
+        <li data-market-api hidden></li>
       </ul>
       <p class="eg-privacy"><span aria-hidden="true">✧</span>這是個人整理頁，首頁只在頁尾放連結，也請搜尋引擎不要收錄；網址本身是公開的。價格是掛單價，不是成交價；掃描之後可能已經被買走。對面陣營與中立拍賣場的價格請看阿莫比。</p>
     </section>
@@ -47,7 +48,7 @@
         <label><span class="mk-label">類型</span><select name="cat"><option value="">全部類型</option></select></label>
         <label><span class="mk-label">品質</span><select name="quality"><option value="">全部品質</option><option value="5">傳說</option><option value="4">史詩</option><option value="3">精良</option><option value="2">優秀</option><option value="1">普通</option><option value="0">粗糙</option></select></label>
         <label><span class="mk-label">排序</span><select name="sort"><option value="quality">品質高到低</option><option value="price-desc">價格高到低</option><option value="price-asc">價格低到高</option><option value="drop">跌最多</option><option value="count">上架最多</option><option value="name">名稱</option></select></label>
-        <label class="mk-check"><input type="checkbox" name="latest"><span>只看最新一次掃描</span></label>
+        <label class="mk-check"><input type="checkbox" name="latest"><span>只看現在有貨</span></label>
       </form>
       <p class="mk-summary" data-market-summary aria-live="polite">行情讀取中…</p>
       <noscript><p class="mk-summary">這頁需要 JavaScript 才能顯示行情列表。</p></noscript>
@@ -58,12 +59,13 @@
     <section id="sources" class="section-wrap sources-section eg-sources" aria-labelledby="sources-title">
       <div class="section-heading"><div><p class="eyebrow">02 / SOURCES & ASSUMPTIONS</p><h2 id="sources-title">依據與限制。</h2></div><span class="verified-date" data-market-generated>資料讀取中</span></div>
       <div class="source-list">
+        <a href="https://community.developer.battle.net/" target="_blank" rel="noopener noreferrer"><span>BATTLE.NET API</span><strong>官方拍賣 API：部落拍賣場每小時資料</strong><span>開發者入口 ↗</span></a>
         <a href="https://www.curseforge.com/wow/addons/auctionator" target="_blank" rel="noopener noreferrer"><span>CURSEFORGE</span><strong>拍賣小幫手（Auctionator）</strong><span>插件 ↗</span></a>
         <a href="https://wago.tools/" target="_blank" rel="noopener noreferrer"><span>WAGO.TOOLS</span><strong>永恆客戶端物品資料表（繁中）</strong><span>資料表 ↗</span></a>
         <a href="https://www.wowhead.com/forever/tw/" target="_blank" rel="noopener noreferrer"><span>WOWHEAD</span><strong>客戶端沒有的物品名稱與圖示</strong><span>資料庫 ↗</span></a>
         <a href="https://wowamobi.com/market" target="_blank" rel="noopener noreferrer"><span>阿莫比</span><strong>聯盟、部落、中立三間拍賣場的行情</strong><span>資料站 ↗</span></a>
       </div>
-      <div class="scope-note"><span aria-hidden="true">✧</span><p>價格是站主在部落拍賣場用拍賣小幫手完整掃描看到的最低一口價；拍賣小幫手不分陣營拍賣場，這裡只放在主城掃描的結果。頁首的時間是開始完整掃描的時間（台灣時間）；之後在遊戲裡搜尋過的物品也會更新價格，直到資料依據區標的存檔時間。標「M/D 看到」的是最近一次掃描沒看到、之前看到的價格，多半已經賣掉。漲跌是和前一個掃描日的最低價比較。物品名稱與分類來自永恆客戶端資料表，客戶端沒有的名稱與所有圖示取自 Wowhead；少數永恆新增物品在這些資料裡還沒有中文名稱，會顯示成「[英文名稱]」，遊戲內的名稱可能不同；物品名稱與圖示的版權屬於 Blizzard Entertainment。</p></div>
+      <div class="scope-note"><span aria-hidden="true">✧</span><p>價格都是最低一口價，是掛單價不是成交價。有「官方 HH:MM」的物品來自 Blizzard 官方拍賣 API 的亞服 PvP 部落拍賣場，每小時更新一次；漲跌和 24 小時前比，走勢線是近 7 天每小時的最低價，斷掉的地方是那段時間沒貨；官方 API 目前只有裝備、武器、配方這類不能堆疊的物品。其他物品是站主在部落拍賣場用拍賣小幫手完整掃描的結果，頁首是開始完整掃描的時間（台灣時間），之後在遊戲裡搜尋過的物品也會更新價格，直到資料依據區標的存檔時間；標「掃描看到」的是最近一次掃描沒看到、之前看到的價格，多半已經賣掉，漲跌和前一個掃描日的最低價比較。物品名稱與分類來自永恆客戶端資料表，客戶端沒有的名稱與所有圖示取自 Wowhead；少數永恆新增物品在這些資料裡還沒有中文名稱，會顯示成「[英文名稱]」，遊戲內的名稱可能不同；物品名稱與圖示的版權屬於 Blizzard Entertainment。</p></div>
       <a class="text-link eg-back" href="../">回到專業與傳承分配規劃 <span aria-hidden="true">→</span></a>
     </section>
   </main>

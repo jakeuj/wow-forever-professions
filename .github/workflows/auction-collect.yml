@@ -1,0 +1,47 @@
+# Hourly: add the latest Horde auction snapshot from the Battle.net API to
+# auctions.json on the `auction-data` branch, which the market page reads.
+# The API refreshes at about :06 each hour; scheduled runs often start late.
+# Credentials come from repo Secrets. GitHub turns off schedules in public repos
+# after 60 days without activity; re-enable this workflow in the Actions tab then.
+name: Collect Horde auction prices
+
+on:
+  schedule:
+    - cron: "12 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auction-collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: auction-data
+          path: auction-data
+          fetch-depth: 1
+      - name: Add the latest snapshot
+        env:
+          BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
+          BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
+        run: python3 scripts/collect-auctions.py --out auction-data/auctions.json
+      - name: Commit to the data branch
+        working-directory: auction-data
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No new snapshot."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add auctions.json
+          git commit -q -m "Horde auction snapshot $(python3 -c 'import json; print(json.load(open("auctions.json"))["updatedAt"])')"
+          git push -q origin HEAD:auction-data

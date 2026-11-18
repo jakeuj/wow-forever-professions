@@ -1,9 +1,14 @@
 // Personal market page: renders market/data.json (built by scripts/build-market-data.py
-// from the owner's Auctionator scan) as a searchable, sortable price list.
+// from the owner's Auctionator scan) as a searchable, sortable price list. Items the
+// official auction API carries (gear, weapons, recipes: things that do not stack) use
+// its hourly prices from auctions.json on the auction-data branch, written by
+// scripts/collect-auctions.py, with a 24-hour change and a 7-day trend line.
 (() => {
   const PAGE = 120;
   const QUALITY = ['粗糙', '普通', '優秀', '精良', '史詩', '傳說', '神器', '傳家寶'];
   const ICON = 'https://wow.zamimg.com/images/wow/icons/medium/';
+  const AUCTIONS = 'https://raw.githubusercontent.com/jakeuj/wow-forever-professions/auction-data/auctions.json';
+  const TREND_HOURS = 7 * 24;
   const $ = selector => document.querySelector(selector);
   const form = $('[data-market-form]');
   const list = $('[data-market-list]');
@@ -25,8 +30,12 @@
   };
 
   const shortDay = iso => iso ? `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}` : '';
+  // API hours are hours since the Unix epoch (UTC); show them in Taiwan time.
+  const hourDate = hour => new Date((hour + 8) * 3600e3);
+  const hourDay = hour => { const d = hourDate(hour); return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`; };
+  const hourLabel = hour => `${hourDay(hour)} ${hourDate(hour).getUTCHours()} 時`;
   const money = copper => {
-    if (copper == null) return '—';
+    if (copper == null) return [['—', '', 'none']];
     const g = Math.floor(copper / 10000), s = Math.floor(copper / 100) % 100, c = copper % 100;
     const parts = [];
     if (g) parts.push([g.toLocaleString('zh-TW'), '金', 'g']);
@@ -35,6 +44,7 @@
     if (!parts.length) parts.push([0, '銅', 'c']);
     return parts;
   };
+  const moneyText = copper => money(copper).map(([amount, unit]) => `${amount}${unit}`).join(' ');
 
   let items = [];
   let latestDay = '';
@@ -42,6 +52,7 @@
   let subclasses = {};
   let shown = 0;
   let filtered = [];
+  let apiHour = null;
 
   const readHash = () => {
     const params = new URLSearchParams(location.hash.slice(1));
@@ -61,13 +72,49 @@
     history.replaceState(null, '', hash ? `#${hash}` : location.pathname + location.search);
   };
 
-  const change = item => (item.prev && item.price != null) ? (item.price - item.prev) / item.prev : null;
+  // Price in effect at `hour` in a change-point series: undefined before its first point.
+  const priceAt = (series, hour) => {
+    let value;
+    for (const [t, price] of series) {
+      if (t > hour) break;
+      value = price;
+    }
+    return value;
+  };
+
+  // Give each scanned item the fields the list shows, from the API when it carries the item.
+  const merge = auctions => {
+    for (const item of items) {
+      const entry = auctions && auctions.items[item.id];
+      if (!entry) {
+        item.now = item.price;
+        item.listed = item.day === latestDay;
+        item.base = item.prev;
+        item.baseLabel = shortDay(item.prevDay);
+        item.units = item.count;
+        item.when = item.listed ? `${shortDay(item.day)} 掃描` : `${shortDay(item.day)} 掃描看到`;
+        continue;
+      }
+      const [count, series] = entry;
+      const last = series[series.length - 1];
+      const lastPrice = [...series].reverse().find(([, price]) => price != null);
+      item.series = series;
+      item.listed = last[1] != null;
+      item.now = item.listed ? last[1] : lastPrice && lastPrice[1];
+      item.units = item.listed ? count : null;
+      item.when = item.listed ? `官方 ${auctions.updatedAt.slice(11, 16)}` : `${hourLabel(last[0])}起沒貨`;
+      item.base = item.listed ? priceAt(series, apiHour - 24) : null;
+      item.baseLabel = '24 小時前';
+    }
+  };
+
+  const change = item => (item.base && item.now != null) ? (item.now - item.base) / item.base : null;
   const sorters = {
-    quality: (a, b) => (b.quality ?? -1) - (a.quality ?? -1) || (b.price ?? 0) - (a.price ?? 0),
-    'price-desc': (a, b) => (b.price ?? 0) - (a.price ?? 0),
-    'price-asc': (a, b) => (a.price ?? Infinity) - (b.price ?? Infinity),
+    quality: (a, b) => (b.quality ?? -1) - (a.quality ?? -1) || (b.now ?? 0) - (a.now ?? 0),
+    'price-desc': (a, b) => (b.now ?? 0) - (a.now ?? 0),
+    'price-asc': (a, b) => (a.now ?? Infinity) - (b.now ?? Infinity),
     drop: (a, b) => (change(a) ?? Infinity) - (change(b) ?? Infinity),
-    count: (a, b) => (b.count ?? 0) - (a.count ?? 0),
+    count: (a, b) => (b.units ?? 0) - (a.units ?? 0),
     name: (a, b) => a.name.localeCompare(b.name, 'zh-Hant-TW'),
   };
 
@@ -75,13 +122,13 @@
     const q = form.elements.q.value.trim();
     const cat = form.elements.cat.value;
     const quality = form.elements.quality.value;
-    const latestOnly = form.elements.latest.checked;
+    const listedOnly = form.elements.latest.checked;
     filtered = items.filter(item => {
       if (q && !item.name.includes(q) && String(item.id) !== q) return false;
       if (cat.startsWith('c') && String(item.class) !== cat.slice(1)) return false;
       if (cat.startsWith('s') && `${item.class}.${item.subclass}` !== cat.slice(1)) return false;
       if (quality !== '' && String(item.quality) !== quality) return false;
-      if (latestOnly && item.day !== latestDay) return false;
+      if (listedOnly && !item.listed) return false;
       return true;
     });
     filtered.sort(sorters[form.elements.sort.value] || sorters.quality);
@@ -91,10 +138,47 @@
     writeHash();
   };
 
+  // A small step chart of the last 7 days of lowest prices; gaps where the item was gone.
+  const SVG = 'http://www.w3.org/2000/svg';
+  const sparkline = (series, name) => {
+    const from = apiHour - TREND_HOURS;
+    const points = [[from, priceAt(series, from)], ...series.filter(([t]) => t > from), [apiHour + 1, undefined]];
+    const values = points.map(([, price]) => price).filter(price => price != null);
+    if (values.length < 1) return null;
+    const low = Math.min(...values), high = Math.max(...values);
+    const w = 84, h = 20, x = t => ((t - from) / (apiHour + 1 - from)) * w;
+    const y = price => high === low ? h / 2 : 2 + (1 - (price - low) / (high - low)) * (h - 4);
+    let d = '';
+    for (let i = 0; i < points.length - 1; i += 1) {
+      const [t, price] = points[i];
+      if (price == null) continue;
+      const end = points[i + 1][0];
+      d += `M${x(t).toFixed(1)} ${y(price).toFixed(1)}H${x(end).toFixed(1)}`;
+      const next = points[i + 1][1];
+      if (next != null) d += `V${y(next).toFixed(1)}`;
+    }
+    const svg = document.createElementNS(SVG, 'svg');
+    svg.setAttribute('class', 'mk-spark');
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+    svg.setAttribute('role', 'img');
+    const label = high === low
+      ? `${name} 近 7 天最低價都是 ${moneyText(low)}`
+      : `${name} 近 7 天最低價在 ${moneyText(low)} 到 ${moneyText(high)} 之間`;
+    svg.setAttribute('aria-label', label);
+    const title = document.createElementNS(SVG, 'title');
+    title.textContent = label;
+    const path = document.createElementNS(SVG, 'path');
+    path.setAttribute('d', d);
+    svg.append(title, path);
+    return svg;
+  };
+
   const renderRow = item => {
     const li = document.createElement('li');
     li.className = 'mk-row';
-    if (item.day !== latestDay) li.classList.add('is-stale');
+    if (!item.listed) li.classList.add('is-stale');
 
     const iconLink = document.createElement('a');
     iconLink.className = 'mk-icon';
@@ -145,7 +229,7 @@
     const price = document.createElement('div');
     price.className = 'mk-price';
     const value = document.createElement('strong');
-    for (const [amount, unit, cls] of money(item.price)) {
+    for (const [amount, unit, cls] of money(item.now)) {
       const span = document.createElement('span');
       span.className = `mk-coin mk-${cls}`;
       span.append(String(amount), document.createElement('small'));
@@ -155,17 +239,19 @@
     const detail = document.createElement('span');
     detail.className = 'mk-detail';
     const parts = [];
-    if (item.count != null) parts.push(`${item.count} 個`);
-    parts.push(item.day === latestDay ? shortDay(item.day) : `${shortDay(item.day)} 看到`);
+    if (item.units != null) parts.push(`${item.units} 個`);
+    parts.push(item.when);
     detail.append(parts.join('・'));
     const delta = change(item);
     if (delta != null && Math.abs(delta) >= 0.005) {
       const tag = document.createElement('span');
       tag.className = delta < 0 ? 'mk-down' : 'mk-up';
-      tag.textContent = ` 比 ${shortDay(item.prevDay)} ${delta < 0 ? '▼' : '▲'}${Math.round(Math.abs(delta) * 100)}%`;
+      tag.textContent = ` 比 ${item.baseLabel} ${delta < 0 ? '▼' : '▲'}${Math.round(Math.abs(delta) * 100)}%`;
       detail.append(tag);
     }
     price.append(value, detail);
+    const spark = item.series && sparkline(item.series, item.name);
+    if (spark) price.append(spark);
 
     li.append(iconLink, main, price);
     return li;
@@ -205,12 +291,17 @@
   form.addEventListener('submit', event => { event.preventDefault(); apply(); });
   more.addEventListener('click', renderMore);
 
-  fetch('./data.json', { cache: 'no-cache' })
-    .then(response => {
-      if (!response.ok) throw new Error(response.status);
-      return response.json();
-    })
-    .then(data => {
+  const getJson = url => fetch(url, { cache: 'no-cache' }).then(response => {
+    if (!response.ok) throw new Error(response.status);
+    return response.json();
+  });
+  // On a local preview, ?auctions=<url> points the page at a test file.
+  const local = ['localhost', '127.0.0.1'].includes(location.hostname);
+  const auctionsUrl = (local && new URLSearchParams(location.search).get('auctions')) || AUCTIONS;
+  const auctionsRequest = getJson(auctionsUrl).catch(() => null);
+
+  getJson('./data.json')
+    .then(async data => {
       latestDay = data.latestDay;
       classes = data.classes;
       subclasses = data.subclasses;
@@ -220,9 +311,23 @@
       const scan = data.scanStartedAt ? stamp(data.scanStartedAt) : data.latestDay.replaceAll('-', '.');
       const saved = data.savedAt ? stamp(data.savedAt) : '';
       const savedShort = saved.slice(0, 10) === scan.slice(0, 10) ? saved.slice(11) : saved;
+
+      // Use the API only when it is not older than the scan; a stalled collector should not hide a new scan.
+      let auctions = await auctionsRequest;
+      const scanTime = Date.parse(data.savedAt || data.scanStartedAt || data.latestDay);
+      if (auctions && !(Date.parse(auctions.updatedAt) >= scanTime - 3 * 3600e3 && auctions.hours?.length)) auctions = null;
+      apiHour = auctions ? auctions.hours[auctions.hours.length - 1] : null;
+      merge(auctions);
+
       $('[data-market-scan]').textContent = `完整掃描 ${scan}`;
       $('[data-market-total]').textContent = `${items.length.toLocaleString('zh-TW')} 件物品`;
-      $('[data-market-generated]').textContent = `完整掃描 / ${scan}${saved ? `・存檔 ${savedShort}` : ''}・客戶端 ${data.build}`;
+      const apiChip = $('[data-market-api]');
+      if (apiChip && auctions) {
+        apiChip.textContent = `官方 API ${stamp(auctions.updatedAt).slice(5)}`;
+        apiChip.hidden = false;
+      }
+      $('[data-market-generated]').textContent = `完整掃描 / ${scan}${saved ? `・存檔 ${savedShort}` : ''}`
+        + `${auctions ? `・官方 API ${stamp(auctions.updatedAt)}` : ''}・客戶端 ${data.build}`;
       fillCategories();
       readHash();
       form.hidden = false;

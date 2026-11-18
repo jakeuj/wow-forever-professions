@@ -40,7 +40,7 @@
 - [`alchemy/`](https://jakeuj.com/wow-forever-professions/alchemy/)：分享給煉金同伴的轉化、配方（AH／NPC／商人青睞／看到再收）與材料行情。
 - [`speculation/`](https://jakeuj.com/wow-forever-professions/speculation/)：配方期貨清單，依經典版經驗整理會漲的條件、可囤與不要囤的配方。
 - [`leveling/`](https://jakeuj.com/wow-forever-professions/leveling/)：鍛造 200→300 的最省路線，列出每段配方與次數，以及每種材料的數量、單價、小計與佔比長條。
-- [`market/`](https://jakeuj.com/wow-forever-professions/market/)：部落拍賣行情，列出站主用拍賣小幫手完整掃描的每件物品最低一口價，可依名稱、類型、品質查詢與排序。
+- [`market/`](https://jakeuj.com/wow-forever-professions/market/)：部落拍賣行情，可依名稱、類型、品質查詢與排序。裝備、武器、配方用官方拍賣 API 的每小時最低一口價，附 24 小時漲跌與 7 天走勢；材料、藥水這類能堆疊的物品官方沒有提供，用站主拍賣小幫手完整掃描的價格。
 
 - 首頁只在頁尾連到這五頁，各頁也互相連結；都不在主要導覽與 `sitemap.xml`，並設 `noindex`，但網址仍是公開的。
 - 純靜態 HTML，沿用 `style.css`，各頁共用 `endgame/endgame.css`；所有連結為相對路徑。
@@ -48,6 +48,7 @@
 - 標了 `data-ah-list="清單名稱"` 的表格或區塊會變成拍賣小幫手（Auctionator）的購物清單；頁首面板可複製這頁、複製全部頁面或下載 `.txt`，到插件「購買」分頁按「匯入」貼上。名稱加引號做完全比對，套裝前綴加 `data-ah-prefix`；`.is-skip` 的列不列入。
 - 價格與角色進度是手動更新的快照，更新時同步頁面上的快照日期。
 - 行情頁讀 `market/data.json`。在遊戲內完整掃描後輸入 `/reload`，再執行 `python3 scripts/build-market-data.py` 重建：價格來自本機的拍賣小幫手存檔，名稱與分類來自 wago.tools 的永恆客戶端資料表，客戶端沒有的名稱與所有圖示取自 Wowhead；查詢結果有快取，已知物品沿用上一份 `data.json`。
+- 官方拍賣價：`.github/workflows/auction-collect.yml` 每小時執行 `scripts/collect-auctions.py`，把亞服 PvP 部落拍賣場（TW 區 113 號）的最低一口價寫進 `auction-data` 分支的 `auctions.json`：最近 7 天逐小時，更早每天留一個最低價，保留 90 天。行情頁從 `raw.githubusercontent.com` 讀這個檔，所以 `main` 不會每小時多一個 commit，Pages 也不用重建；讀不到或比掃描舊 3 小時以上時，整頁改用掃描價格。憑證放在 repo Secrets 的 `BLIZZARD_CLIENT_ID`、`BLIZZARD_CLIENT_SECRET`；手動執行的 `auction-probe.yml` 可重新確認哪一間是部落拍賣場。公開 repo 的排程在 60 天沒有活動後會被 GitHub 停用，到 Actions 分頁重新啟用即可。
 - 練等頁的 HTML 是路線與價格的快照；`leveling/leveling.js` 開頁時讀 `market/data.json`（依物品 ID），重算單價、小計、佔比、階段合計與設計圖價，所以重建行情資料後材料費會跟著更新。路線本身要重排時，執行技能的 `scripts/leveling_route.py --from 200`（加 `--json` 給頁面），再更新 HTML。
 
 ## 專案技能
