@@ -78,13 +78,13 @@ GitHub 專用分支、CurseForge 無法提供相容檔案，或使用者明確�
 
 ## 拍賣行情、配方利潤與 60 級製造需求
 
-問哪些配方值得從拍賣場買、哪些配方可以囤著等漲價、某項製造有沒有賺、查材料與成品的拍賣行情、排專業練等路線與成本，或要讀拍賣小幫手的掃描、給可匯入的購物清單、看遊戲內拍賣場截圖時，讀 [references/market-recipe-value.md](references/market-recipe-value.md)。該檔附 `scripts/amobi_recipe_value.py`（依專業算毛利）、`scripts/amobi_item_prices.py`（查指定物品的分陣營價）、`scripts/auctionator_prices.py`（讀拍賣小幫手存檔）與 `scripts/leveling_route.py`（練等最省路線），並涵蓋 NPC 配方、遊戲內資料對照與判讀規則；結論以當次掃描為準。
+問哪些配方值得從拍賣場買、哪些配方可以囤著等漲價、某項製造有沒有賺、查材料與成品的拍賣行情或走勢、排專業練等路線與成本，或要讀拍賣小幫手的掃描、給可匯入的購物清單、看遊戲內拍賣場截圖時，讀 [references/market-recipe-value.md](references/market-recipe-value.md)。該檔附 `scripts/amobi_recipe_value.py`（依專業算毛利）、`scripts/amobi_item_prices.py`（查指定物品的分陣營價）、`scripts/auctionator_prices.py`（讀拍賣小幫手存檔）與 `scripts/leveling_route.py`（練等最省路線），並涵蓋 NPC 配方、遊戲內資料對照與判讀規則；結論以當次掃描為準。
 
 問 60 級後期該做什麼、團本要哪些消耗品或裝備、配方該先拿哪些時，讀 [references/endgame-crafting.md](references/endgame-crafting.md)。該檔整理團本時程、軍團鋼等材料瓶頸，以及鍛造與煉金的經典版需求和永恆改動，並標註可信度。
 
 ## 公開專業規劃網站
 
-維護「永恆・專業議事廳」、調整專業分配頁的預設方案，或更新其 GitHub Pages 發布時，讀 [references/profession-planner-site.md](references/profession-planner-site.md)。網站面向一般玩家，01 雙採集主號＋三隻雙製造小號為預設首選，聖騎士多路線放 04；repo 相對路徑、正式網址、方案連結與驗證重點集中於該檔。
+維護「永恆・專業議事廳」與站主的個人頁、調整專業分配頁的預設方案、更新其 GitHub Pages 發布，或檢查每小時的拍賣資料排程時，讀 [references/profession-planner-site.md](references/profession-planner-site.md)。網站面向一般玩家，01 雙採集主號＋三隻雙製造小號為預設首選，聖騎士多路線放 04；repo 相對路徑、正式網址、方案連結與驗證重點集中於該檔。
 
 ## 公開資料與官方 API
 
