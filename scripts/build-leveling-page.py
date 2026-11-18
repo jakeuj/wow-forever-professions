@@ -93,8 +93,8 @@ def mats_table(ph, gate, end):
     made = ""
     if ph["made"]:
         items = "、".join(f'{esc(m["name"])} ×{m["qty"]}' for m in ph["made"])
-        made = (f'\n      <p class="lv-made"><span aria-hidden="true">⚒</span>自己做：{items}。訓練師配方，'
-                "用上表的石頭做比拍賣場便宜，材料已經算在上表。</p>")
+        made = (f'\n      <p class="lv-made"><span aria-hidden="true">⚒</span>自己做：{items}。拍賣場比較貴或不夠時，'
+                "用上表的石頭照訓練師配方做，材料已經算在上表。</p>")
     return (f'      <table class="eg-table lv-mats" data-ah-list="{LISTS[ph["phase"]]}" data-lv-phase="{ph["phase"]}" '
             f'data-lv-vendor="{ph["vendor"]}">\n'
             f"        <caption>{label}：依小計排序，長條是佔這個階段材料費的比例</caption>\n"
