@@ -113,14 +113,22 @@ def id_lists(value, key=None, found=None):
     return found
 
 
-def longest_list(value):
-    best = 0
+def longest_list(value, key=None):
+    """(length, key, first element) of the longest list in a document."""
+    best = (0, None, None)
     if isinstance(value, dict):
         for k, v in value.items():
             if k != "_links":
-                best = max(best, longest_list(v))
+                found = longest_list(v, k)
+                if found[0] > best[0]:
+                    best = found
     elif isinstance(value, list):
-        best = max([len(value)] + [longest_list(v) for v in value])
+        if value:
+            best = (len(value), key, value[0])
+        for v in value:
+            found = longest_list(v)
+            if found[0] > best[0]:
+                best = found
     return best
 
 
@@ -234,7 +242,11 @@ class Probe:
                "namespace": result["namespace"] if ok else tried[0]["namespace"], "tried": tried}
         if ok:
             row["keys"] = sorted(k for k in payload if k != "_links") if isinstance(payload, dict) else []
-            row["longest_list"] = longest_list(payload)
+            size, list_key, first = longest_list(payload)
+            row["longest_list"], row["list_key"] = size, list_key
+            if first is not None and not endpoint["forever"].startswith("/profile/") \
+                    and "{guild}" not in endpoint["forever"]:
+                row["row_shape"] = shape(first)  # field names of one entry, no values
             row["zh_TW"] = has_zh(payload)
             row["last_modified"] = result["last_modified"]
             row["bytes"] = result["bytes"]
@@ -320,7 +332,8 @@ def cell(row):
     status = row["status"]
     if status == 200:
         listing = re.search(r"/index$|/search/|/auctions/$", row["forever"] or "")
-        note = [f"清單 {row['longest_list']}"] if row.get("longest_list") else ["空清單"] if listing else []
+        note = [f"`{row.get('list_key') or '—'}` {row['longest_list']} 筆"] if row.get("longest_list") \
+            else ["空清單"] if listing else []
         if row.get("zh_TW"):
             note.append("zh_TW")
         if row.get("asset_hosts"):
