@@ -19,6 +19,7 @@ import gzip
 import json
 import os
 from pathlib import Path
+import re
 import sys
 import time
 import urllib.error
@@ -107,13 +108,13 @@ def house_list(index):
 
 
 def lowest_prices(auctions, commodities):
-    """item id -> (lowest buyout / quantity, lowest buyout, largest quantity in one listing)."""
+    """item id -> (lowest buyout / quantity, lowest buyout, largest quantity in one listing, listings)."""
     best = {}
 
     def add(item, unit, whole, quantity):
         old = best.get(item)
-        best[item] = (unit, whole, quantity) if old is None else \
-            (min(unit, old[0]), min(whole, old[1]), max(quantity, old[2]))
+        best[item] = (unit, whole, quantity, 1) if old is None else \
+            (min(unit, old[0]), min(whole, old[1]), max(quantity, old[2]), old[3] + 1)
 
     for row in auctions or []:
         buyout = row.get("buyout")
@@ -133,8 +134,11 @@ def load_scan(path):
     data = json.loads(path.read_text(encoding="utf-8"))
     fields = data["fields"]
     rows = [dict(zip(fields, row)) for row in data["items"]]
-    latest = {r["id"]: r["price"] for r in rows if r["day"] == data["latestDay"] and r["price"]}
-    return latest, data.get("scanStartedAt") or data["latestDay"]
+    rows = [r for r in rows if r["day"] == data["latestDay"] and r["price"]]
+    latest = {r["id"]: r["price"] for r in rows}
+    details = {r["id"]: {"class": data["classes"].get(str(r["class"]), str(r["class"])), "count": r["count"]}
+               for r in rows}
+    return latest, details, data.get("scanStartedAt") or data["latestDay"]
 
 
 def compare(prices, scan):
@@ -159,7 +163,30 @@ def pct(value):
     return f"{value * 100:.0f}%"
 
 
-def probe_region(region, token, ruleset, scan, lines):
+def ruleset_of(owner):
+    """The ruleset id a house payload names, from its id or its key link."""
+    if isinstance(owner, dict) and owner.get("id") is not None:
+        return owner["id"]
+    found = re.search(r"/ruleset/(\d+)", json.dumps(owner)) if owner else None
+    return int(found.group(1)) if found else None
+
+
+def by_class(prices, scan, details):
+    """Per item class: shared items, share at the same lowest unit price, median listings / scanned units."""
+    groups = {}
+    for item in scan:
+        if item in prices:
+            groups.setdefault(details[item]["class"], []).append(item)
+    rows = []
+    for name, items in sorted(groups.items(), key=lambda kv: -len(kv[1])):
+        ratios = sorted(prices[i][3] / details[i]["count"] for i in items if details[i]["count"])
+        rows.append({"class": name, "shared": len(items),
+                     "unit_same": sum(round(prices[i][0]) == scan[i] for i in items) / len(items),
+                     "listings_per_unit": ratios[len(ratios) // 2] if ratios else None})
+    return rows
+
+
+def probe_region(region, token, ruleset, scan, details, lines):
     api = Api(region, token)
     result = {"region": region, "namespace": api.query["namespace"], "rulesets": [], "houses": []}
 
@@ -197,6 +224,7 @@ def probe_region(region, token, ruleset, scan, lines):
     lines.append("| House | Name | Ruleset | Listings | Stacks (max) | Items | Last-Modified | Items also in scan "
                  "| Same lowest price (unit) | Same (whole listing) | Within 5% (unit) |")
     lines.append("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+    house_prices = {}
     for house in houses:
         hid = house["id"]
         base = f"/data/wow/ruleset/{ruleset}/auctions/{hid}"
@@ -206,9 +234,13 @@ def probe_region(region, token, ruleset, scan, lines):
         prices = lowest_prices(a_rows, c_rows)
         match = compare(prices, scan)
         owner = (auctions["payload"] or {}).get("ruleset")
+        house_prices[hid] = prices
         info = {
             "id": hid, "name": text(house.get("name")),
-            "ruleset": owner.get("id", text(owner.get("name"))) if isinstance(owner, dict) else owner,
+            "ruleset": ruleset_of(owner), "ruleset_raw": strip_links(owner),
+            "row_keys": sorted({k for row in a_rows or [] for k in row}),
+            "item_keys": sorted({k for row in a_rows or [] for k in (row.get("item") or {})}),
+            "sample": (a_rows or [])[:3],
             "stack_listings": sum((row.get("quantity") or 1) > 1 for row in a_rows or []),
             "max_quantity": max([row.get("quantity") or 1 for row in a_rows or []], default=0),
             "auctions_status": auctions["status"], "commodities_status": commodities["status"],
@@ -241,6 +273,22 @@ def probe_region(region, token, ruleset, scan, lines):
                          "already per unit.\n")
         else:
             lines.append("No shared item is listed in stacks, so `buyout` per unit vs per stack is still open.\n")
+        lines.append(f"Listing fields in house {top['id']}: `{', '.join(top['row_keys'])}`; "
+                     f"item fields: `{', '.join(top['item_keys'])}`; house ruleset: "
+                     f"`{json.dumps(top['ruleset_raw'], ensure_ascii=False)}`.\n")
+        lines.append("<details><summary>First listings</summary>\n\n```json\n"
+                     + json.dumps(top["sample"], ensure_ascii=False, indent=1) + "\n```\n</details>\n")
+        classes = by_class(house_prices[top["id"]], scan, details)
+        result["by_class"] = classes
+        # Per-item lowest prices of the matched house, to compare offline with a newer scan.
+        result["best_prices"] = {str(item): value for item, value in sorted(house_prices[top["id"]].items())}
+        lines.append(f"House {top['id']} by item class (listings per unit: API listings of an item ÷ units "
+                     "the scan counted; near 1 means each listing is one unit):\n")
+        lines.append("| Class | Shared items | Same lowest price | Listings per unit (median) |\n| --- | --- | --- | --- |")
+        for row in classes:
+            ratio = f"{row['listings_per_unit']:.2f}" if row["listings_per_unit"] is not None else "—"
+            lines.append(f"| {row['class']} | {row['shared']:,} | {pct(row['unit_same'])} | {ratio} |")
+        lines.append("")
     lines.append(f"API calls in this region: {api.calls}.\n")
     return result
 
@@ -258,14 +306,14 @@ def main():
     if not client_id or not client_secret:
         sys.exit("set BLIZZARD_CLIENT_ID and BLIZZARD_CLIENT_SECRET (in CI they come from repo Secrets)")
 
-    scan, scan_time = load_scan(args.scan)
+    scan, details, scan_time = load_scan(args.scan)
     started = time.time()
     token = get_token(client_id, client_secret)
     lines = [f"# Auction API probe\n",
              f"Compared with the Horde scan from {scan_time} ({len(scan):,} items seen in the latest scan day).\n"]
     report = {"scan": scan_time, "scanItems": len(scan), "regions": []}
     for region in [r.strip() for r in args.regions.split(",") if r.strip()]:
-        report["regions"].append(probe_region(region, token, args.ruleset, scan, lines))
+        report["regions"].append(probe_region(region, token, args.ruleset, scan, details, lines))
     lines.append(f"Finished in {time.time() - started:.0f} s.")
 
     markdown = "\n".join(lines) + "\n"
