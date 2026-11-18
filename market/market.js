@@ -82,17 +82,23 @@
     return value;
   };
 
+  // Containers, weapons, armor, recipes and quivers never stack, so the API lists every one
+  // on sale; if a newer API snapshot lacks one the scan saw, it has sold or expired since.
+  const API_CLASSES = new Set([1, 2, 4, 9, 11]);
+
   // Give each scanned item the fields the list shows, from the API when it carries the item.
-  const merge = auctions => {
+  const merge = (auctions, apiNewer) => {
     for (const item of items) {
       const entry = auctions && auctions.items[item.id];
       if (!entry) {
+        const goneSinceScan = apiNewer && API_CLASSES.has(item.class);
         item.now = item.price;
-        item.listed = item.day === latestDay;
+        item.listed = item.day === latestDay && !goneSinceScan;
         item.base = item.prev;
         item.baseLabel = shortDay(item.prevDay);
-        item.units = item.count;
-        item.when = item.listed ? `${shortDay(item.day)} 掃描` : `${shortDay(item.day)} 掃描看到`;
+        item.units = item.listed ? item.count : null;
+        item.when = goneSinceScan ? `${shortDay(item.day)} 掃描看到，官方已沒貨`
+          : item.listed ? `${shortDay(item.day)} 掃描` : `${shortDay(item.day)} 掃描看到`;
         continue;
       }
       const [count, series] = entry;
@@ -317,7 +323,7 @@
       const scanTime = Date.parse(data.savedAt || data.scanStartedAt || data.latestDay);
       if (auctions && !(Date.parse(auctions.updatedAt) >= scanTime - 3 * 3600e3 && auctions.hours?.length)) auctions = null;
       apiHour = auctions ? auctions.hours[auctions.hours.length - 1] : null;
-      merge(auctions);
+      merge(auctions, auctions && Date.parse(auctions.updatedAt) > scanTime);
 
       $('[data-market-scan]').textContent = `完整掃描 ${scan}`;
       $('[data-market-total]').textContent = `${items.length.toLocaleString('zh-TW')} 件物品`;
