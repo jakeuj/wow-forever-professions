@@ -13,93 +13,27 @@
 | 需要的資料 | 首選來源 | 備援與限制 |
 | --- | --- | --- |
 | 目前客戶端版本 | [TACT 版本伺服器](#客戶端版本與資料表) | wago.tools builds |
-| 物品名稱、品質、圖示（繁中） | [客戶端資料表](#客戶端版本與資料表)、[Wowhead](#wowhead-永恆繁中) | 客戶端 `ItemSparse` 只有約六成物品，圖示只有 Wowhead 有；官方 API 約四成物品回 404 |
-| 專業配方、技能點、材料 | 客戶端資料表 | 學費與訓練師位置只在伺服器端 |
-| 拍賣行情 | [官方拍賣 API](#拍賣場) | 插件掃描只看得到掛單價；回答玩家當下的行情問題用阿莫比，見 [market-recipe-value.md](market-recipe-value.md) |
-| 角色等級、裝備、專業 | [官方角色 API](#角色與公會) | Lv10 以上且登出後才出現 |
-| 公會成員 | 官方公會 roster | 中文公會名的 slug 未驗證 |
-| 掉落、任務、NPC 位置 | 無官方來源；[插件群眾回報](#遊戲內插件收集) | 經典版資料只能標示為參考 |
+| 物品名稱、品質、圖示（繁中） | [客戶端資料表](#客戶端版本與資料表)、[官方物品 API](battlenet-api.md#實測結論)、[Wowhead](#wowhead-永恆繁中) | 客戶端 `ItemSparse` 只有約六成物品；官方 `item`／`media/item` 有 zh_TW 名稱與圖示，但約四成拍賣物品回 404，Wowhead 補剩下的 |
+| 專業配方、技能點、材料 | [官方專業 API](battlenet-api.md#實測結論)、客戶端資料表 | API 有配方、材料與成品，沒有變色點數；點數用客戶端資料表。學費與訓練師位置只在伺服器端 |
+| 拍賣行情 | [官方拍賣 API](battlenet-api.md#拍賣場) | 插件掃描只看得到掛單價；回答玩家當下的行情問題用阿莫比，見 [market-recipe-value.md](market-recipe-value.md) |
+| 角色等級、裝備、專業 | [官方角色 API](battlenet-api.md#角色與公會) | Lv10 以上且登出後才出現 |
+| 公會成員 | 官方公會 roster | 中文公會名直接當 slug 可查（2026-11-18 實測「黎明之劍」） |
+| 任務內容與獎勵 | [官方任務 API](battlenet-api.md#端點實測表) | 有 zh_TW 標題、需求與獎勵；沒有 NPC 位置 |
+| 掉落、NPC 位置 | 無官方來源（副本手冊 API 為空）；[插件群眾回報](#遊戲內插件收集) | 經典版資料只能標示為參考 |
 | 伺服器人口 | 無官方來源；插件抽樣 | 只代表被看到的角色，適合看比例 |
 | 官方公告 | [台灣新聞頁](#官方新聞與論壇) | 未找到 RSS／JSON |
 | 藍帖、BUG 回報 | 台灣官方論壇 JSON／RSS | Discourse 標準端點 |
 
 ## Battle.net API（永恆）
 
-可信度：社群實測，最後查核 2026-11-09。Blizzard 開發者文件只列 Retail 與 Classic（`classic`、`classic1x`），尚無永恆章節；`classic1x` 屬於 Classic Era，與永恆無關。主要來源：
+官方開發者入口到 2026-11-18 仍只有 Retail 與 Classic 的文件，永恆的 namespace、ruleset、角色、公會、拍賣與逐端點可用性都整理在 [battlenet-api.md](battlenet-api.md)。該檔另含官方指南重點（OAuth、區域與語系、搜尋語法、媒體）、本機查詢工具 `scripts/forever_api.py` 與涵蓋率探測 `api-probe.yml`。
 
-- [WoW: Forever API: what works so far, plus a TS client](https://us.forums.blizzard.com/en/blizzard/t/wow-forever-api-what-works-so-far-plus-a-ts-client/60334)（2026-11-05～06）
-- [World of Warcraft: Forever API Namespace?](https://us.forums.blizzard.com/en/blizzard/t/world-of-warcraft-forever-api-namespace/59774)（開服前探測，部分已過時）
-- [blizzard.pinta.land/forever](https://blizzard.pinta.land/forever/)：MIT 授權的 TypeScript 函式庫 [`@pinta365/blizzard_api`](https://github.com/Pinta365/blizzard_api) 0.8.0 起支援永恆，文件標示每週以 CI 對線上 API 做煙霧測試
+速記：
 
-### 連線與驗證
-
-- Token（官方文件）：`POST https://oauth.battle.net/token`，`grant_type=client_credentials`，以 client ID／secret 做 Basic 驗證；中國區另需中國註冊的 client。到 [Battle.net 開發者入口](https://community.developer.battle.net/) 建立 client，並遵守其 API 使用條款。
-- 主機：台灣區為 `https://tw.api.blizzard.com`，加 `locale=zh_TW`。亞服拍賣資料在 TW 區已實測確認（見[拍賣場](#拍賣場)）；角色資料仍待以已知角色確認。
-- Namespace 可放在 `?namespace=` 或 `Battlenet-Namespace` 標頭。
-- 速率（官方文件，通用）：每個 client 每小時 36,000 次、每秒 100 次。
-- Client secret 只能放在伺服器端或 CI Secrets。帳號角色清單 `/profile/user/wow` 需要使用者授權碼流程（`wow.profile` scope 與回呼網址），純靜態網站做不到。
-
-```sh
-TOKEN=$(curl -s -u "$BLIZZARD_CLIENT_ID:$BLIZZARD_CLIENT_SECRET" \
-  -d grant_type=client_credentials https://oauth.battle.net/token |
-  python3 -c 'import json,sys; print(json.load(sys.stdin)["access_token"])')
-curl -s -H "Authorization: Bearer $TOKEN" \
-  "https://tw.api.blizzard.com/data/wow/ruleset/index?namespace=dynamic-forever-tw&locale=zh_TW"
-```
-
-### Namespace
-
-| Namespace | 用途 |
-| --- | --- |
-| `static-forever-{region}` | 遊戲靜態資料（職業、種族、物品等），提供目前版本 |
-| `static-{版本}-forever-{region}` | 鎖定版本，例如 `static-1.60.1_70399-forever-tw` |
-| `dynamic-forever-{region}` | ruleset、拍賣場 |
-| `profile-forever-{region}` | 角色、公會、帳號資料 |
-
-`us`、`eu`、`kr`、`tw` 可用。目前版本寫在任一 static 回應 `self` 連結的 `namespace` 參數。2026-11-09 的 static 版本是 `1.60.1_70399`，比當時客戶端舊；版本更新後舊版是否保留未知。
-
-### Ruleset 取代伺服器
-
-永恆沒有 realm：`/data/wow/realm/index` 回 404，realm search 沒有結果。改用 `dynamic` 的 `/data/wow/ruleset/index` 與 `/data/wow/ruleset/{id}`，回傳 `id`、`name`、`status`（`UP`／`DOWN`）與拍賣場連結。TW 與 KR 只有 `1` PvP、`2` Normal；US 與 EU 另有 `3` Roleplay、`15` Roleplay PvP。
-
-### 角色與公會
-
-- 角色名稱是「名字＋姓氏」，全區唯一，以小寫 `{name}-{surname}` 查詢，不帶 realm，例如 `/profile/wow/character/{name}-{surname}?namespace=profile-forever-tw`。
-- 角色要達 Lv10 並在該等級登出後才查得到；之前所有角色端點都回 404。資料是登出當下的快照，通常數秒內更新。
-- 角色資料以 `surname`、`ruleset` 取代 `realm`，沒有 `active_spec`、`active_title`。
-- 可用子端點：achievements、appearance、collections、encounters、equipment、character-media、mythic-keystone-profile、professions、pvp-summary、quests、reputations、specializations、statistics、titles。`professions` 的永恆回傳內容（技能點、已學配方）尚未有公開樣本，串接前先實測。
-- `character-media` 的圖片在 `render.worldofwarcraft.com/forever-{region}/`，可能比角色資料晚數小時到一天以上出現。
-- 帳號角色清單（使用者 token）另有快取，可能落後角色資料數分鐘到數小時。
-- 公會同樣不帶 realm：`/data/wow/guild/{slug}`，以及 `/roster`、`/activity`、`/achievements`。slug 為小寫公會名、空白換成連字號；中文公會名的 slug 尚無實例。roster 包含 Lv10 以下成員，列出 `name`、`surname`、`slug`、`level`、職業、種族與陣營；目前沒有 crest 與成就總數，activity 為空。
-
-### 拍賣場
-
-2026-11-06 起提供資料，路徑在 `dynamic-forever-{region}`：
-
-| 路徑 | 內容 |
-| --- | --- |
-| `/data/wow/ruleset/{id}/auctions/` | 拍賣場索引；結尾斜線必要，沒有斜線回 404 |
-| `/data/wow/ruleset/{id}/auctions/{houseId}` | 該拍賣場的 `auctions` |
-| `/data/wow/ruleset/{id}/auctions/{houseId}/commodities` | 該拍賣場的商品類 `commodities` |
-
-- 每個 ruleset 都列出同一組 15 間（ID 110–121、123–125）：聯盟、部落、中立黑水各 5 間。ruleset ID 必須有效但不會篩選資料，跨 ruleset 加總會重複計算。
-- 欄位與 Retail 相同：auction 有 `item.id`、`buyout`、部分有 `bid`、`quantity`、`time_left`；commodity 用 `unit_price`。沒有賣家資訊，也沒有成交價。
-- 部分拍賣場沒有 `auctions` 欄位（112、115、118），視為選填。最大的單間約 5～7 萬筆、9 MB。
-- 舊的 `/data/wow/auctions/commodities` 回 404。
-- 物品資料缺漏：某一間拍賣場的 1,515 種物品中，652 種（43%）在 `static-forever` 的 `/data/wow/item/{id}` 回 404。名稱改用客戶端資料表；Retail 物品 API 可補名稱與品質，但屬性可能與永恆不同。
-
-TW 區實測（2026-11-18，`scripts/probe-auction-api.py`，在 GitHub Actions 手動執行 `auction-probe.yml`）：
-
-- ruleset 1、2 的索引是同一組 15 間，名稱只有「聯盟拍賣場」「部落拍賣場」「黑水灣拍賣場」。單間回應的 `ruleset` 只是請求路徑裡的 ruleset 連結，每間都一樣，分不出拍賣場屬於哪個 ruleset。
-- 有掛單的是 110、111（聯盟）、113、114（部落）、116、117（黑水灣），其餘 9 間是空的。
-- **亞服 PvP 部落是 113**：站主在部落拍賣場用拍賣小幫手完整掃描，與 10 分鐘後的 API 資料相比，2,082 件共同物品有 97.6% 的最低一口價完全相同；其他拍賣場只有 6～12%。
-- **API 只有不能堆疊的物品**：`auctions` 只列裝備、武器、配方、容器、棒、武器之油這類單件物品，每筆 `quantity` 都是 1，`buyout` 就是單價。能堆疊的物品幾乎都不在：同一次掃描的 343 件商品類（草藥、礦、皮、肉）只有 8 件、522 件消耗品（藥水、食物、卷軸）只有 153 件、彈藥 0 件出現在 API。每間的 `/commodities` 都回 200，但清單是空的。所以材料行情目前只能靠拍賣小幫手掃描。
-- 掛單欄位：`id`、`item`（`id`、`bonus_lists`、`context`、`modifiers`）、`bid`、`buyout`、`quantity`、`time_left`。113 約 8,750 筆、2,075 種物品、1.9 MB；整區 15 間各抓一次共 35 次請求，約 35 秒。
-- 每小時更新一次：`Last-Modified` 從 06:06 UTC 變成 07:06 UTC，15 間同時更新。排程抓取放在每小時 :10 之後，並用 `Last-Modified` 判斷有沒有新資料。
-
-### 尚不可用
-
-realm 與 connected realm、WoW 代幣、PvP 與傳奇鑰石賽季、`/hunter-pets` 回 404。傳家寶、資料片、副本與首領（journal instances／encounters）、寵物技能的 static 索引是空的，所以副本與掉落資料要另找來源。
+- Token 用 client credentials，主機 `https://tw.api.blizzard.com`、`locale=zh_TW`；namespace 是 `static-forever-tw`、`dynamic-forever-tw`、`profile-forever-tw`。
+- 永恆沒有 realm，改用 ruleset；角色以 `{name}-{surname}` 查詢，要 Lv10 以上且登出後才有資料。
+- 拍賣在 `/data/wow/ruleset/{id}/auctions/{houseId}`，亞服 PvP 部落是 113；單間端點只有不能堆疊的物品，能堆疊的在 `/commodities`，清單 key 是 `auctions`。
+- 專業、配方、物品、物品圖示、搜尋、任務都有 zh_TW 資料；副本手冊是空的。
 
 ## 客戶端版本與資料表
 
@@ -170,8 +104,8 @@ API 與客戶端都缺的資料（掉落、任務、NPC 位置、人口、行情
 
 1. **物品提示框**：在材料、成品或配方名稱加上 Wowhead 永恆繁中連結並載入 tooltips 腳本。需要在 `data.mjs` 補物品或法術 ID，不需要後端。
 2. **版本與查證標示**：在頁尾顯示目前客戶端 build 與資料查證日期，可手動更新，或由排程讀 TACT。
-3. **材料行情**：用排程抓官方拍賣 API，只輸出方案用到的材料（草藥、礦、布、皮、附魔材料）的中位單價、最低價與上架量。2026-11-18 實測 API 沒有可堆疊的材料（見[拍賣場](#拍賣場)），目前只能用在裝備、配方這類單件物品；材料仍靠拍賣小幫手掃描。
-4. **配方與里程碑**：從客戶端資料表匯出各製造專業在 150／225／300 附近的配方，對應傳承里程碑。
+3. **材料行情**：用排程抓官方拍賣 API，只輸出方案用到的材料（草藥、礦、布、皮、附魔材料）的中位單價、最低價與上架量。2026-11-18 實測材料在 `/commodities`（清單 key 是 `auctions`，見[拍賣場](battlenet-api.md#拍賣場)），但現有排程讀錯 key 而漏掉；修好前材料仍靠拍賣小幫手掃描。
+4. **配方與里程碑**：從官方專業 API（skill tier → recipe）取配方、材料與成品，點數仍從客戶端資料表補，對應 150／225／300 附近的傳承里程碑。
 5. **公會工匠名冊**：以《黎明之劍》roster 加上各角色的 `professions` 列出誰會做什麼。成員要先同意才公開，只顯示同意者。
 6. **公告連結**：以台灣論壇藍帖 RSS 或 BUG 回報分類，列出與專業相關的最新官方訊息。
 
@@ -183,7 +117,7 @@ API 與客戶端都缺的資料（掉落、任務、NPC 位置、人口、行情
 - 每份 JSON 記錄 `fetchedAt`、build 或 namespace、來源 URL；請求失敗時保留上一份資料，並在網站顯示資料時間。
 - 拍賣原始回應每間最大約 9 MB、共 15 間，只在 CI 記憶體內處理，repo 只存彙總結果。物品名稱以客戶端繁中資料為主。
 - Pages 仍從 `main` 根目錄發布。拍賣資料採第三種做法：排程把彙總結果 commit 到獨立的 `auction-data` 分支，網站從 `raw.githubusercontent.com` 讀（回應帶 `Access-Control-Allow-Origin: *`、快取 5 分鐘、支援 gzip），`main` 的歷史與 Pages 建置都不受影響。實作是 `scripts/collect-auctions.py` 與 `.github/workflows/auction-collect.yml`，API 共用 `scripts/blizzard_api.py`；README 有發布說明。
-- 永恆的拍賣資料每小時更新（見[拍賣場](#拍賣場)），以回應的 `Last-Modified` 判斷有沒有新資料。
+- 永恆的拍賣資料每小時更新（見[拍賣場](battlenet-api.md#拍賣場)），以回應的 `Last-Modified` 判斷有沒有新資料。
 
 ## 授權與隱私
 
@@ -198,6 +132,5 @@ API 與客戶端都缺的資料（掉落、任務、NPC 位置、人口、行情
 寫進網站前依需要重跑：
 
 1. 客戶端版本：`curl -s http://us.patch.battle.net:1119/wowf/versions`，以及 `https://wago.tools/api/builds` 的 `wowf`。
-2. 有 API 憑證時，依序確認 TW 的 ruleset 索引、static 回應的 `self` namespace 版本、拍賣場索引，以及一個已知角色的 profile 與 `professions`。
-3. 重讀 [blizzard.pinta.land/forever](https://blizzard.pinta.land/forever/) 各頁的 *Last checked* 日期與 [API Discussion](https://us.forums.blizzard.com/en/blizzard/c/api-discussion) 的新討論，確認有沒有官方文件或行為變更。
-4. 更新本檔的查證日期、版本號與可信度標記。
+2. 官方 API：照 [battlenet-api.md 的重新查證](battlenet-api.md#重新查證)執行 `api-probe.yml`，確認官方文件、static 版本與各端點狀態有沒有變。
+3. 更新本檔的查證日期、版本號與可信度標記。

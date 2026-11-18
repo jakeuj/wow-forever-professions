@@ -77,7 +77,7 @@ python3 '<skill-dir>/scripts/auctionator_prices.py' --from-html speculation/inde
 
 ### 官方拍賣 API 每小時資料
 
-repo 的排程每小時把亞服 PvP 部落拍賣場（TW 區 113 號）的最低一口價寫進 `auction-data` 分支的 `auctions.json`，排程維護見 [profession-planner-site.md](profession-planner-site.md)。裡面只有不能堆疊的物品（裝備、武器、配方、容器）；材料、藥水、食物、彈藥不在其中，仍靠完整掃描。
+repo 的排程每小時把亞服 PvP 部落拍賣場（TW 區 113 號）的最低一口價寫進 `auction-data` 分支的 `auctions.json`，排程維護見 [profession-planner-site.md](profession-planner-site.md)。裡面只有不能堆疊的物品（裝備、武器、配方、容器）；材料、藥水、食物、彈藥不在其中，仍靠完整掃描。原因是收集腳本讀錯 `/commodities` 的 key（官方其實有提供，見 [battlenet-api.md](battlenet-api.md#拍賣場)）；修好後這段要改。
 
 ```sh
 curl -s https://raw.githubusercontent.com/jakeuj/wow-forever-professions/auction-data/auctions.json
