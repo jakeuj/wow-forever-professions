@@ -13,7 +13,7 @@
 | 需要的資料 | 首選來源 | 備援與限制 |
 | --- | --- | --- |
 | 目前客戶端版本 | [TACT 版本伺服器](#客戶端版本與資料表) | wago.tools builds |
-| 物品名稱、品質、圖示（繁中） | [客戶端資料表](#客戶端版本與資料表)、[Wowhead](#wowhead-永恆繁中) | 官方 API 約四成物品回 404 |
+| 物品名稱、品質、圖示（繁中） | [客戶端資料表](#客戶端版本與資料表)、[Wowhead](#wowhead-永恆繁中) | 客戶端 `ItemSparse` 只有約六成物品，圖示只有 Wowhead 有；官方 API 約四成物品回 404 |
 | 專業配方、技能點、材料 | 客戶端資料表 | 學費與訓練師位置只在伺服器端 |
 | 拍賣行情 | [官方拍賣 API](#拍賣場) | 插件掃描只看得到掛單價；回答玩家當下的行情問題用阿莫比，見 [market-recipe-value.md](market-recipe-value.md) |
 | 角色等級、裝備、專業 | [官方角色 API](#角色與公會) | Lv10 以上且登出後才出現 |
@@ -100,6 +100,8 @@ realm 與 connected realm、WoW 代幣、PvP 與傳奇鑰石賽季、`/hunter-pe
 - [wago.tools](https://wago.tools/)：`https://wago.tools/api/builds` 的 `wowf` 陣列列出歷次版本與建立時間（當日 `70938`、11/10 `70888`、11/07 `70862`）。
 - 資料表 CSV：`https://wago.tools/db2/{表名}/csv?build={版本}&locale=zhTW`。例如 `ItemSparse` 的 `Display_lang` 是繁中物品名，物品 19019 為「雷霆之怒，逐風者的祝福之劍」。
 - 專業相關資料表：`SkillLine`（專業）、`SkillLineAbility`（配方所屬專業，以及 `MinSkillLineRank`、`TrivialSkillLineRankLow`／`High` 技能點）、`ItemSparse`／`Item`（成品與材料）。材料與成品的對應在法術相關資料表，欄位依當版 schema 確認。
+- 物品覆蓋率（2026-11-18，build `70938`）：`ItemSparse` 19,325 列，`Item` 32,008 列。部落拍賣場完整掃描的 2,803 件物品只有 1,633 件在 `ItemSparse`，其餘的名稱由伺服器下發，要用 Wowhead 補；`Item` 涵蓋全部，可取 `ClassID`／`SubclassID`，再用 `ItemClass`、`ItemSubClass` 的繁中名稱當分類。另有少數名稱仍是「[英文]」未翻譯。
+- 各區版本可能不同步：2026-11-18 美服已是 `70959`，台服、韓服仍是 `70938`。查名稱用安裝目錄 `.build.info` 的 wowf 版本。
 - 客戶端沒有怪物掉落表、任務內容、訓練師學費與大部分 NPC 位置；伺服器也可能修正客戶端資料。發布前依遊戲內實際結果抽查，並在網站標示資料的 build。
 
 ## Wowhead 永恆繁中
@@ -109,7 +111,8 @@ realm 與 connected realm、WoW 代幣、PvP 與傳奇鑰石賽季、`/hunter-pe
 - 頁面：`https://www.wowhead.com/forever/tw/item={id}`，其他類型照 Wowhead 慣例，例如 `spell={id}`。
 - 嵌入提示框：載入 `https://wow.zamimg.com/js/tooltips.js`，頁面上指向 `wowhead.com/forever/tw/...` 的連結會自動依網址判斷資料版本與語系，滑鼠移上就顯示繁中提示框。設定與條款以 Wowhead 的 tooltips 說明頁為準。
 - 內部識別：永恆的 `dataEnv` 為 16（`classicplus`），繁中 locale 為 10。這屬於提示框腳本的內部參數，網站應使用官方腳本，不要直接呼叫。
-- 伺服器端 `curl` 會被 Cloudflare 擋（403），只在瀏覽器中使用。
+- 網站頁面會被 Cloudflare 擋伺服器端 `curl`（403），只在瀏覽器中使用。
+- 建置時查名稱與圖示（本次實測，2026-11-18）：`https://nether.wowhead.com/forever/tw/tooltip/item/{id}` 可用 `curl` 取得 JSON，含 `name`、`quality`、`icon` 與提示框 HTML；圖示網址為 `https://wow.zamimg.com/images/wow/icons/medium/{icon}.jpg`。永恆資料仍是「[英文]」的經典版物品，改查 `classic/tw` 會有繁中名稱（例：647 命運）；永恆新增物品查不到時回 404。只在建置腳本低頻查詢並快取（`scripts/build-market-data.py`），網站前端仍用官方 tooltips 腳本或連結。
 
 ## 官方新聞與論壇
 
