@@ -66,7 +66,7 @@
 - 頁面說明網址仍公開。角色名稱、BattleTag、帳號等私人資訊不放進頁面；陣營、職業、等級與專業進度依站主當次提供的內容。
 - 沿用 `../style.css`（版本參數與首頁一致）並以 `endgame/endgame.css` 補樣式；連結與圖示一律相對路徑，以支援 `/wow-forever-professions/` 專案路徑。
 - 內容來源：鍛造與煉金需求讀 [endgame-crafting.md](endgame-crafting.md)，價格依 [market-recipe-value.md](market-recipe-value.md) 的腳本與規則重算。更新時同步頁首快照日期與資料依據區的日期。
-- 站主傳來遊戲內拍賣場截圖時，依 [market-recipe-value.md](market-recipe-value.md) 的「遊戲內截圖與阿莫比對照」更新：截圖裡的部落價優先，再用 `scripts/amobi_item_prices.py --from-html` 讀三頁的所有可複製名稱，補上截圖沒有的項目、中立與聯盟價格，以及截圖前已經被買走的低價。頁面標明哪些是遊戲內、哪些是阿莫比與掃描時間。
+- 站主在遊戲內完整掃描或傳來拍賣場截圖時，依 [market-recipe-value.md](market-recipe-value.md) 的「遊戲內資料與阿莫比對照」更新：部落價以遊戲內為準（完整掃描用 `scripts/auctionator_prices.py --from-html` 讀三頁的所有可複製名稱），再用 `scripts/amobi_item_prices.py --from-html` 補上中立與聯盟價格，以及遊戲內資料之前已經被買走的低價。頁面標明哪些是遊戲內、哪些是阿莫比與掃描時間。
 - 驗證：桌機與 360px 手機無橫向溢出、手機版表格改為卡片、首頁頁尾連結可進入、頁面的首頁連結回到 `../`。
 
 ## 外部資料整合
