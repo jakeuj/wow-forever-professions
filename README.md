@@ -70,7 +70,9 @@ python scripts/build-crafting-leveling.py --root 'C:/Games/World of Warcraft'
 
 共用的 [wow-forever 技能](.agents/skills/wow-forever/SKILL.md) 位於 `.agents/skills/wow-forever`，包含永恆玩法、插件查證、專業與傳承規劃、網站及公會招生維護、官方 API 與公開資料來源參考，以及唯讀插件盤點工具。
 
-技能文件使用 repo 相對路徑與通用佔位符。個人角色、帳號目錄、私人 BattleTag、本機絕對路徑與憑證留在操作環境；公開公會聯絡方式統一參照既有招生內容。
+Codex 直接讀 `.agents/skills`；Claude Code 讀 `.claude/skills/wow-forever`，那是指向同一個資料夾的符號連結，兩邊用的是同一份技能。Windows 要先開啟「開發人員模式」，再於 repo 內執行 `git config core.symlinks true` 與 `git checkout -- .claude/skills/wow-forever`，連結才會還原；否則它只是一個寫著路徑的文字檔，Claude Code 讀不到技能。
+
+技能文件使用 repo 相對路徑與通用佔位符。個人角色、帳號目錄、私人 BattleTag、本機絕對路徑與憑證留在操作環境；agent 需要時讀家目錄的 `.config/wow-forever/local.md`（每台電腦各一份，不提交，格式見技能的 `references/local.example.md`）。公開公會聯絡方式統一參照既有招生內容。
 
 ## 本機預覽
 

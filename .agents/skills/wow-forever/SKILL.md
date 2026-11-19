@@ -19,6 +19,8 @@ description: 處理《魔獸世界：永恆》（WoW Forever／wowf）的台服�
 
 這是公開 repo 的共用技能。文件與範例使用佔位符或 repo 相對路徑；帳號目錄、私人角色與 BattleTag、本機絕對路徑、憑證及未公開聯絡資訊留在當次操作環境，不寫回技能、範例或測試資料。公會公開聯絡方式由 repo 既有招生內容取得。
 
+需要使用者的角色、陣營、安裝目錄或 API 角色 slug 時，先讀家目錄的 `.config/wow-forever/local.md`（Windows：`%USERPROFILE%\.config\wow-forever\local.md`）。這份檔在 repo 外、每台電腦各一份，Claude Code 與 Codex 共用。欄位見 [references/local.example.md](references/local.example.md)。檔案不存在時，依當次對話確認後建立；使用者提供或更正的私人資訊寫進 local.md，不寫進 repo。不保存密碼、client secret 或 token。
+
 ## 辨識目標
 
 從使用者指定的版本、路徑與既有對話確認目標；「永恆」對應 WoW Forever，不能直接套用 Classic Era、週年版、探索賽季或現代版的相容性與玩法結論。
