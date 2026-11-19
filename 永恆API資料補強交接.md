@@ -20,25 +20,11 @@
 
 ## 待辦（回家在 Windows 繼續）
 
-### 1. 測角色與專業端點
+### 1. 測角色與專業端點（2026-11-19 完成）
 
-角色端點（含 `/professions`）需要一隻 Lv10 以上、登出過的角色，這次沒有測。
+已設 `FOREVER_PROBE_CHARACTER`，[run 44447493169](https://github.com/jakeuj/wow-forever-professions/actions/runs/44447493169) 測了角色端點：31 個中 25 個回 200，結果已寫進 battlenet-api.md。報告與 artifact 裡沒有角色名。
 
-1. 設 repo Secret。會提示輸入 `名字-姓氏`，不會留在歷史紀錄：
-
-   ```powershell
-   gh secret set FOREVER_PROBE_CHARACTER
-   ```
-
-2. 跑探測並下載結果：
-
-   ```powershell
-   gh workflow run api-probe.yml -f regions=tw
-   gh run list --workflow api-probe.yml -L 1
-   gh run download <run id> -n api-probe
-   ```
-
-3. 把角色端點的結果（哪些 200、`professions` 的欄位結構：技能點、已學配方）補進 battlenet-api.md 的端點實測表。報告只留欄位與筆數，不會有角色名，也不要手動寫進去。
+還沒確認：`professions` 的 `tiers[]` 中技能點欄位的實際名稱。探測只記三層欄位，要用本機 `forever_api.py character … --part professions` 看一次再補進文件。
 
 ### 2. Windows 本機查詢
 
@@ -53,20 +39,9 @@ python .agents\skills\wow-forever\scripts\forever_api.py character '<名字-姓�
 
 `Read-Host -MaskInput` 要 PowerShell 7；Windows PowerShell 5.1 改用 `-AsSecureString` 再轉回字串，或直接在終端機貼上（貼上的值會留在歷史）。Mac 上改用鑰匙圈：`security add-generic-password -s wow-forever-battlenet -a '<client id>' -w`。
 
-### 3. 拍賣 commodities 被漏抓（重要）
+### 3. 拍賣 commodities 被漏抓：已修正（2026-11-19）
 
-探測發現 `/data/wow/ruleset/{id}/auctions/{houseId}/commodities` 有資料，但清單的 key 是 `auctions`，不是 `commodities`。聯盟 110 號有 11,725 筆。
-
-`scripts/collect-auctions.py` 第 117 行與 `scripts/probe-auction-api.py` 第 150 行讀的是 `payload["commodities"]`，所以一直當成空的。技能裡「API 只有不能堆疊的物品、材料行情只能靠拍賣小幫手」的結論可能是這個 bug 造成的。
-
-1. 欄位已在 run 44290944141 確認：每筆有 `id`、`item.id`、`quantity`、`unit_price`、`time_left`。`scripts/blizzard_api.py` 的 `lowest_prices()` 本來就會處理 `unit_price`。
-2. 修這兩支腳本：改讀 `auctions` key，並保留讀 `commodities` 的相容寫法。最小改法是 `payload.get("commodities") or payload.get("auctions")`。
-3. 手動跑 `auction-probe.yml`，重新比對部落 113 的材料價與拍賣小幫手掃描。
-4. 確認後更新：
-   - 技能的 battlenet-api.md「拍賣場」與 market-recipe-value.md
-   - public-data-sources.md 的增強方向第 3 點
-   - README 的官方拍賣價說明
-   - 行情頁是否改用 API 的材料價（`market/market.js` 的價格來源規則）
+收集與探測腳本改成兩種 key 都讀，每小時資料從 2026-11-19 起包含材料與藥水，行情頁的「官方已沒貨」也套用到所有類別。之後幾天留意 `auctions.json` 的大小：能堆疊的物品每小時價格變動較多，7 天逐小時的資料可能長到 1 MB 左右；太大時可縮短 `--hourly-days`。
 
 ### 4. 可以接著做的網站改進（依實測結果）
 

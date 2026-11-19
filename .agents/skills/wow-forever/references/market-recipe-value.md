@@ -47,7 +47,7 @@
 
 更新期貨頁的價格與分類：
 
-1. 部落的配方價格與件數用[官方拍賣 API 每小時資料](#官方拍賣-api-每小時資料)；配方都不能堆疊，官方資料裡沒有就是現在沒貨。能堆疊的成品（藥水、馬刺、盾刺）用最新的完整掃描，聯盟與中立用 `amobi_item_prices.py --from-html speculation/index.html`。
+1. 部落的配方與成品價格、件數用[官方拍賣 API 每小時資料](#官方拍賣-api-每小時資料)；官方資料裡沒有就是現在沒貨。官方資料比最新的完整掃描舊時改用掃描，聯盟與中立用 `amobi_item_prices.py --from-html speculation/index.html`。
 2. 逐項對照頁面上的觸發價：到價的往 A 移，低價被掃光、漲回好幾倍的往 C 移，掛單一路變多、價格還在跌的寫「等止跌」。
 3. 找新候選時，從官方資料挑出配方類（`market/data.json` 的類別 9）現價不到早上掃描一半的，再查跨陣營價與經典版來源。物品 ID 很大（25 萬以上）的是永恆新增物品，經典版經驗不適用，2026-11-18 看到的兩張（堅韌藥劑、徘徊者皮甲護手）在聯盟都不到 2g；來源說法不一的先不列，例如附魔武器 - 超強衝擊公式，經典版攻略說是黑石塔上層掉落，永恆資料站卻列為購買取得。
 
@@ -55,7 +55,7 @@
 
 ## 遊戲內資料與阿莫比對照
 
-自家陣營價有三種比阿莫比新的來源：官方拍賣 API 的每小時資料（只有不能堆疊的物品）、拍賣小幫手的完整掃描（整間拍賣場都有，材料只能靠它），以及拍賣場「收藏」清單的截圖。
+自家陣營價有三種比阿莫比新的來源：官方拍賣 API 的每小時資料（整間部落拍賣場，含材料與藥水）、拍賣小幫手的完整掃描（站主掃描的當下，聯盟或中立也能掃），以及拍賣場「收藏」清單的截圖。
 
 ### 拍賣小幫手（Auctionator）完整掃描
 
@@ -77,7 +77,7 @@ python3 '<skill-dir>/scripts/auctionator_prices.py' --from-html speculation/inde
 
 ### 官方拍賣 API 每小時資料
 
-repo 的排程每小時把亞服 PvP 部落拍賣場（TW 區 113 號）的最低一口價寫進 `auction-data` 分支的 `auctions.json`，排程維護見 [profession-planner-site.md](profession-planner-site.md)。裡面只有不能堆疊的物品（裝備、武器、配方、容器）；材料、藥水、食物、彈藥不在其中，仍靠完整掃描。原因是收集腳本讀錯 `/commodities` 的 key（官方其實有提供，見 [battlenet-api.md](battlenet-api.md#拍賣場)）；修好後這段要改。
+repo 的排程每小時把亞服 PvP 部落拍賣場（TW 區 113 號）的最低一口價寫進 `auction-data` 分支的 `auctions.json`，排程維護見 [profession-planner-site.md](profession-planner-site.md)。2026-11-19 起同時收單件掛單與 `/commodities`，材料、藥水、食物、彈藥也在其中（見 [battlenet-api.md](battlenet-api.md#拍賣場)）；更早的快照只有裝備、武器、配方、容器這類不能堆疊的物品，所以材料的 24 小時漲跌與走勢要從那天之後才有。
 
 ```sh
 curl -s https://raw.githubusercontent.com/jakeuj/wow-forever-professions/auction-data/auctions.json

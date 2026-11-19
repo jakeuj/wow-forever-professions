@@ -10,15 +10,16 @@
 
 ## 實測結論
 
-可信度：本次實測，2026-11-18 在 GitHub Actions 執行 `api-probe.yml`（[run 44290066755](https://github.com/jakeuj/wow-forever-professions/actions/runs/44290066755)、[run 44290944141](https://github.com/jakeuj/wow-forever-professions/actions/runs/44290944141)），TW 區、static 版本 `1.60.1_70399`。官方 Retail＋Classic 文件的 218 個端點中，113 個回 200（其中約 30 個是空索引）、64 個回 404、9 個需要使用者 token。角色端點這次沒有測試角色，尚未實測。
+可信度：本次實測，2026-11-18 在 GitHub Actions 執行 `api-probe.yml`（[run 44290066755](https://github.com/jakeuj/wow-forever-professions/actions/runs/44290066755)、[run 44290944141](https://github.com/jakeuj/wow-forever-professions/actions/runs/44290944141)），TW 區、static 版本 `1.60.1_70399`。官方 Retail＋Classic 文件的 218 個端點中，113 個回 200（其中約 30 個是空索引）、64 個回 404、9 個需要使用者 token。2026-11-19 再帶測試角色（Lv33 部落）跑一次（[run 44447493169](https://github.com/jakeuj/wow-forever-professions/actions/runs/44447493169)），角色的 31 個端點 25 個回 200、6 個回 404。
 
 對專業網站與回答玩家問題有用的結論：
 
 - **專業與配方可直接查**：`profession/index` 列出 13 個專業（zh_TW）；`profession/{id}` 的 `skill_tiers` 指向 `profession/{id}/skill-tier/{tierId}`，內含 `minimum_skill_level`／`maximum_skill_level` 與 `categories[].recipes[]`（裁縫一個 tier 65 筆）；`recipe/{id}` 有 `crafted_item`、`crafted_quantity` 與 `reagents[]`（`reagent`＋`quantity`）。配方沒有變黃／變綠／變灰點數，練等路線仍要客戶端 `SkillLineAbility` 或 wowf.io。
 - **物品資料與官方圖示**：`item/{id}` 有 `quality`、`item_class`、`required_level`、`purchase_price`、`sell_price`、`is_stackable`；`media/item/{id}` 的 `assets[].value` 是 `https://render.worldofwarcraft.com/forever-tw/icons/56/{file_data_id}.jpg`。但拍賣場上仍有約四成物品在 `item/{id}` 回 404，名稱與圖示要保留客戶端資料表與 Wowhead 備援。
 - **搜尋可用**：`search/item`、`search/spell`、`search/creature`、`search/mount`、`search/media`、`search/item-appearance` 回結果。搜尋結果的名稱是所有語系的物件，即使帶了 `locale`；用 `name.zh_TW=` 篩選。
-- **拍賣商品類有資料**：`/commodities` 回 200，清單的 key 是 `auctions`（不是 `commodities`），每筆 `id`、`item.id`、`quantity`、`unit_price`、`time_left`；聯盟 110 號在 10:06 UTC 有 11,725 筆。repo 的 `collect-auctions.py` 與 `probe-auction-api.py` 讀的是 `commodities` key，所以每小時資料目前沒有能堆疊的物品，見[拍賣場](#拍賣場)。
+- **拍賣商品類有資料**：`/commodities` 回 200，清單的 key 是 `auctions`（不是 `commodities`），每筆 `id`、`item.id`、`quantity`、`unit_price`、`time_left`；聯盟 110 號在 10:06 UTC 有 11,725 筆。repo 的收集與探測腳本原本只讀 `commodities` key 而漏掉，2026-11-19 已修正，每小時資料現在包含材料與藥水，見[拍賣場](#拍賣場)。
 - **任務、聲望、法術、坐騎、寵物、玩具、稱號、成就、天賦**的索引與明細都有 zh_TW 資料；`quest/{id}` 有 `requirements`、`rewards`。
+- **角色專業可查**：`/profile/wow/character/{name}-{surname}/professions` 回 `primaries[]`（主專業，測試角色 2 個）與 `secondaries[]`（副專業 3 個），每項是 `profession` 加 `tiers[]`，已學配方在 `tiers[].known_recipes[]`（測試角色一個 tier 40 筆）。探測只記三層欄位，技能點的欄位名稱用 `forever_api.py character … --part professions` 直接看。中文角色名直接當 slug（`名字-姓氏`）可查。
 - **公會用中文名當 slug 可查**：`/data/wow/guild/黎明之劍`（`profile` namespace）回 200，roster 166 人（含 `rank`）；`achievements` 與 `activity` 只有公會標頭，沒有內容。
 - **仍然沒有**：副本手冊（journal 索引全空，明細 404），所以首領掉落仍無官方來源；realm、connected realm、WoW 代幣、PvP 賽季、傳奇鑰石賽季、名人堂、住宅、盟約、艾澤萊精華、傳家寶、寵物技能、pvp／tech 天賦皆為 404 或空索引。
 
@@ -105,7 +106,8 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 - 角色名稱是「名字＋姓氏」，全區唯一，以小寫 `{name}-{surname}` 查詢，不帶 realm，例如 `/profile/wow/character/{name}-{surname}?namespace=profile-forever-tw`。
 - 角色要達 Lv10 並在該等級登出後才查得到；之前所有角色端點都回 404。資料是登出當下的快照，通常數秒內更新。
 - 角色資料以 `surname`、`ruleset` 取代 `realm`，沒有 `active_spec`、`active_title`。
-- 社群列出可用的子端點：achievements、appearance、collections、encounters、equipment、character-media、mythic-keystone-profile、professions、pvp-summary、quests、reputations、specializations、statistics、titles。60 級角色的團本與地城 `encounters` 仍是空的（pinta，2026-11-16）。
+- 子端點（本次實測，2026-11-19，Lv33 角色）：achievements（含 statistics）、appearance、collections（mounts、pets、toys、transmogs；heirlooms 為空）、encounters、equipment（含 `equipped_item_sets`）、character-media（4 張圖）、mythic-keystone-profile（只有 `current_period`）、professions、pvp-summary（`honorable_kills`、`pvp_rank`）、quests（進行中與 `completed`）、reputations、specializations、statistics、status、titles 都回 200。collections/decor、house、hunter-pets、mythic-keystone 賽季、pvp-bracket、soulbinds 回 404。`encounters` 的團本與地城是空的，60 級角色也一樣（pinta，2026-11-16）。
+- 角色主文件有 `level`、`experience`、`achievement_points`、`guild`（含 `slug`）、`last_login_timestamp`、`average_item_level`、`equipped_item_level`、種族、職業、性別與陣營。
 - `character-media` 的圖片在 `render.worldofwarcraft.com/forever-{region}/`，可能比角色資料晚數小時到一天以上出現。
 - 帳號角色清單（使用者 token）另有快取，可能落後角色資料數分鐘到數小時。
 - 公會同樣不帶 realm：`/data/wow/guild/{slug}`（`profile` namespace），以及 `/roster`、`/activity`、`/achievements`。slug 為小寫公會名、空白換成連字號；中文公會名直接用原字（網址編碼），本次實測「黎明之劍」可查。公會文件有 `member_count`、`achievement_points`、`created_timestamp`、`faction`、`ruleset`、`name_search`。roster 包含 Lv10 以下成員，列出 `name`、`surname`、`slug`、`level`、職業、種族、陣營與 `rank`。11 月中起部分公會有 crest；`achievements` 與 `activity` 只有公會標頭。
@@ -132,13 +134,14 @@ TW 區實測（2026-11-18，`scripts/probe-auction-api.py`，在 GitHub Actions 
 - ruleset 1、2 的索引是同一組 15 間，名稱只有「聯盟拍賣場」「部落拍賣場」「黑水灣拍賣場」。單間回應的 `ruleset` 只是請求路徑裡的 ruleset 連結，每間都一樣，分不出拍賣場屬於哪個 ruleset。
 - 有掛單的是 110、111（聯盟）、113、114（部落）、116、117（黑水灣），其餘 9 間是空的。
 - **亞服 PvP 部落是 113**：站主在部落拍賣場用拍賣小幫手完整掃描，與 10 分鐘後的 API 資料相比，2,082 件共同物品有 97.6% 的最低一口價完全相同；其他拍賣場只有 6～12%。
-- **單間端點只有不能堆疊的物品**：`auctions` 只列裝備、武器、配方、容器、棒、武器之油這類單件物品，每筆 `quantity` 都是 1，`buyout` 就是單價。同一次掃描的 343 件商品類（草藥、礦、皮、肉）只有 8 件、522 件消耗品（藥水、食物、卷軸）只有 153 件、彈藥 0 件出現在這個端點。當時以為 `/commodities` 是空的，其實是腳本讀了不存在的 `commodities` key（見上一點），能堆疊的物品應在 `/commodities`。修正 `collect-auctions.py`／`probe-auction-api.py` 並重新比對前，材料行情仍以拍賣小幫手掃描為準。
+- **單間端點只有不能堆疊的物品**：`auctions` 只列裝備、武器、配方、容器、棒、武器之油這類單件物品，每筆 `quantity` 都是 1，`buyout` 就是單價。同一次掃描的 343 件商品類（草藥、礦、皮、肉）只有 8 件、522 件消耗品（藥水、食物、卷軸）只有 153 件、彈藥 0 件出現在這個端點。當時以為 `/commodities` 是空的，其實是腳本讀了不存在的 `commodities` key（見上一點）。
+- **能堆疊的物品在 `/commodities`**（2026-11-19 本次實測，修正後的 `probe-auction-api.py`，[run 44447472007](https://github.com/jakeuj/wow-forever-professions/actions/runs/44447472007)）：113 號有 8,050 筆單件掛單＋10,916 筆商品類，合計 2,841 種物品。與 10 小時前的拍賣小幫手完整掃描相比，商品類 342 件中 332 件、消耗品 527 件中 474 件、彈藥 16 件中 14 件出現在 API；各類別 API 最低價除以掃描價的中位數都是 1.00，所以 `unit_price` 是單價。`/commodities` 的 `Last-Modified` 與單間端點同時更新。
 - 掛單欄位：`id`、`item`（`id`、`bonus_lists`、`context`、`modifiers`）、`bid`、`buyout`、`quantity`、`time_left`。113 約 8,750 筆、2,075 種物品、1.9 MB；整區 15 間各抓一次共 35 次請求，約 35 秒。
 - 每小時更新一次：`Last-Modified` 從 06:06 UTC 變成 07:06 UTC，15 間同時更新。排程抓取放在每小時 :10 之後，並用 `Last-Modified` 判斷有沒有新資料。
 
 ## 端點實測表
 
-可信度：本次實測，2026-11-18（TW、`static-1.60.1_70399-forever-tw`，未帶測試角色）。路徑省略 `/data/wow/` 前綴；「空」表示 200 但列表沒有內容。`{guild}` 用「黎明之劍」測試。
+可信度：本次實測，2026-11-18（TW、`static-1.60.1_70399-forever-tw`）；角色端點為 2026-11-19 [run 44447493169](https://github.com/jakeuj/wow-forever-professions/actions/runs/44447493169)。路徑省略 `/data/wow/` 前綴；「空」表示 200 但列表沒有內容。`{guild}` 用「黎明之劍」測試。
 
 | API | 可用（200，有資料） | 200 但清單是空的 | 404 |
 | --- | --- | --- | --- |
@@ -176,7 +179,8 @@ TW 區實測（2026-11-18，`scripts/probe-auction-api.py`，在 GitHub Actions 
 | Region API | `region/index` | — | `region/{regionId}` |
 | Reputations API | `reputation-faction/index`、`reputation-faction/{reputationFactionId}`、`reputation-tiers/index`、`reputation-tiers/{reputationTiersId}` | — | — |
 | Ruleset API | `ruleset/index`、`ruleset/{rulesetId}`、`ruleset/{rulesetId}/auctions/`、`ruleset/{rulesetId}/auctions/{auctionHouseId}`、`ruleset/{rulesetId}/auctions/{auctionHouseId}/commodities` | — | — |
-| Spell API | `media/spell/{spellId}`、`search/spell`、`spell/{spellId}` | — | — |
+| Spell API | `media/spell/{spellId}`、`search/spell`、`spell/{spellId}`（不是每個 ID 都有） | — | — |
+| Character Profile API | `character`、`status`、`achievements`、`achievements/statistics`、`appearance`、`collections`、`collections/{mounts\|pets\|toys\|transmogs}`、`equipment`、`character-media`、`professions`、`pvp-summary`、`quests`、`quests/completed`、`reputations`、`specializations`、`statistics` | `collections/heirlooms`、`encounters`、`encounters/{dungeons\|raids}`、`mythic-keystone-profile`、`titles` | `collections/decor`、`house/house-{houseNumber}`、`hunter-pets`、`mythic-keystone-profile/season/{seasonId}`、`pvp-bracket/{pvpBracket}`、`soulbinds` |
 | Talent API | `talent-tree/index`、`talent/index`、`talent/{talentId}` | `pvp-talent/index` | `pvp-talent/{pvpTalentId}`、`talent-tree/{talentTreeId}`、`talent-tree/{talentTreeId}/playable-specialization/{specId}` |
 | Tech Talent API | — | `tech-talent-tree/index`、`tech-talent/index` | `media/tech-talent/{techTalentId}`、`tech-talent-tree/{techTalentTreeId}`、`tech-talent/{techTalentId}` |
 | Title API | `title/index`、`title/{titleId}` | — | — |
@@ -185,7 +189,8 @@ TW 區實測（2026-11-18，`scripts/probe-auction-api.py`，在 GitHub Actions 
 
 未列入表格：
 
-- `/profile/wow/character/{name}-{surname}` 及其 30 個子端點（achievements、appearance、collections、encounters、equipment、character-media、professions、quests、reputations、specializations、statistics、titles 等）：這次沒有測試角色，待設定 `FOREVER_PROBE_CHARACTER` 後重跑。社群實測見[角色與公會](#角色與公會)。
+- Character Profile API 一列的路徑省略 `/profile/wow/character/{name}-{surname}/` 前綴。
+- `spell/{id}` 與 `media/spell/{id}`：17123 回 200，但測試角色天賦裡的法術 ID（如 1292222、196607）與經典版 133 回 404，不是每個法術都有發布。
 - `/profile/user/wow` 與帳號 collections、`protected-character`（9 個）：需要使用者授權碼 token，探測不呼叫。
 - `quest/index`、`mythic-keystone/index`、`modified-crafting/index` 只有子索引連結；前者的子索引有資料，後兩者是空的。
 - 每個端點的 HTTP 狀態、namespace、欄位與第一筆的欄位結構在 `api-probe` artifact 的 JSON。

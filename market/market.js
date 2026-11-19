@@ -1,7 +1,7 @@
 // Personal market page: renders market/data.json (built by scripts/build-market-data.py
 // from the owner's Auctionator scan) as a searchable, sortable price list. Items the
-// official auction API carries (gear, weapons, recipes: things that do not stack) use
-// its hourly prices from auctions.json on the auction-data branch, written by
+// official auction API carries (the house's listings plus its /commodities, so stackables
+// too) use its hourly prices from auctions.json on the auction-data branch, written by
 // scripts/collect-auctions.py, with a 24-hour change and a 7-day trend line.
 // Starred items are kept in this browser's localStorage; #fav=<id.id...> shares a list.
 (() => {
@@ -132,16 +132,14 @@
     return value;
   };
 
-  // Containers, weapons, armor, recipes and quivers never stack, so the API lists every one
-  // on sale; if a newer API snapshot lacks one the scan saw, it has sold or expired since.
-  const API_CLASSES = new Set([1, 2, 4, 9, 11]);
-
+  // The API lists every item on sale at the house (single items and /commodities alike); if a
+  // newer API snapshot lacks one the scan saw, it has sold or expired since.
   // Give each scanned item the fields the list shows, from the API when it carries the item.
   const merge = (auctions, apiNewer) => {
     for (const item of items) {
       const entry = auctions && auctions.items[item.id];
       if (!entry) {
-        const goneSinceScan = apiNewer && API_CLASSES.has(item.class);
+        const goneSinceScan = apiNewer;
         item.now = item.price;
         item.listed = item.day === latestDay && !goneSinceScan;
         item.base = item.prev;
