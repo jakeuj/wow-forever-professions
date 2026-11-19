@@ -9,9 +9,12 @@ if (destination) {
     if (destination) location.replace(destination);
   });
 
-  const status = document.getElementById('guild-copy-status');
+  const contactStatus = document.getElementById('guild-copy-status');
   document.querySelectorAll('[data-copy-target]').forEach(button => {
     const target = document.getElementById(button.dataset.copyTarget);
+    const status = button.dataset.copyStatus
+      ? document.getElementById(button.dataset.copyStatus)
+      : contactStatus;
     const label = button.querySelector('[data-copy-label]');
     const defaultLabel = label.textContent;
     let resetLabelTimer;
@@ -29,7 +32,7 @@ if (destination) {
           label.textContent = defaultLabel;
           button.classList.remove('is-copied');
         }, 2400);
-        status.textContent = `已複製「${text}」`;
+        status.textContent = status === contactStatus ? `已複製「${text}」` : '已複製。';
       } catch {
         status.textContent = '無法自動複製，請選取上方文字手動複製。';
       }

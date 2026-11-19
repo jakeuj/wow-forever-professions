@@ -21,8 +21,8 @@
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/webp" href="./assets/guild-emblem.webp">
   <link rel="stylesheet" href="./style.css?v=20261119-guild">
-  <link rel="stylesheet" href="./guild/guild.css?v=20261119-announcements">
-  <script src="./guild/home.mjs?v=20261119-guild" type="module"></script>
+  <link rel="stylesheet" href="./guild/guild.css?v=20261119-recruitment">
+  <script src="./guild/home.mjs?v=20261119-recruitment" type="module"></script>
   <script src="./guild/overview.mjs?v=1" type="module"></script>
 </head>
 <body class="guild-home">
@@ -81,6 +81,20 @@
           <div class="guild-announcement-links">
             <a class="text-link" href="https://forum.gamer.com.tw/Co.php?bsn=05219&amp;sn=5507760" target="_blank" rel="noopener noreferrer">查看巴哈招募文</a>
           </div>
+        </article>
+        <article class="guild-announcement guild-recruitment" aria-labelledby="guild-recruitment-title">
+          <h3 id="guild-recruitment-title">公會成員都可以幫忙收人</h3>
+          <p>目前全公會成員都有收人權限。在遊戲聊天欄輸入 <code>/ginvite 角色名稱</code> 就能發出入會邀請，例如 <code>/ginvite 真田 信村</code>。</p>
+          <p>想一鍵發話，可以在遊戲內開啟巨集介面，建立新巨集、貼上下面整行，再把巨集拖到快捷列。點一下就能發送招募訊息。</p>
+          <pre class="guild-recruitment-macro"><code id="guild-recruitment-macro">/2 《黎明之劍》誠徵戰友！老手來當大腿，新手來當潛力股。別怕不會打，只要有心肯學，公會手把手把你養大！12月團本開荒，私訊我加入</code></pre>
+          <div class="guild-recruitment-actions">
+            <button type="button" class="button-compact" data-copy-target="guild-recruitment-macro" data-copy-status="guild-recruitment-copy-status" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><rect x="8" y="8" width="12" height="13" rx="1"/><path d="M16 8V3H3v13h5"/></svg>
+              <span data-copy-label>複製巨集</span>
+            </button>
+            <div class="guild-copy-status" id="guild-recruitment-copy-status" role="status" aria-atomic="true"></div>
+          </div>
+          <p>範例用 <code>/2</code> 發到綜合頻道。若沒看到訊息，先確認聊天視窗的頻道編號。綜合頻道顯示為 1 就改用 <code>/1</code>，要發到尋求組隊且頻道顯示為 6 就改用 <code>/6</code>。</p>
         </article>
       </div>
     </section>

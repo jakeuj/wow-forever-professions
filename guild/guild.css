@@ -153,6 +153,30 @@
 
 .guild-announcement-links .text-link { font-size: .875rem; }
 
+.guild-recruitment { grid-column: 1 / -1; }
+
+.guild-recruitment code { color: var(--text); }
+
+.guild-recruitment-macro {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.guild-recruitment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.guild-recruitment-actions .button-compact { margin-top: 8px; }
+.guild-recruitment-actions .guild-copy-status { margin: 0; min-height: 0; }
+
 .guild-about > p {
   margin: 12px 0 0;
   color: var(--muted);
