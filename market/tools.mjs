@@ -41,8 +41,19 @@ export function saveLocal(key, data) {
 }
 
 export function shoppingText(title, rows) {
-  const names = [...new Set(rows.map(row => row.name))].filter(name => name && !/[\^"\r\n]/u.test(name));
-  return names.length ? [title, ...names.map(name => `"${name}"`)].join('^') : '';
+  const quantities = new Map();
+  for (const { name, quantity } of rows) {
+    if (!name || /[\^;"\r\n]/u.test(name)) continue;
+    const count = Number.isSafeInteger(quantity) && quantity > 0 ? quantity : 0;
+    quantities.set(name, (quantities.get(name) || 0) + count);
+  }
+  const terms = [...quantities].map(([name, quantity]) => {
+    const exact = `"${name}"`;
+    if (!quantity || !Number.isSafeInteger(quantity)) return exact;
+    // Auctionator stores quantity after ten filter fields, the tier marker, and expansion.
+    return [exact, ...Array(10).fill(''), '#', '', quantity].join(';');
+  });
+  return terms.length ? [title, ...terms].join('^') : '';
 }
 
 export function copyButton(label, text) {

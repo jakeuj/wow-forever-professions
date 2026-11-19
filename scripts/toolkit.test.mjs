@@ -88,6 +88,14 @@ test('備戰清單驗證分享資料，合併全團與職責採購', () => {
   const plan = verifyPlan({ schema: 1, title: '備戰', common, tank: [{ ...common[0], quantity: 3 }], healer: [], damage: [] });
   const merged = mergeItems([...plan.common, ...plan.tank]);
   assert.deepEqual(merged, [{ ...common[0], quantity: 5 }]);
-  assert.equal(shoppingText('團本備戰', merged), '團本備戰^"瑟銀錠"');
+  assert.equal(shoppingText('團本備戰', merged), '團本備戰^"瑟銀錠";;;;;;;;;;;#;;5');
   assert.throws(() => verifyPlan({ ...plan, common: [{ ...common[0], quantity: -1 }] }));
+});
+
+test('拍賣小幫手匯出把每項數量寫入第 14 欄', () => {
+  const rows = [{ name: '秘銀錠', quantity: 200 }, { name: '魔紋布', quantity: 26 },
+    { name: '秘銀錠', quantity: 33 }, { name: '設計圖：秘銀盾刺', quantity: 1 }];
+  assert.equal(shoppingText('鍛造購物清單', rows),
+    '鍛造購物清單^"秘銀錠";;;;;;;;;;;#;;233^"魔紋布";;;;;;;;;;;#;;26^"設計圖：秘銀盾刺";;;;;;;;;;;#;;1');
+  assert.equal(shoppingText('收藏', [{ name: '銀葉草' }, { name: '無效;名稱', quantity: 5 }]), '收藏^"銀葉草"');
 });
