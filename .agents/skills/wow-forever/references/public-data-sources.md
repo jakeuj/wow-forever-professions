@@ -18,7 +18,7 @@
 | 拍賣行情 | [官方拍賣 API](battlenet-api.md#拍賣場) | 插件掃描只看得到掛單價；回答玩家當下的行情問題用阿莫比，見 [market-recipe-value.md](market-recipe-value.md) |
 | 角色等級、裝備、專業 | [官方角色 API](battlenet-api.md#角色與公會) | Lv10 以上且登出後才出現 |
 | 公會成員 | 官方公會 roster | 中文公會名直接當 slug 可查（2026-11-18 實測「黎明之劍」） |
-| 任務內容與獎勵 | [官方任務 API](battlenet-api.md#端點實測表) | 有 zh_TW 標題、需求與獎勵；沒有 NPC 位置 |
+| 任務內容與獎勵 | [官方任務 API](battlenet-api-coverage.md#端點實測表) | 有 zh_TW 標題、需求與獎勵；沒有 NPC 位置 |
 | 掉落、NPC 位置 | 無官方來源（副本手冊 API 為空）；[插件群眾回報](#遊戲內插件收集) | 經典版資料只能標示為參考 |
 | 伺服器人口 | 無官方來源；插件抽樣 | 只代表被看到的角色，適合看比例 |
 | 官方公告 | [台灣新聞頁](#官方新聞與論壇) | 未找到 RSS／JSON |
@@ -26,7 +26,7 @@
 
 ## Battle.net API（永恆）
 
-官方開發者入口到 2026-11-18 仍只有 Retail 與 Classic 的文件，永恆的 namespace、ruleset、角色、公會、拍賣與逐端點可用性都整理在 [battlenet-api.md](battlenet-api.md)。該檔另含官方指南重點（OAuth、區域與語系、搜尋語法、媒體）、本機查詢工具 `scripts/forever_api.py` 與涵蓋率探測 `api-probe.yml`。
+官方開發者入口到 2026-11-18 仍只有 Retail 與 Classic 的文件，永恆的 namespace、ruleset、角色、公會、拍賣與官方指南重點見 [Battle.net API（永恆）](battlenet-api.md)。設定憑證與執行查詢見 [本機查詢工具](battlenet-local-tools.md)，端點狀態與排程探測見 [端點實測](battlenet-api-coverage.md)。
 
 速記：
 
@@ -133,5 +133,5 @@ API 與客戶端都缺的資料（掉落、任務、NPC 位置、人口、行情
 寫進網站前依需要重跑：
 
 1. 客戶端版本：`curl -s http://us.patch.battle.net:1119/wowf/versions`，以及 `https://wago.tools/api/builds` 的 `wowf`。
-2. 官方 API：照 [battlenet-api.md 的重新查證](battlenet-api.md#重新查證)執行 `api-probe.yml`，確認官方文件、static 版本與各端點狀態有沒有變。
+2. 官方 API：照 [端點實測的重新查證](battlenet-api-coverage.md#重新查證)執行 `api-probe.yml`，確認官方文件、static 版本與各端點狀態有沒有變。
 3. 更新本檔的查證日期、版本號與可信度標記。

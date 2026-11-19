@@ -20,7 +20,7 @@
 
 - GitHub repo Secrets：`BLIZZARD_CLIENT_ID`、`BLIZZARD_CLIENT_SECRET`、`FOREVER_PROBE_CHARACTER` 的設定狀態
 - macOS 鑰匙圈 service：`wow-forever-battlenet`（已建立／未建立）
-- Windows 的 DPAPI 憑證檔 `~/.config/wow-forever/battlenet.xml`（記錄是否已建立）。設定方式見 [本機查詢工具](battlenet-api.md#本機查詢工具)。
+- Windows 的 DPAPI 憑證檔 `~/.config/wow-forever/battlenet.xml`（記錄是否已建立）。設定方式見 [本機查詢工具](battlenet-local-tools.md#本機查詢工具)。
 
 ## 電腦
 

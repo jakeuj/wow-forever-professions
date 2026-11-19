@@ -116,40 +116,7 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 
 ## DungeonsForever 與 Auctionator 專業衝等操作
 
-以下依 **DungeonsForever 2.1.87＋Auctionator 345** 的載入清單及 `DungeonsForeverProf/Core/ProfessionUI.lua`、`ProfRouteAuto.lua`、`ProfFollow.lua`、`AuctionatorBridge.lua` 查證，介面文字取自 2.1.112 的 `Locales/zhTW.lua` 與 Auctionator 347 的 `Locales/zhTW.lua`。2026-11-18 站主以 DungeonsForever 2.1.112＋Auctionator 347 進遊戲實測：開慢速掃描模式、完整掃描一次後，專業練級路線規劃會把拍賣行價格算進路線。
-
-價格來自 `Auctionator.API.v1.GetAuctionPriceByItemID`／`GetAuctionAgeByItemID`，也就是遊戲裡拍賣小幫手的資料，掃完不必 `/reload`；DungeonsForever 另外保存最近一次完整掃描的快照（含件數），依角色與市場核對，超過 2 天就要求重掃。
-
-**快照從 2.1.116 起可用**（站主 2026-11-19 00:08 的部落完整掃描）：存檔改成 `DungeonsForeverProfDB.prof.auctionFullScans["rules:1:forever:2:100:Horde"]`，`c = true`、`received` 等於 `expected`（27,574 筆掛單），3,193 種物品沒有任何 `failure`，3,192 種有件數 `q` 與加權平均單價 `p`。每種物品另有 `d`：`{ {單價（銅）, 件數}, … }` 的價位階梯，可算「買 N 個實際要花多少」；外部腳本要算大量收購時讀這裡，比拍賣小幫手存檔只有最低價準。階梯尾端偶有 50 金一個的離譜掛單，買超過正常價位的件數時要另外處理，不能直接用最後一階的價格。2.1.112 那份存檔（2026-11-18 18:46）每種物品都是 `q = 0`、`failure = "incomplete"`：依 `AuctionatorBridge.lua` 的 `FullRow`，同一物品只要有一筆掛單缺賣家名稱就整個判為不完整；遇到舊版或新存檔又出現 `failure` 時，仍照這個限制看待。
-
-同一檔的 `routeHistory.<專業>` 保存最近算過的路線：`steps` 每段是 `{起點, 終點, 法術 ID, 次數}`，`total` 是預計總花費（銅），`options` 是當時的設定；法術名稱可查 `https://nether.wowhead.com/forever/tw/tooltip/spell/<ID>`。2.1.114 另有 `prof.routePlans.characters["角色-伺服器"]`：`active.<專業>` 指向 `routes` 裡目前採用的路線鍵，該路線的 `skeleton` 有 `start`／`target`／`scheme`／`status`（`incomplete` 是沒排到目標）、`options` 與同格式的 `steps`（另附 `reason`：`level` 是練等、`material` 是先做中間材料）。法術 ID 也可在 `DungeonsForeverProf/Core/Data/zhTW/Data_ProfRecipes.lua` 對照：一般配方列開頭是 `{法術 ID, 成品物品 ID, 數量, …}`，附魔列開頭是英文名、中文名、部位，法術 ID 在列尾 `nil` 前；材料是 `{ {物品 ID, 數量}, … }`。存檔裡有角色名稱，只在本機比對，不寫進 repo 或回報。2026-11-18 它的鍛造 200→300「最省錢」路線用到黑檀剃刃、華麗瑟銀手斧、巨型瑟銀戰斧三張設計圖，`Data_ProfRecipes.lua` 記成 NPC 11278 瑪格努斯·霜鳴販售；阿莫比沒有這位商人的販售紀錄，部落拍賣場也沒貨，要以遊戲內的學法提示確認來源、價格與是否限量。
-
-站主的[鍛造練等頁](https://jakeuj.com/wow-forever-professions/leveling/#addons)有給一般玩家看的步驟。
-
-1. **確認模組。** CurseForge 選 Forever／本機 `_forever_`，在插件列表確認 `DungeonsForever`、`DungeonsForeverProf`、`Auctionator` 已啟用；若剛改啟用狀態，重載介面。主體能開地城頁不代表專業模組也已啟用。
-2. **取得完整行情。** 需要新掃描時，在「設定選項 → 插件 → Auctionator → 進階」的「慢速掃描模式」勾選「預設改成使用另一種速度較慢的掃描模式」（複製模式），再到拍賣場「拍賣小幫手」分頁按完整掃描，等待完成。DungeonsForever 的提示用語為「預設使用較慢的備用掃描模式」；這版專業功能需要可驗證的完整掃描快照，摘要掃描不能替代。「考慮拍賣行的銷售數量」（`autoConsiderAuctionSupply`，預設關閉）：關閉時只看拍賣小幫手 2 天內最後看到的價格、不看件數，已賣掉的便宜掛單仍會被排進路線；開啟後依掃描件數採購、沒貨改向商人買；2.1.112 的快照全部不完整，開了也沒作用，2.1.116 的快照已完整（見上），開啟才有意義。已有有效快照可沿用；不使用專業功能時，插件建議切回摘要模式。
-   - **2.1.114 起設定頁沒有這個開關**（2026-11-18 查 `ProfessionUI.lua`）。「升級」分頁右上的齒輪開「升級頁設定」，`PD.SET_GROUPS` 的「採購與配方」仍列這個鍵，但 `RowsSettings` 的 `defs` 沒有它的定義，畫面直接略過；求解器（`ProfSolverCapture.lua` 的 `E.ConsiderAuctionSupply`）仍會讀。設定按專業存在 `DungeonsForeverProfDB.prof.professionSettings.<專業代號>`，沒存過就是關閉。真的要開，在遊戲裡執行下行（代號換成 `enchanting`、`tailoring` 等，`false` 為關），再回升級頁按「重新計算」：
-
-     ```text
-     /run local p=DungeonsForeverProfDB.prof; p.professionSettings=p.professionSettings or {}; p.professionSettings.blacksmithing=p.professionSettings.blacksmithing or {}; p.professionSettings.blacksmithing.autoConsiderAuctionSupply=true
-     ```
-
-     2.1.116（專業模組 `.toc` 寫 2.0.3）的設定頁仍沒有這個開關，`SETTING_DEF` 預設仍是關閉，但快照已完整，現在用上行指令開啟才有效果。
-3. **計算目標路線。** `/df` 開專業手冊，依目標專業選擇衝等頁，例如鍛造，核對讀到的目前技能與已學配方，設定目標技能；為傳承規劃時依需求設為 150／225／300。「路線方案」選「最省錢」再按「自動計算」，比較當次可行成本；缺資料或該專業只支援固定路線時，依提示查閱固定攻略，待補齊行情、配方與學習條件後重算。
-4. **核對並匯入缺口。** 開背包與銀行，確認已有材料、需向 NPC 購買、自製中間材料及拍賣採購缺口；先確認圖紙與學習費是否有資料，再按「一鍵導入購物清單」。`AuctionatorBridge` 使用 `Auctionator.API.v1.CreateShoppingList`，清單依專業命名；只匯入拍賣採購缺口，NPC 貨物與自製材料不匯入，**同名清單會被覆寫**。回 Auctionator 選該清單，逐項核對價格與實際數量再買；空清單先確認是否確實無缺口。
-5. **依實際進度調整。** 開專業製作介面，按路線與步驟追蹤製作；學配方、升階、技能點與材料變化後重新核對，行情有變則重新掃描並計算。黃色／綠色配方不保證每次升點，預估回收與淨成本也不保證成交；「最省錢」是依可用資料的方案估算，不能保證零浪費或全市場最低價。
-
-### 常見狀況
-
-| 狀況 | 處理方式 |
-| --- | --- |
-| 有地城頁，沒有專業頁 | 核對 Forever 分支及 `DungeonsForeverProf` 的安裝、啟用與主體依賴；按需載入模組不必從登入起就顯示為已載入。 |
-| 顯示 Auctionator 未安裝／未啟用／初始化中 | 分別確認套件、啟用狀態及等待載入，必要時重載；地城手冊本身可用不代表行情整合可用。 |
-| 無價格、僅做過摘要掃描、完整掃描失敗 | 依上方模式重新完成完整掃描後計算；缺價不能當 0 銅。失敗時可能仍顯示上次快照，核對畫面的狀態與時間。 |
-| 快照過期、屬於其他角色／市場或資料無效 | 用目前角色在目標市場重新完整掃描；此版提示超過 2 天即過期，重載或切換模式不會延長有效期。 |
-| 材料或圖紙在售量不足、配方尚未學會 | 核對現貨、NPC／其他已確認來源與角色學習條件，更新資料或更換路線；掃描紀錄不能保證現在買得到。 |
-| 材料花費比商人售價低很多（例：強效助熔劑商人賣 20s，路線算 5s 或更低） | 先看「路線方案」。五種方案是最省錢、穩定升級、材料成本、次數最少、樂觀計數；「樂觀計數」照說明按賣店價值粗算，5s 正是強效助熔劑的賣店價（商人收購價）。物品提示依序列「拍賣」（拍賣小幫手最近看到的最低價）、各商人的「價格」（向商人買）、「賣店」（賣給商人）；「可出售」清單也是賣店價。「最省錢」取商人價與拍賣價的較低者：拍賣價是拍賣小幫手 2 天內最後看到的價格，設定「採購與配方」裡的「考慮拍賣行的銷售數量」預設關閉時只看價格、不看件數，所以只出現過一張的便宜掛單賣掉後仍會被當成買得到。開啟它照理會改用掃描件數、沒貨時向商人買（強效助熔劑約 18～21s，插件內建商人資料；開過商人視窗則用拍賣小幫手記下的單價），2.1.112 的掃描全部不完整、開了無效，2.1.116 的完整掃描才有件數可用；購買前仍在拍賣場確認實際價格。2.1.114 起設定頁不顯示此開關，開法見上方第 2 步。 |
-| 匯入失敗或只出現可複製字串 | 確認 Auctionator 的購物清單 API 可用；若有匯出字串，可在 Auctionator 的購物清單匯入處貼上。先確認目前專業與同名清單覆寫範圍。 |
+遊戲內的完整掃描、自動選路、缺料處理及匯入步驟見 [專業衝等操作](profession-addon-workflow.md)。
 
 ## 選用時的功能分工
 

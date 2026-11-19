@@ -13,7 +13,7 @@
 | 公會首頁 | `index.html` 是招募文案、公開聯絡人與玩家工具入口的來源。複製互動和首頁舊網址在 `guild/`。 |
 | 公會資料 | `guild/overview.mjs` 顯示概況，`professions/artisans/` 提供配方搜尋。`scripts/collect_guild.py` 建立快照，`guild/worker/` 發布與讀取。 |
 | 專業與傳承 | `professions/` 內的 `data.mjs` 定義方案、配對及點數規則，`planner.mjs` 控制切換與分享，`milestones.mjs` 讀寫進度。 |
-| 六項製造升級 | `scripts/crafting-leveling.html` 是模板，`scripts/build-crafting-leveling.py` 讀遊戲掃描與路線資料後產生 `crafting-leveling/index.html`。修改版型時同步更新模板與已發布快照。 |
+| 六項製造升級 | `crafting-leveling/planner.mjs` 控制網頁試算，`auto-search.mjs` 搜尋自動路線。Python 建置入口為 `scripts/build-crafting-leveling.py`，各模組和產物見[練等來源與產物](#練等來源與產物)。 |
 | 行情與採購 | `market/` 讀官方拍賣資料與本機掃描快照。各採購頁的購物清單由 `endgame/ah-copy.js` 匯整。 |
 
 新增工具時沿用目錄下的 `index.html` 和站內相對連結。分享網址、錨點與瀏覽器儲存鍵都屬於既有介面，變更時先驗證舊資料與連結。
@@ -93,6 +93,18 @@ python scripts/build-crafting-leveling.py --root 'C:/Games/World of Warcraft'
 重建會讀同一輪的 `Auctionator.lua` 與 `DungeonsForeverProf.lua`，使用後者保存的各價位件數。需要指定存檔時加 `--file '<Auctionator.lua 路徑>'`。資料不完整或市場不符時會留下上一份頁面。加入 `--check` 可驗證已產生的 HTML 是否與輸入一致。路線資料依本機無限副本手冊的繁中資料表與 `scripts/crafting-leveling-routes.json` 中已核對的替代段落，估價與排序會一併產生。
 
 也可用 `--auction-snapshot <JSON 路徑>` 改讀官方價位階梯。快照帶 `region: "tw"`、`ruleset: 1`、`house: 113`、含時區的 `updatedAt`，以及以物品 ID 為鍵、以 `[單價（銅）, 件數]` 陣列為值的 `depth`。價位須取同一輪官方單件掛單與 `/commodities`。
+
+### 練等來源與產物
+
+以下參數接在 `python scripts/build-crafting-leveling.py` 後。重建時使用已核對的插件版本與市場資料。
+
+| 要改的行為 | 來源 | 產物與驗證 |
+| --- | --- | --- |
+| 練等頁版面與費用呈現 | `scripts/crafting-leveling.html`、`scripts/crafting_leveling/render.py` | `--root <遊戲目錄>` 產生 `crafting-leveling/index.html`，同組輸入加 `--check` 比對。 |
+| 配方來源 | `scripts/crafting_leveling/sources.py` 讀插件與已核對資料，`catalog.py` 編排瀏覽器目錄。 | `--addon-zip <ZIP>` 產生 `crafting-leveling/routes.json`。加 `--auto-professions alchemy blacksmithing enchanting engineering leatherworking tailoring` 產生 `crafting-leveling/auto-recipes.json`。跑 Python 與 Node 測試驗證資料與試算。 |
+| 固定路線與估價 | `scripts/crafting_leveling/routes.py` 計算固定路線與估價，修訂資料在 `scripts/crafting-leveling-routes.json`。 | `--root <遊戲目錄>` 重建 HTML，路線有更新時以 `--addon-zip <ZIP>` 同步固定路線目錄。 |
+| 官方配方欄位與軍械庫 ID 對照 | `scripts/crafting_leveling/catalog.py` 管理目錄、欄位核對與 ID 對照；`sources.py` 載入已核對欄位。 | `--battle-net-audit <核對報告>` 產生 `scripts/battle-net-leveling-data.json`。重建自動配方庫後，以 `--battle-net-catalog <官方配方快照>` 產生 `crafting-leveling/battle-net-recipe-map.json`，跑兩套測試驗證核對與角色匯入。 |
+| 掃描價階備援 | `scripts/crafting_leveling/sources.py` 驗證同輪部落完整掃描。 | `--root <遊戲目錄> --scan-depth-out market/scan-depth.json` 匯出備援，核對市場、掃描時間及價階件數。 |
 
 ## 專案技能
 

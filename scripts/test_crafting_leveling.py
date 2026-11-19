@@ -1,16 +1,10 @@
 from fractions import Fraction
-from pathlib import Path
-import runpy
 import unittest
 
-
-guide = runpy.run_path(str(Path(__file__).with_name("build-crafting-leveling.py")))
-buy = guide["buy"]
-Market = guide["Market"]
-Phase = guide["Phase"]
-Recipe = guide["Recipe"]
-build_battle_net_recipe_map = guide["build_battle_net_recipe_map"]
-verified_recipe_fields = guide["verified_recipe_fields"]
+from crafting_leveling.catalog import build_battle_net_recipe_map
+from crafting_leveling.render import priority_list
+from crafting_leveling.routes import Market, Phase, buy, compile_route
+from crafting_leveling.sources import Recipe, checked_depth, verified_recipe_fields
 
 
 class BattleNetRecipeMapTests(unittest.TestCase):
@@ -76,11 +70,11 @@ class CraftingCostsTests(unittest.TestCase):
 
     def test_bad_ladder_stays_unpriced(self):
         row = {"q": 5, "d": {1: {1: 20, 2: 4}}}
-        self.assertIsNone(guide["checked_depth"](row))
+        self.assertIsNone(checked_depth(row))
         row["q"] = 4
-        self.assertEqual(guide["checked_depth"](row), [(Fraction(20), 4)])
+        self.assertEqual(checked_depth(row), [(Fraction(20), 4)])
         row["failure"] = "incomplete"
-        self.assertIsNone(guide["checked_depth"](row))
+        self.assertIsNone(checked_depth(row))
 
     def test_restock_and_price_change_reorders_the_next_point(self):
         phases = {
@@ -96,7 +90,7 @@ class CraftingCostsTests(unittest.TestCase):
                 name: ("", stages, [market.quote([phase]) for phase in stages], [])
                 for name, stages in phases.items()
             }
-            return guide["priority_list"](results, str).split("</article>")[1]
+            return priority_list(results, str).split("</article>")[1]
 
         initial = after_150({7: [(Fraction(100), 10)], 8: [(Fraction(50), 1)]})
         rebuilt = after_150({7: [(Fraction(100), 10)], 8: [(Fraction(50), 10)]})
@@ -113,7 +107,7 @@ class CraftingCostsTests(unittest.TestCase):
         }
         facts = {"rankFees": {"test": [10, 500, 5000, 50000]}, "components": {"test": [20]},
                  "tools": {"4": 40}, "sellPrices": {"3": 30}}
-        stages = guide["compile_route"]("test", [(1, 150, 20, 149), (150, 225, 30, 75),
+        stages = compile_route("test", [(1, 150, 20, 149), (150, 225, 30, 75),
                                                   (225, 300, 30, 75)], recipes, facts)
         self.assertEqual(stages[0].demands[5], 149)
         self.assertEqual(stages[1].carried[2], 298)
@@ -130,7 +124,7 @@ class CraftingCostsTests(unittest.TestCase):
         recipes = {20: Recipe("材料", 2, 1, 25, 100, 130, 140, (), fee=0)}
         for row in [(1, 150, 20, 149), (1, 25, 20, 24)]:
             with self.subTest(row=row), self.assertRaises(ValueError):
-                guide["compile_route"]("test", [row], recipes, facts)
+                compile_route("test", [row], recipes, facts)
 
 
 if __name__ == "__main__":

@@ -39,7 +39,9 @@ python '<skill-dir>\scripts\inspect_install.py' --root '<WoW 安裝根目錄>' -
 
 依用途挑插件、比對現有組合，或使用者提到巴哈的永恆插件整理／開服前推薦時，讀 [references/addon-selection.md](references/addon-selection.md)。該檔合併兩篇社群主文的候選、功能取捨與已驗證的 AnoUI 語系線索；候選清單本身不保證目前相容。
 
-查 GnomeLevelUp、RestedXP Guide、Shortest Path Forever、Waypoint UI、Baganator／Syndicator、Platynator、Immersion、Leatrix Plus／Maps、DungeonJournal、DungeonsForever 或 Auctionator 的功能、指令、相依插件與繁中支援，使用 DungeonsForever 查書籍／睡袋／收藏進度，或搭配 Auctionator 計算專業衝等成本、掃描行情與匯入材料清單時，讀 [references/addon-feature-guide.md](references/addon-feature-guide.md)。該檔含作者發佈與套件內容的查證、操作流程及既有插件的功能重疊。DungeonsForever、ForeverDungeons、DungeonJournal 是不同專案；後者的 Forever 套件目錄為 `ForeverDungeonJournal`，依專案 ID 與目錄辨識。
+查永恆插件的功能、指令、相依插件、收藏進度或繁中支援，讀 [插件功能指南](references/addon-feature-guide.md)。DungeonsForever、ForeverDungeons、DungeonJournal 是不同專案，依專案 ID 與套件目錄辨識。
+
+操作 DungeonsForever＋Auctionator 的專業衝等、完整行情掃描、自動選路或匯入材料清單，讀 [專業衝等操作](references/profession-addon-workflow.md)。
 
 - 開啟作者專案頁和具體發佈檔案頁，核對專案 ID、Forever flavor、支援的遊戲版本、更新日期與變更內容。搜尋標題與網址 slug 只當作線索。
 - 將已安裝 `.toc` 的 `Version`、`Interface`、`X-Curse-Project-ID` 與上游檔案比對。不同專案的版本號不能直接比較大小；明確支援目標分支與相關修正比下載量更有判斷力。
@@ -92,7 +94,11 @@ GitHub 專用分支、CurseForge 無法提供相容檔案，或使用者明確�
 
 查客戶端版本與資料表、Wowhead、官方論壇、參考資料站，或為網站規劃外部資料串接時，讀 [references/public-data-sources.md](references/public-data-sources.md)。該檔逐項標註官方文件、社群實測或本次實測；引用時沿用標記，並依日期重新查證。
 
-官方 Battle.net API 的用法（OAuth、namespace、搜尋、媒體、額度與節流）、永恆與官方文件的差異、哪些端點在永恆能用，或要用 API 查角色、專業、公會、物品時，讀 [references/battlenet-api.md](references/battlenet-api.md)。官方只文件化 Retail 與 Classic，永恆的可用性以該檔的端點實測表為準。查詢時先執行 `scripts/forever_api.py`，腳本會自動讀取環境變數、Windows 的 DPAPI 加密憑證或 macOS 鑰匙圈。逐端點探測用 `scripts/forever_api_coverage.py`（由 `api-probe.yml` 執行）。查到的角色資料只用來回答當次問題，不寫回 repo。
+查軍械庫、角色專業、公會、拍賣、物品或媒體端點的 OAuth、namespace、欄位與搜尋語法，讀 [Battle.net API（永恆）](references/battlenet-api.md)。估算請求數或排查 HTTP 429 時，讀 [額度與節流](references/battlenet-api.md#額度與節流)。
+
+設定 Windows DPAPI、macOS 鑰匙圈或環境變數，或要用 `forever_api.py` 查詢，讀 [本機查詢工具](references/battlenet-local-tools.md)。角色資料僅用於當次查詢。
+
+核對端點在台服是否可用、試測參數或重跑 `forever_api_coverage.py`／`api-probe.yml`，讀 [端點實測與探測](references/battlenet-api-coverage.md)。
 
 校對練等配方的材料、產量、缺項或 Battle.net 配方 ID 時，讀 [配方材料與產量核對](references/battlenet-api.md#配方材料與產量核對)，依 API 與客戶端資料的查證結果選用欄位。
 
