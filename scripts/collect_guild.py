@@ -167,7 +167,11 @@ def apply_exclusions(snapshot, excluded_ids):
 class Publisher:
     def __init__(self, url, token):
         self.url = url.rstrip("/")
-        self.headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        self.headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "User-Agent": "dawnblade-guild-collector/1.0 (+https://jakeuj.com/wow-forever-professions/)",
+        }
 
     def send(self, key, snapshot=None, method=None):
         data = json.dumps(snapshot, ensure_ascii=False, separators=(",", ":")).encode("utf-8") if snapshot is not None else None
