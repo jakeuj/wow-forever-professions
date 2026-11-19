@@ -95,7 +95,7 @@
 
 .guild-scene img { display: block; width: 100%; height: auto; }
 
-.guild-tools, .guild-about {
+.guild-tools, .guild-about, .guild-overview {
   padding-block: 28px 42px;
   border-top: 1px solid var(--line);
 }
@@ -153,6 +153,75 @@
   padding-top: 12px;
   border-top: 1px solid var(--line);
 }
+
+.guild-overview-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.guild-overview-heading h2 { margin: 0; }
+
+.guild-overview-status, .guild-overview-note {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.guild-overview-note { margin: 16px 0 0; }
+.guild-overview-note .text-link { margin-inline-start: 8px; }
+
+.guild-overview-facts, .guild-overview-breakdowns {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0 0;
+}
+
+.guild-overview-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.guild-overview-breakdowns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.guild-overview-facts > div, .guild-overview-breakdowns > div {
+  min-width: 0;
+  padding: 16px 20px;
+  border: 1px solid #61503e;
+  background: #221b17;
+}
+
+.guild-overview-facts dt { color: var(--muted); font-size: 12px; }
+
+.guild-overview-facts dd {
+  margin: 4px 0 0;
+  color: var(--gold-bright);
+  font: 600 clamp(1.08rem, 2.3vw, 1.4rem)/1.5 var(--serif);
+  font-variant-numeric: tabular-nums;
+}
+
+.guild-overview-breakdowns h3 {
+  margin: 0 0 12px;
+  color: var(--gold-bright);
+  font: 600 1rem/1.5 var(--serif);
+}
+
+.guild-distribution {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.guild-distribution li {
+  display: grid;
+  grid-template-columns: 6em minmax(0, 1fr) 3em;
+  align-items: center;
+  gap: 8px;
+}
+
+.guild-distribution strong { text-align: end; font-variant-numeric: tabular-nums; }
+.guild-distribution-track { height: 6px; background: #493729; }
+.guild-distribution-track span { display: block; height: 100%; background: var(--gold); }
 
 .guild-home .site-footer { margin-top: 58px; }
 
@@ -345,7 +414,8 @@
   .guild-home .site-header { min-height: 68px; }
   .guild-home .site-header .brand img { width: 32px; }
   .guild-home .site-header nav { gap: clamp(8px, 2.5vw, 14px); }
-  .guild-tools, .guild-about { padding-block: 24px 32px; }
+  .guild-tools, .guild-about, .guild-overview { padding-block: 24px 32px; }
+  .guild-overview-facts, .guild-overview-breakdowns { grid-template-columns: 1fr; }
   .guild-contacts { padding: 22px 17px 10px; }
 
   .guild-contact-heading p { font-size: 11px; }

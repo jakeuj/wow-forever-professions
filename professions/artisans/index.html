@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#181512">
+  <title>公會工匠名冊｜黎明之劍</title>
+  <meta name="description" content="依配方與製造專業查詢《魔獸世界：永恆》黎明之劍的公會工匠。">
+  <meta name="robots" content="noindex">
+  <link rel="canonical" href="https://jakeuj.com/wow-forever-professions/professions/artisans/">
+  <link rel="icon" type="image/webp" href="../../assets/guild-emblem.webp">
+  <link rel="stylesheet" href="../../style.css?v=20261119-guild">
+  <link rel="stylesheet" href="./artisans.css?v=1">
+  <script type="module" src="./artisans.mjs?v=1"></script>
+</head>
+<body class="artisan-page">
+  <a class="skip-link" href="#lookup">跳至配方查詢</a>
+  <header class="site-header">
+    <a class="brand" href="../../" aria-label="回黎明之劍公會首頁">
+      <img src="../../assets/crest.svg" alt="" width="34" height="38">
+      <span>黎明之劍<small>魔獸世界：永恆</small></span>
+    </a>
+    <nav aria-label="主要導覽"><a href="../">專業與傳承</a><a href="../../#overview">公會概況</a></nav>
+  </header>
+  <main id="lookup" class="section-wrap artisan-main">
+    <h1>公會工匠名冊</h1>
+    <p class="artisan-lead">依配方找代工。查到工匠後，複製名稱並在遊戲內私訊，確認材料和可製作時間。</p>
+    <p id="artisan-status" class="artisan-status" role="status" hidden>工匠名冊載入中…</p>
+    <noscript><p class="artisan-status">啟用 JavaScript 即可查詢名冊。</p></noscript>
+    <form id="artisan-search" class="artisan-search" role="search" aria-label="查詢工匠配方" hidden>
+      <label><span>配方名稱</span><input name="recipe" type="search" placeholder="例如玉蛇刀" autocomplete="off"></label>
+      <label><span>製造專業</span><select name="profession"><option value="">全部專業</option></select></label>
+    </form>
+    <p id="artisan-count" class="artisan-count" aria-live="polite"></p>
+    <p id="artisan-copy-status" class="sr-only" role="status"></p>
+    <ul id="artisan-results" class="artisan-results" aria-label="配方查詢結果"></ul>
+    <button id="artisan-more" class="button-compact" type="button" hidden>顯示更多配方</button>
+  </main>
+  <footer class="site-footer section-wrap">
+    <a class="brand footer-brand" href="../../">黎明之劍</a>
+    <p>資料來源為暴雪 Battle.net API</p>
+    <nav class="footer-links" aria-label="頁尾導覽"><a href="../">專業與傳承</a><a href="../../guild/data-policy/">資料使用與撤下</a></nav>
+  </footer>
+</body>
+</html>

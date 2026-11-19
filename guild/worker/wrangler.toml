@@ -1,0 +1,8 @@
+name = "dawnblade-guild-data"
+main = "index.mjs"
+compatibility_date = "2025-06-01"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "SNAPSHOTS"
+id = "41656027e480400dbba01b2fa114d68c"

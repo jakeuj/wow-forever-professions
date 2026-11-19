@@ -11,6 +11,7 @@
 | 功能 | 維護入口 |
 | --- | --- |
 | 公會首頁 | `index.html` 是招募文案、公開聯絡人與玩家工具入口的來源。複製互動和首頁舊網址在 `guild/`。 |
+| 公會資料 | `guild/overview.mjs` 顯示概況，`professions/artisans/` 提供配方搜尋。`scripts/collect_guild.py` 建立快照，`guild/worker/` 發布與讀取。 |
 | 專業與傳承 | `professions/` 內的 `data.mjs` 定義方案、配對及點數規則，`planner.mjs` 控制切換與分享，`milestones.mjs` 讀寫進度。 |
 | 六項製造升級 | `scripts/crafting-leveling.html` 是模板，`scripts/build-crafting-leveling.py` 讀遊戲掃描與路線資料後產生 `crafting-leveling/index.html`。修改版型時同步更新模板與已發布快照。 |
 | 行情與採購 | `market/` 讀官方拍賣資料與本機掃描快照。各採購頁的購物清單由 `endgame/ah-copy.js` 匯整。 |
@@ -20,6 +21,16 @@
 ## 公會招募
 
 首頁以營火橫幅與劍徽呈現「篝火旁還有位置」，主入口是 Discord，也提供巴哈招生文及遊戲內聯絡方式。公開聯絡人與開場訊息以根目錄 `index.html` 為準。角色名稱、已公開的 BattleTag 與開場訊息可分別複製。停用 JavaScript 時仍可閱讀和選取文字。 [巴哈招生文](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681451)
+
+## 公會概況與工匠名冊
+
+[公會概況](https://jakeuj.com/wow-forever-professions/#overview) 統計永恆台區全公會的角色、職業與等級。[公會工匠名冊](https://jakeuj.com/wow-forever-professions/professions/artisans/) 以配方 ID 關聯角色已學的六項製造配方，用繁中或原文搜尋。[資料使用與撤下](https://jakeuj.com/wow-forever-professions/guild/data-policy/) 說明公開欄位、資料來源與聯絡方式。
+
+`.github/workflows/guild-collect.yml` 每天台灣時間約 07:20 更新，也可手動執行 `refresh`。它復用 `BLIZZARD_CLIENT_ID` 和 `BLIZZARD_CLIENT_SECRET`，透過 `DAWNBLADE_PUBLISH_URL` repository variable 及 `DAWNBLADE_PUBLISH_TOKEN` secret 發布至公會的 Workers KV。公開 Reader 和需要憑證的 Publisher 共用該 namespace。Publisher 的 Cloudflare secret 為 `PUBLISH_TOKEN`，與 GitHub Actions 的值相同。兩支 Worker 的設定分別在 `guild/worker/wrangler.toml` 和 `guild/worker/wrangler.publish.toml`，變更後各自用 `wrangler deploy --config` 發布。
+
+每份快照於擷取七天後過期。部分角色端點錯誤會讓當次名冊標註資料不完整。公會、名冊或靜態資料取用失敗時，未產出的快照沿用上一份至原定到期。查看 Actions 執行摘要可確認發布筆數，公開快照可從 `guild/data-source.mjs` 定義的來源檢查。
+
+撤下角色時，以角色 slug 查 Battle.net 角色資料的 `id`，在 GitHub Actions secret `DAWNBLADE_EXCLUDED_CHARACTER_IDS` 維護整份 JSON 整數陣列。保留先前排除的 ID，加入新項目後手動執行 `apply-exclusions`。這會先更新現有快照並保留原本的到期時間，後續排程也會套用排除名單。KV 跨區讀取可能需要約一分鐘才同步。 [Cloudflare KV 快取行為](https://developers.cloudflare.com/kv/api/read-key-value-pairs/)
 
 ## 專業與傳承分配規劃
 
@@ -93,7 +104,7 @@ python -m http.server 8765 --bind 127.0.0.1
 
 ```sh
 node --test scripts/*.test.mjs
-python -m unittest discover -s scripts -p test_crafting_leveling.py
+python -m unittest discover -s scripts
 ```
 
 專業頁的分享圖可用 `scripts/make-social-card.py` 重建，需要 Python、Pillow 與 Windows 微軟正黑體。公會首頁的分享圖 `assets/social-guild.jpg` 由營火橫幅縮放為 1200 × 675。

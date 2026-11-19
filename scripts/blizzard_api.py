@@ -60,18 +60,21 @@ def get_token():
 
 
 class Api:
-    """GET helper for one region's dynamic-forever namespace."""
+    """GET helper for one region's Forever namespaces; defaults to dynamic data."""
 
     def __init__(self, region, token):
+        self.region = region
         self.base = f"https://{region}.api.blizzard.com"
         self.query = {"namespace": f"dynamic-forever-{region}", "locale": LOCALES.get(region, "en_US")}
         self.auth = {"Authorization": f"Bearer {token}"}
         self.calls = 0
 
-    def get(self, path):
-        url = f"{self.base}{path}?{urllib.parse.urlencode(self.query)}"
+    def get(self, path, kind=None, timeout=180):
+        query = self.query if kind is None else {**self.query, "namespace": f"{kind}-forever-{self.region}"}
+        encoded_path = urllib.parse.quote(path, safe="/-_.~")
+        url = f"{self.base}{encoded_path}?{urllib.parse.urlencode(query)}"
         self.calls += 1
-        status, headers, body = fetch(url, self.auth)
+        status, headers, body = fetch(url, self.auth, timeout=timeout)
         payload = json.loads(body) if status == 200 else None
         return {"url": url, "status": status, "payload": payload, "bytes": len(body),
                 "last_modified": headers.get("Last-Modified") if headers else None}

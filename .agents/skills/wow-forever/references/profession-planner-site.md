@@ -83,6 +83,8 @@
 
 加入物品提示框、材料行情、配方清單或公會工匠名冊時，先讀 [public-data-sources.md](public-data-sources.md) 的增強方向與靜態網站整合模式。需要 API 憑證的資料由排程預先產生；發布方式若從 `main` 根目錄改為 Actions 部署，同步更新本檔與 README。
 
+公會概況在首頁 `#overview`，工匠名冊在 `/professions/artisans/`。資料排程、Cloudflare 快照與撤下角色的操作見 README 的「公會概況與工匠名冊」。
+
 ## 公會首頁與舊入口
 
 公會介紹、招募與連結在根目錄 `index.html`。公開資訊來源與圖片維護見 [dawnblade-guild.md](dawnblade-guild.md)。

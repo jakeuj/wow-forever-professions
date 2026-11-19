@@ -1,0 +1,35 @@
+name: Refresh Dawnblade guild data
+
+on:
+  schedule:
+    - cron: "20 23 * * *" # 07:20 Asia/Taipei
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Refresh original data or remove excluded artisans from the current snapshot
+        type: choice
+        options: [refresh, apply-exclusions]
+        default: refresh
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dawnblade-guild-data
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+      - name: Publish guild snapshots
+        env:
+          BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
+          BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
+          DAWNBLADE_PUBLISH_URL: ${{ vars.DAWNBLADE_PUBLISH_URL }}
+          DAWNBLADE_PUBLISH_TOKEN: ${{ secrets.DAWNBLADE_PUBLISH_TOKEN }}
+          DAWNBLADE_EXCLUDED_CHARACTER_IDS: ${{ secrets.DAWNBLADE_EXCLUDED_CHARACTER_IDS }}
+          DAWNBLADE_JOB_MODE: ${{ inputs.mode || 'refresh' }}
+        run: python3 scripts/collect_guild.py --mode "$DAWNBLADE_JOB_MODE"
