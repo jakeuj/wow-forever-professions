@@ -2,7 +2,7 @@
 
 [公會官網](https://jakeuj.com/wow-forever-professions/) · [專業與傳承分配規劃](https://jakeuj.com/wow-forever-professions/professions/) · [製造升級總覽](https://jakeuj.com/wow-forever-professions/crafting-leveling/) · [部落拍賣行情](https://jakeuj.com/wow-forever-professions/market/)
 
-《黎明之劍》是《魔獸世界：永恆》亞服 PvP 部落公會，歡迎新手、回鍋與老手。首頁提供公會介紹、招募聯絡方式與三個玩家工具。
+《黎明之劍》是《魔獸世界：永恆》亞服 PvP 部落公會，歡迎新手、回鍋與老手。首頁提供公會介紹、招募聯絡方式與玩家工具，包含站主的插件清單。
 
 ## 維護地圖
 

@@ -184,12 +184,15 @@
 
 .guild-tool-list, .guild-stories {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
   margin: 20px 0 0;
 }
 
-.guild-tool-list { padding: 0; list-style: none; }
+.guild-tool-list {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  padding: 0;
+  list-style: none;
+}
 
 .guild-tool {
   display: flex;
@@ -222,7 +225,10 @@
 
 .guild-tool > span { color: var(--gold); font-size: 21px; }
 
-.guild-stories { gap: 24px; }
+.guild-stories {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
 
 .guild-stories article {
   padding-top: 12px;
@@ -457,6 +463,8 @@
 }
 
 @media (max-width: 1120px) {
+  .guild-tool-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
   .guild-contact-heading {
     align-items: flex-start;
     flex-direction: column;
