@@ -1,17 +1,10 @@
 #!/usr/bin/env python3
-"""Query the Battle.net API for WoW: Forever (standard library only).
+r"""Query the Battle.net API for WoW: Forever (standard library only).
 
-Credentials come from BLIZZARD_CLIENT_ID and BLIZZARD_CLIENT_SECRET; when those are
-not set (macOS only), from the Keychain item whose service is `wow-forever-battlenet`
-(account = client ID, password = client secret):
-
-    security add-generic-password -s wow-forever-battlenet -a '<client id>' -w
-
-On Windows set the two variables for the current PowerShell session instead
-(works in Windows PowerShell 5.1 and PowerShell 7; the secret is not echoed):
-
-    $env:BLIZZARD_CLIENT_ID = '<client id>'
-    $env:BLIZZARD_CLIENT_SECRET = [Net.NetworkCredential]::new('', (Read-Host 'client secret' -AsSecureString)).Password
+Credentials come from BLIZZARD_CLIENT_ID and BLIZZARD_CLIENT_SECRET first. On
+Windows, the fallback is a DPAPI-protected PowerShell credential in
+%USERPROFILE%\.config\wow-forever\battlenet.xml. On macOS, the fallback is the
+Keychain item with service wow-forever-battlenet. See references/battlenet-api.md.
 
 The access token stays in memory and in the Authorization header; it is never
 printed or written to disk.
@@ -39,9 +32,11 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
 TOKEN_URL = "https://oauth.battle.net/token"
 KEYCHAIN_SERVICE = "wow-forever-battlenet"
+WINDOWS_CREDENTIAL_FILE = Path(".config/wow-forever/battlenet.xml")
 LOCALES = {"tw": "zh_TW", "kr": "ko_KR", "us": "en_US", "eu": "en_GB"}
 USER_AGENT = "wow-forever-skill"
 # Resources the official docs publish in a dynamic namespace (plus Forever's rulesets).
@@ -70,12 +65,45 @@ def fetch(url, headers=None, data=None, timeout=60):
     raise AssertionError("unreachable")
 
 
+def windows_credentials():
+    """Read the current user's DPAPI-backed PSCredential via a private pipe."""
+    path = Path.home() / WINDOWS_CREDENTIAL_FILE
+    if not path.is_file():
+        return None
+
+    quoted_path = str(path).replace("'", "''")
+    command = f"$credential = Import-Clixml -LiteralPath '{quoted_path}' -ErrorAction Stop\n" + """
+if ($credential -isnot [pscredential] -or -not $credential.UserName -or $credential.Password.Length -eq 0) {
+    exit 1
+}
+[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+ConvertTo-Json -InputObject @($credential.UserName, $credential.GetNetworkCredential().Password) -Compress
+"""
+    powershell = (Path(os.environ.get("SystemRoot", r"C:\Windows"))
+                  / "System32/WindowsPowerShell/v1.0/powershell.exe")
+    try:
+        result = subprocess.run(
+            [str(powershell), "-NoProfile", "-NonInteractive", "-Command", command],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=True,
+            encoding="utf-8", timeout=15,
+        )
+        client_id, secret = json.loads(result.stdout)
+    except (OSError, subprocess.SubprocessError, ValueError, TypeError):
+        sys.exit("Could not load the Windows Battle.net credential. Use the Windows account "
+                 "and computer that created battlenet.xml, or check references/battlenet-api.md.")
+    return client_id, secret
+
+
 def credentials():
-    """(client id, client secret) from the environment, else the macOS Keychain."""
+    """(client id, client secret) from the environment or the OS credential store."""
     client_id = os.environ.get("BLIZZARD_CLIENT_ID")
     secret = os.environ.get("BLIZZARD_CLIENT_SECRET")
     if client_id and secret:
         return client_id, secret
+    if sys.platform == "win32":
+        stored = windows_credentials()
+        if stored is not None:
+            return stored
     if sys.platform == "darwin" and shutil.which("security"):
         item = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE],
                               capture_output=True, text=True)
@@ -88,10 +116,11 @@ def credentials():
     if sys.platform == "darwin":
         hint = ("or add them to the Keychain with: "
                 f"security add-generic-password -s {KEYCHAIN_SERVICE} -a '<client id>' -w")
+    elif sys.platform == "win32":
+        hint = r"or set up %USERPROFILE%\.config\wow-forever\battlenet.xml as in references/battlenet-api.md"
     else:
-        hint = ("e.g. in PowerShell: $env:BLIZZARD_CLIENT_SECRET = "
-                "[Net.NetworkCredential]::new('', (Read-Host 'client secret' -AsSecureString)).Password")
-    sys.exit(f"No Battle.net credentials: set BLIZZARD_CLIENT_ID and BLIZZARD_CLIENT_SECRET, {hint}")
+        hint = "as documented in references/battlenet-api.md"
+    sys.exit(f"No Battle.net credentials: set BLIZZARD_CLIENT_ID and BLIZZARD_CLIENT_SECRET {hint}")
 
 
 def get_token():

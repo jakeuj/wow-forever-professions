@@ -8,7 +8,7 @@ from the index documents, and calls every endpoint in the Forever namespaces.
 
     python3 forever_api_coverage.py --regions tw --out api-probe.json
 
-Credentials as in forever_api.py (environment or macOS Keychain). A test character
+Credentials are loaded by forever_api.py. A test character
 (name-surname, Lv10+) comes from FOREVER_PROBE_CHARACTER; the report and JSON
 replace it with {character} and keep only field names, counts and the level.
 Prints Markdown (also appended to $GITHUB_STEP_SUMMARY when set).
