@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock
 
 from collect_guild import apply_exclusions, build_artisans, build_overview, get_excluded_ids, roster_characters
-from collect_guild import publish_exclusions, refresh_snapshots
+from collect_guild import publish_exclusions, recipe_record, refresh_recipes, refresh_snapshots
 
 NOW = datetime(2026, 11, 19, 4, tzinfo=timezone.utc)
 
@@ -46,6 +46,51 @@ class FakeApi:
 
 
 class GuildTests(unittest.TestCase):
+    def test_recipe_snapshot_includes_unnamed_ids_and_prefers_localized_product(self):
+        def get(path, kind=None, timeout=None, all_locales=False):
+            parts = path.split("/")
+            data = {}
+            if parts[3] == "profession":
+                profession = int(parts[4])
+                if len(parts) == 5:
+                    data = {"id": profession, "skill_tiers": [{"id": 2941}]}
+                elif profession == 202:
+                    fallback = [{"en_US": "EZ-Thro Tru-Trigger"}, {"en_US": "Tru-Trigger Frag Bomb"}]
+                    data = {"categories": [{"recipes": [
+                        {"id": rid, "name": name if all_locales else None}
+                        for rid, name in zip((56773, 56774), fallback, strict=True)
+                    ]}]}
+            elif parts[3] == "recipe":
+                product = {56773: 260808, 56774: 260809}[int(parts[4])]
+                data = {"name": None, "crafted_item": {"id": product, "name": None},
+                        "crafted_quantity": {"value": 1.0}, "reagents": []}
+            elif parts[3] == "item":
+                data = {"name": "真扳機破片炸彈"} if parts[4] == "260809" else {}
+            return {"status": 200, "payload": data}
+
+        publisher = Mock()
+        refresh_recipes(Mock(get=get), publisher, NOW)
+        key, snapshot = publisher.send.call_args.args
+        self.assertEqual(key, "recipes")
+        self.assertEqual([(row["id"], row["name"], row["units"]) for row in snapshot["recipes"]],
+                         [(56773, "EZ-Thro Tru-Trigger", 1), (56774, "真扳機破片炸彈", 1)])
+
+    def test_recipe_quantities_keep_ranges_and_preserve_white_dress_reagent(self):
+        variable = recipe_record(2456, 202, "鐵皮手雷", {"crafted_item": {"id": 4390},
+            "crafted_quantity": {"minimum": 1.0, "maximum": 5.0}, "reagents": []})
+        self.assertEqual((variable["units"], variable["outputRange"]), (1, [1, 5]))
+        data = {"crafted_item": {"id": 10040}, "crafted_quantity": {"value": 1.0}, "reagents": [
+            {"reagent": {"id": 4339}, "quantity": 5}, {"reagent": {"id": 8343}, "quantity": 3},
+        ]}
+        dress = recipe_record(6622, 197, "白色婚紗", data)
+        self.assertEqual(dress["units"], 1)
+        self.assertNotIn("outputRange", dress)
+        self.assertEqual([(r["id"], r["quantity"]) for r in dress["materials"]], [(4339, 5), (8343, 3), (2324, 1)])
+        data["reagents"].append({"reagent": {"id": 2324, "name": "漂白液"}, "quantity": 1})
+        self.assertEqual(recipe_record(6622, 197, "白色婚紗", data)["materials"], dress["materials"])
+        missing = recipe_record(1, 202, "缺少數值", {"crafted_item": {"id": 100}})
+        self.assertIsNone(missing["units"])
+
     def test_overview_counts_each_roster_character_once(self):
         rows = [character(1, 1), character(2, 10), character(3, 11), character(4, 60)]
         roster = roster_characters({"members": [{"character": row} for row in rows + rows[:1]]})

@@ -15,6 +15,24 @@ const ranks = [{ cap: 75, skill: 1, level: 5, fee: 10 }, { cap: 150, skill: 50, 
   { cap: 225, skill: 125, level: 20, fee: 5000 }, { cap: 300, skill: 200, level: 35, fee: 50000 }];
 const fixture = { items: { 1: '甲材料', 2: '乙材料', 3: '半成品', 4: '圖樣' }, rods: [], tools: {}, supplies: {}, formulas: {} };
 const input = { start: 187, target: 225, cap: 225, level: 60, inventory: [], known: [] };
+
+test('官方工程產量區間與求解器使用的估算分開保存', () => {
+  const engineering = catalog.professions.engineering.recipes;
+  assert.deepEqual(Object.entries(engineering).filter(([, row]) => row.output_range)
+    .map(([spell, row]) => [Number(spell), row.output_range, row.output]), [
+    [3931, [1, 4], 2], [3937, [1, 5], 3], [3941, [1, 4], 2], [3946, [1, 7], 3],
+    [3950, [1, 5], 3], [3962, [1, 5], 3], [8339, [1, 4], 2],
+  ]);
+  const state = initialState(input);
+  const result = finishBatch(state, { ...engineering[3962], spell:3962 }, 2, 187);
+  assert.equal(result.crafted.get(4390), 6);
+  assert.ok(catalog.professions.tailoring.recipes[12091].reagents.some(([id, count]) => id === 2324 && count === 1));
+  const potion = catalog.professions.alchemy.recipes[1251750];
+  assert.equal(potion.product, 250952);
+  assert.equal(potion.output, 1);
+  assert.equal(potion.battle_net_recipe_id, undefined);
+});
+
 function recipe(spell, item, options = {}) {
   return { spell, name: `配方 ${spell}`, learn: 1, yellow: 300, green: 300, grey: 300,
     grant: 1, offers: [], tools: [], reagents: [[item, 1]], product: 0, output: 0, ...options };

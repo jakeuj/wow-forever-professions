@@ -10,9 +10,22 @@ Market = guide["Market"]
 Phase = guide["Phase"]
 Recipe = guide["Recipe"]
 build_battle_net_recipe_map = guide["build_battle_net_recipe_map"]
+verified_recipe_fields = guide["verified_recipe_fields"]
 
 
 class BattleNetRecipeMapTests(unittest.TestCase):
+    def test_verified_fields_preserve_range_estimate_reagent_order_and_local_exceptions(self):
+        engineering = {"recipeId": 2456, "product": 4390,
+                       "reagents": [[3575, 1], [4306, 1], [4377, 1]], "outputRange": [1, 5]}
+        materials = ((3575, 1), (4377, 1), (4306, 1))
+        self.assertEqual(verified_recipe_fields(4390, materials, 3, engineering), (materials, 3, (1, 5), 2456))
+        dress = ((4339, 5), (8343, 3), (2324, 1))
+        verified = {"recipeId": 6622, "product": 10040, "output": 1}
+        self.assertEqual(verified_recipe_fields(10040, dress, 1, verified), (dress, 1, None, 6622))
+        potion = ((8845, 3), (3369, 2), (8925, 1))
+        self.assertEqual(verified_recipe_fields(250952, potion, 1, None), (potion, 1, None, None))
+        self.assertEqual(verified_recipe_fields(250952, potion, 1, verified), (potion, 1, None, None))
+
     def test_requires_unique_matches_in_both_directions_and_matching_materials(self):
         def local(product, name="物品"):
             return {"product": product, "output": 1, "name": name, "reagents": [[7, 2], [6, 1]]}

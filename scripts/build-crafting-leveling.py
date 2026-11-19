@@ -115,9 +115,28 @@ class Recipe:
     unlock_materials: tuple = ()
     orange: int | None = None
     restricted: bool = False
+    output_range: tuple[int, int] | None = None
+    battle_net_recipe_id: int | None = None
 
 
-def load_recipes(data_dir, facts, name):
+def verified_recipe_fields(product, materials, output, verified):
+    if not verified or verified["product"] != product:
+        return materials, output, None, None
+    official_materials = tuple(map(tuple, verified.get("reagents", [])))
+    material_match = "reagents" in verified and sorted(official_materials) == sorted(materials)
+    if material_match:
+        # Keep the guide's iteration order so the solver visits dependencies in the same order.
+        official_pairs = {pair: pair for pair in official_materials}
+        materials = tuple(official_pairs[pair] for pair in materials)
+    output_match = verified.get("output") == output
+    if output_match:
+        output = verified["output"]
+    interval = verified.get("outputRange")
+    output_range = tuple(interval) if interval and interval[0] <= output <= interval[1] else None
+    return materials, output, output_range, verified["recipeId"] if material_match or output_match or output_range else None
+
+
+def load_recipes(data_dir, facts, name, official):
     text = (data_dir / "zhTW/Data_ProfRecipes.lua").read_text(encoding="utf-8-sig")
     handbook = table(data_dir / "zhTW/Data_ProfLeveling.lua", "ns.ProfLeveling")
     catalog = {}
@@ -137,6 +156,8 @@ def load_recipes(data_dir, facts, name):
             changes = facts.get("recipeFacts", {}).get(str(spell), {})
             learn = changes.get("learn", learn)
             materials = tuple(tuple(row) for row in changes.get("reagents", [series(r) for r in series(reagents)]))
+            materials, output, output_range, recipe_id = verified_recipe_fields(
+                product or 0, materials, output or 0, official.get(slug, {}).get(str(spell)))
             fee = changes.get("fee")
             recipes[spell] = Recipe(
                 changes.get("name") or title or name(product), product or 0, output or 0, learn,
@@ -144,6 +165,7 @@ def load_recipes(data_dir, facts, name):
                 changes.get("formula", formula or 0), fee, fee is not None and fee > 0,
                 tuple(tool for tool in changes.get("tools", []) if tool != product),
                 changes.get("requirement", ""), tuple(map(tuple, changes.get("unlockMaterials", []))), orange, restricted,
+                output_range, recipe_id,
             )
 
         for row in series(part.get("rows")):
@@ -422,7 +444,8 @@ def load_catalog_inputs(data_dir):
     supplies = offer_map(table(data_dir / "Data_ProfMaterialSupply.lua", "ns.ProfMaterialSupply"), 5, vendor_names)
     formulas = offer_map(table(data_dir / "Data_ProfFormulaOffers.lua", "ns.ProfFormulaOffers"), 8, vendor_names, formulas=True)
     handbook = table(data_dir / "zhTW/Data_ProfLeveling.lua", "ns.ProfLeveling")
-    recipes = load_recipes(data_dir, facts, name)
+    evidence = json.loads((REPO / "scripts/battle-net-leveling-data.json").read_text(encoding="utf-8"))
+    recipes = load_recipes(data_dir, facts, name, evidence["professions"])
     return name, facts, supplies, formulas, handbook, recipes
 
 
@@ -435,6 +458,12 @@ def load_inputs(root, selected, snapshot=None):
     results = {slug: select_route(slug, handbook[slug], recipes[slug], facts, market) for slug in PROFESSIONS}
     first_round = market.quote([phases[0] for _, phases, _, _ in results.values()])
     return stamp, name, results, first_round
+
+
+def browser_recipe(recipe, exclude=()):
+    optional = {"output_range", "battle_net_recipe_id"}
+    return {key: value for key, value in asdict(recipe).items()
+            if key not in exclude and (key not in optional or value is not None)}
 
 
 def leveling_catalog(data_dir, release):
@@ -454,8 +483,7 @@ def leveling_catalog(data_dir, release):
         if not routes:
             raise ValueError(f"{label}沒有完整的候選路線")
         used.update(facts["tools"].get(str(item)) for spell in tuple(used) for item in recipes[slug][spell].tools)
-        exported = {spell: {key: value for key, value in asdict(recipes[slug][spell]).items()
-                            if key not in ("orange", "restricted")}
+        exported = {spell: browser_recipe(recipes[slug][spell], ("orange", "restricted"))
                     for spell in sorted(used - {None})}
         professions[slug] = {
             "name": label, "routes": routes, "recipes": exported, "components": facts["components"].get(slug, []),
@@ -498,7 +526,7 @@ def auto_catalog(data_dir, release, enabled):
                     offers = [{"item": 0, "fee": recipe.fee, "skill": recipe.learn, "level": 0}]
                 elif recipe.formula and recipe.formula in formulas:
                     offers = [{"item": recipe.formula, "fee": 0, "skill": recipe.learn, "level": 0}]
-            available[spell] = {**asdict(recipe), "offers": offers, "grant": grants[slug].get(spell, 0)}
+            available[spell] = {**browser_recipe(recipe), "offers": offers, "grant": grants[slug].get(spell, 0)}
             item_ids.update((recipe.product, *recipe.tools, *(row["item"] for row in offers)))
             item_ids.update(item for item, _ in (*recipe.reagents, *recipe.unlock_materials))
         ranks = series(trainers[slug]["ranks"])
@@ -572,6 +600,24 @@ def build_battle_net_recipe_map(catalog, snapshot):
         professions[slug] = {recipe: spell for recipe, spell in sorted(matches) if counts[recipe] == 1}
     return {"schema": 1, "catalogRelease": catalog["release"], "fetchedAt": snapshot["fetchedAt"],
             "professions": professions}
+
+
+def export_verified_recipe_data(audit, output):
+    professions = {slug: {} for slug in PROFESSIONS}
+    for row in audit["recipes"]:
+        official = row.get("official")
+        if not official or not official["productMatches"]:
+            continue
+        fields = {"recipeId": official["recipeId"], "product": row["local"]["productId"]}
+        if official["materialStatus"] == "equal":
+            fields["reagents"] = official["reagents"]
+        if official["outputStatus"] == "fixed-equal":
+            fields["output"] = official["quantity"]
+        if official["outputStatus"] == "range-contains-local":
+            fields["outputRange"] = official["quantity"]
+        professions[row["profession"]][str(row["spellId"])] = fields
+    data = {"schema": 1, "namespace": audit["namespace"], "checkedAt": audit["checkedAt"], "professions": professions}
+    output.write_text(json.dumps(data, separators=(",", ":")) + "\n", encoding="utf-8")
 
 
 def gold(copper):
@@ -760,6 +806,7 @@ def main():
     build = parser.add_mutually_exclusive_group()
     build.add_argument("--addon-zip", type=Path, help="verified DungeonsForever ZIP for a browser leveling catalog")
     build.add_argument("--battle-net-catalog", type=Path, help="local public recipes.json snapshot for the armory recipe map")
+    build.add_argument("--battle-net-audit", type=Path, help="local audit JSON to extract verified recipe fields")
     parser.add_argument("--catalog-out", type=Path)
     parser.add_argument("--auto-professions", nargs="+", choices=PROFESSIONS, help="produce the automatic routing catalogue")
     parser.add_argument("--scan-depth-out", type=Path, help="write the validated Horde scan as a browser fallback")
@@ -770,6 +817,11 @@ def main():
     parser.add_argument("--check", action="store_true", help="verify that the published HTML matches the input")
     args = parser.parse_args()
     try:
+        if args.battle_net_audit:
+            audit = json.loads(args.battle_net_audit.read_text(encoding="utf-8"))
+            output = args.catalog_out or REPO / "scripts/battle-net-leveling-data.json"
+            export_verified_recipe_data(audit, output)
+            return
         if args.battle_net_catalog:
             catalog = REPO / "crafting-leveling/auto-recipes.json"
             snapshot = json.loads(args.battle_net_catalog.read_text(encoding="utf-8"))

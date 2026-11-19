@@ -112,7 +112,12 @@ function inventory(text, names) {
   return counts;
 }
 
-function renderPlan(plan, checked, update) {
+function recipeYield(recipe) {
+  return recipe?.output_range
+    ? `（每次 ${recipe.output_range.join('～')} 件，選路估 ${recipe.output} 件）` : '';
+}
+
+function renderPlan(plan, recipes, checked, update) {
   output.replaceChildren(
     element('h3', plan.name),
     element('p', `${plan.missing || plan.missingFees.length ? '已知支出' : '預估支出'} ${money(plan.total)} · 學費 ${money(plan.training)} · 缺料 ${plan.missing} 件`),
@@ -135,7 +140,7 @@ function renderPlan(plan, checked, update) {
     });
     const range = step.to === step.from ? '先備妥' : `${step.from} → ${step.to}`;
     const action = step.kind === 'train' || step.kind === 'learn'
-      ? step.name : `${range} · ${step.name} × ${step.count}${step.uncertain ? '（預估）' : ''}`;
+      ? step.name : `${range} · ${step.name} × ${step.count}${step.uncertain ? '（預估）' : ''}${recipeYield(recipes[step.spell])}`;
     label.append(box, action);
     row.append(label);
     steps.append(row);
@@ -172,7 +177,7 @@ try {
     const recipes = { ...catalog.professions[id].recipes, ...auto?.professions[id]?.recipes };
     form.elements.known.replaceChildren(...Object.entries(recipes)
       .sort(([, a], [, b]) => a.learn - b.learn || a.name.localeCompare(b.name, 'zh-TW'))
-      .map(([spell, recipe]) => new Option(`${recipe.learn} · ${recipe.name}`, spell, false, known.has(Number(spell)))));
+      .map(([spell, recipe]) => new Option(`${recipe.learn} · ${recipe.name}${recipeYield(recipe)}`, spell, false, known.has(Number(spell)))));
     form.elements.from.value = state.start || 1;
     form.elements.target.value = state.target || 150;
     form.elements.inventory.value = state.inventory || '';
@@ -239,7 +244,8 @@ try {
       const state = { ...previous, start, target, known, inventory: data, cap: capSetting, level, confidence, done: previous?.done || [] };
       savePlan(storage, state);
       const checked = new Set(state.done);
-      const show = plan => renderPlan(plan, checked, done => {
+      const recipes = (runAuto ? auto : catalog).professions[id].recipes;
+      const show = plan => renderPlan(plan, recipes, checked, done => {
         state.done = done;
         savePlan(storage, state);
       });

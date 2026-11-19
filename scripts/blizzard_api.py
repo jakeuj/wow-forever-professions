@@ -69,8 +69,12 @@ class Api:
         self.auth = {"Authorization": f"Bearer {token}"}
         self.calls = 0
 
-    def get(self, path, kind=None, timeout=180):
-        query = self.query if kind is None else {**self.query, "namespace": f"{kind}-forever-{self.region}"}
+    def get(self, path, kind=None, timeout=180, *, all_locales=False):
+        query = dict(self.query)
+        if kind is not None:
+            query["namespace"] = f"{kind}-forever-{self.region}"
+        if all_locales:
+            query.pop("locale", None)
         encoded_path = urllib.parse.quote(path, safe="/-_.~")
         url = f"{self.base}{encoded_path}?{urllib.parse.urlencode(query)}"
         self.calls += 1

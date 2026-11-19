@@ -21,6 +21,7 @@ async function fallbackRecipes() {
     .map(([spell, recipe]) => ({
       id: `spell-${spell}`, profession, name: recipe.name, units: recipe.output,
       product: recipe.product ? { id: recipe.product, name: items[recipe.product] || recipe.name } : null,
+      outputRange: recipe.output_range,
       materials: recipe.reagents.map(([id, quantity]) => ({ id, quantity, name: items[id] })),
     })));
 }
@@ -35,6 +36,7 @@ const getDepth = () => currentDepth(initialDepth);
 const rosterFor = recipe => roster && Date.parse(roster.expiresAt) > Date.now()
   ? roster.artisans.filter(person => person.professions.some(skill => skill.id === recipe.profession && skill.recipeIds.includes(recipe.id))) : [];
 const normalize = value => value.normalize('NFKC').trim().toLocaleLowerCase('zh-TW');
+const rangeText = recipe => recipe.outputRange?.join('～') || '';
 
 function renderEstimate(recipe, quantity, inventory, service, box) {
   const depth = getDepth();
@@ -57,6 +59,8 @@ function renderEstimate(recipe, quantity, inventory, service, box) {
 function showRecipe(recipe) {
   const details = element('article');
   details.append(element('h2', recipe.name));
+  const range = rangeText(recipe);
+  if (range) details.append(element('p', `每次製作 ${range} 件。估價按每次 ${recipe.units} 件計算。`));
   const controls = element('form');
   controls.className = 'tool-form';
   const quantityLabel = element('label', recipe.product ? '成品需求件數' : '代工批次');
@@ -129,7 +133,8 @@ function render() {
   const next = () => {
     const page = scores.slice(visible, visible + 25);
     if (page.length) results.append(table(['配方', '每批材料成本', '成品單價', fee === null ? '單位毛利' : '扣費後單位毛利'], page.map(score => {
-      const button = element('button', score.recipe.name);
+      const range = rangeText(score.recipe);
+      const button = element('button', range ? `${score.recipe.name}（每次 ${range} 件）` : score.recipe.name);
       button.className = 'button-compact';
       button.addEventListener('click', () => {
         showRecipe(score.recipe);

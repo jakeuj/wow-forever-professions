@@ -24,6 +24,7 @@
 - 路線資料以 `python scripts/build-crafting-leveling.py --addon-zip <DungeonsForever ZIP>` 重建。現有繁中候選路線來自 [DungeonsForever 2.1.118](https://www.curseforge.com/wow/addons/dungeonsforever/files/9696731) 與 repo 的已核對路線修訂。SHA 或版本以發佈包為準，更新後重新驗證六項製造與中途起算。
 - 自動選路預設 90% 達標機率，每次試算重新抓取可用價階，依庫存與學習條件搜尋。要更新完整自動配方庫，在上面的 ZIP 指令加上 `--auto-professions alchemy blacksmithing enchanting engineering leatherworking tailoring`。角色等級用於核對配方和升階條件，留空時仍可使用已學配方及已具備的技能階級。
 - 配方目錄由公會排程以 `recipes` 模式收集官方六項製造配方，免登入訪客可瀏覽；官方目錄暫時失效時頁面提供已核對的練等配方。收藏、角色分工、勾選和已學配方存在瀏覽器。
+- 配方目錄依 ID 收錄，名稱依繁中配方名、繁中成品名和英文配方名補足。練等建置使用已核對的官方材料與固定產量，產量區間另外顯示。重新核對後可用 `python scripts/build-crafting-leveling.py --battle-net-audit <本機核對報告>` 更新建置資料，再重建練等配方庫。
 - 軍械庫可匯入角色的已學配方、目前技能和技能上限，練等計畫按角色與專業保存在瀏覽器。更換自動選路配方庫後，將 Reader 的 `recipes.json` 存在本機，再執行 `python scripts/build-crafting-leveling.py --battle-net-catalog <本機快照路徑>` 重建配方 ID 對照。
 - 正式發布順序為 Publisher、Reader、資料排程、Pages。Publisher 沿用 `PUBLISH_TOKEN`。每小時拍賣排程使用現有 GitHub Secrets 向 Battle.net 取得應用程式 token，透過有認證的 Publisher 放進私人 KV，三小時後到期。Reader 只在伺服器端使用 token，也可選擇設定 `BLIZZARD_CLIENT_ID` 和 `BLIZZARD_CLIENT_SECRET` 直接授權。執行 `guild-collect.yml` 的 `refresh` 初始化撤下清單及配方，執行 `auction-collect.yml` 取得新價階。於正式 Pages 開放入口前驗證 Workers 的 `/market-depth.json`、`/recipes.json` 與角色查詢。
 

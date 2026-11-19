@@ -38,7 +38,7 @@ def snapshot_dates(now):
 
 def label(value):
     if isinstance(value, dict):
-        value = value.get("zh_TW") or value.get("en_US")
+        value = value.get("zh_TW") or value.get("en_US") or value.get("en_GB")
     return value.strip() if isinstance(value, str) else ""
 
 
@@ -78,6 +78,19 @@ def build_overview(guild, characters, classes, last_modified, now):
     }
 
 
+def optional_static_data(api, path, **options):
+    try:
+        result = api.get(path, kind="static", timeout=8, **options)
+    except LOOKUP_ERRORS:
+        return {}
+    return result["payload"] if result["status"] == 200 and isinstance(result["payload"], dict) else {}
+
+
+def tier_recipes(tier):
+    return {row["id"]: label(row.get("name")) for category in tier.get("categories", [])
+            for row in category.get("recipes", []) if type(row.get("id")) is int and row["id"] > 0}
+
+
 def load_catalog(api, pool, with_profession=False):
     def get_profession(profession_id):
         return get_data(api, f"/data/wow/profession/{profession_id}", "static")["payload"]
@@ -85,16 +98,16 @@ def load_catalog(api, pool, with_profession=False):
     def get_tier(entry):
         profession_id, tier_id = entry
         path = f"/data/wow/profession/{profession_id}/skill-tier/{tier_id}"
-        return get_data(api, path, "static")["payload"]
+        names = tier_recipes(get_data(api, path, "static")["payload"])
+        fallback = tier_recipes(optional_static_data(api, path, all_locales=True)) if "" in names.values() else {}
+        return [(rid, name, fallback.get(rid, "")) for rid, name in names.items()]
 
     professions = list(pool.map(get_profession, MANUFACTURING))
     tiers = [(entry["id"], tier["id"]) for entry in professions for tier in entry["skill_tiers"]]
     return {
-        row["id"]: (profession_id, label(row.get("name"))) if with_profession else label(row.get("name"))
-        for (profession_id, _), tier in zip(tiers, pool.map(get_tier, tiers))
-        for category in tier.get("categories", [])
-        for row in category.get("recipes", [])
-        if label(row.get("name"))
+        rid: (profession_id, name, fallback) if with_profession else (name or fallback)
+        for (profession_id, _), recipes in zip(tiers, pool.map(get_tier, tiers), strict=True)
+        for rid, name, fallback in recipes
     }
 
 
@@ -104,14 +117,27 @@ def recipe_reference(value):
     return {"id": value["id"], "name": label(value.get("name"))}
 
 
-def recipe_record(recipe_id, profession_id, name, data):
+def recipe_units(value):
+    if type(value) in (int, float) and 1 <= value <= 1000 and float(value).is_integer():
+        return int(value)
+    return None
+
+
+def recipe_record(recipe_id, profession_id, name, data, *, fallback_name="", product_name=""):
     product = recipe_reference(data.get("horde_crafted_item") or data.get("crafted_item"))
-    quantity = data.get("crafted_quantity") or {}
-    if not isinstance(quantity, dict):
-        quantity = {"value": quantity}
-    units = quantity.get("value") or quantity.get("minimum") or (1 if not quantity else None)
-    if type(units) not in (int, float) or not 1 <= units <= 1000 or not float(units).is_integer():
-        units = None
+    quantity = data.get("crafted_quantity")
+    units, output_range = None, None
+    if product:
+        product["name"] = product_name or product["name"]
+        if isinstance(quantity, dict):
+            lo, hi = recipe_units(quantity.get("minimum")), recipe_units(quantity.get("maximum"))
+            units = recipe_units(quantity.get("value"))
+            if units is None and lo and hi and lo <= hi:
+                units = lo
+                if lo < hi:
+                    output_range = [lo, hi]
+        else:
+            units = recipe_units(quantity)
     reagents = data.get("reagents")
     materials = None
     if isinstance(reagents, list):
@@ -123,23 +149,34 @@ def recipe_record(recipe_id, profession_id, name, data):
                 materials = None
                 break
             materials.append({**item, "quantity": count})
+    if recipe_id == 6622 and (product or {}).get("id") == 10040 and materials is not None:
+        if not any(row["id"] == 2324 for row in materials):
+            materials.append({"id": 2324, "name": "漂白液", "quantity": 1})
     return {
-        "id": recipe_id, "profession": profession_id, "name": label(data.get("name")) or name,
-        "product": product, "units": int(units) if product and units else None, "materials": materials,
+        "id": recipe_id, "profession": profession_id,
+        "name": label(data.get("name")) or name or (product or {}).get("name") or fallback_name or f"配方 {recipe_id}",
+        "product": product, "units": units, "materials": materials,
+        **({"outputRange": output_range} if output_range else {}),
         "effect": label(data.get("description")) if profession_id == 333 and not product else "",
     }
 
 
 def refresh_recipes(api, publisher, now):
     def detail(entry):
-        recipe_id, (profession_id, name) = entry
+        recipe_id, (profession_id, name, fallback) = entry
         result = api.get(f"/data/wow/recipe/{recipe_id}", kind="static", timeout=8)
         data = result["payload"]
         if result["status"] == 404:
             return None
         if result["status"] != 200 or not isinstance(data, dict):
             raise SnapshotError("Recipe catalog lookup failed")
-        return recipe_record(recipe_id, profession_id, name, data)
+        product = recipe_reference(data.get("horde_crafted_item") or data.get("crafted_item"))
+        product_name = ""
+        if product and not product["name"] and not (name or label(data.get("name"))):
+            product_name = label(optional_static_data(api, f"/data/wow/item/{product['id']}").get("name"))
+        if not (label(data.get("name")) or name or fallback or product_name or (product or {}).get("name")):
+            fallback = label(optional_static_data(api, f"/data/wow/recipe/{recipe_id}", all_locales=True).get("name"))
+        return recipe_record(recipe_id, profession_id, name, data, fallback_name=fallback, product_name=product_name)
 
     with ThreadPoolExecutor(max_workers=10) as pool:
         catalog = load_catalog(api, pool, with_profession=True)
