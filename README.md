@@ -19,7 +19,7 @@
 
 ## 公會招募
 
-首頁以營火橫幅與劍徽呈現「篝火旁還有位置」，主入口是 Discord，也提供巴哈招生文及遊戲內聯絡方式。公開聯絡人與開場訊息以根目錄 `index.html` 為準。兩張聯絡卡的角色名稱、BattleTag 與開場訊息可分別複製。停用 JavaScript 時仍可閱讀和選取文字。 [巴哈招生文](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681451)
+首頁以營火橫幅與劍徽呈現「篝火旁還有位置」，主入口是 Discord，也提供巴哈招生文及遊戲內聯絡方式。公開聯絡人與開場訊息以根目錄 `index.html` 為準。角色名稱、已公開的 BattleTag 與開場訊息可分別複製。停用 JavaScript 時仍可閱讀和選取文字。 [巴哈招生文](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681451)
 
 ## 專業與傳承分配規劃
 
