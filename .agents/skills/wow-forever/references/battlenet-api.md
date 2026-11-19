@@ -28,7 +28,7 @@
 2026-11-20 02:29（台灣時間）用 `static-1.60.1_70399-forever-tw` 逐筆取得六項製造的 2,303 筆官方配方明細，全部回 HTTP 200。自動選路的 1,832 筆配方中，1,831 筆找到官方對應，1,830 筆材料一致，1,812 筆固定產量一致。七筆工程配方回產量區間，12 筆直接附魔施加效果。客戶端 `1.60.1.70959` 的 `SpellReagents` 與現行工具的 1,832 筆材料全數一致。 [客戶端材料表](https://wago.tools/db2/SpellReagents/csv?build=1.60.1.70959&locale=enUS)
 
 - 核對時從六項製造的 `skill_tiers` 和 `categories[].recipes[]` 依配方 ID 取明細，保留 `name` 為空的索引項目。用既有的 Battle.net 配方 ID ↔ 法術 ID 對照辨識同一配方。待核對的成品配方以專業、成品物品 ID 和材料交叉比對，直接附魔用名稱與材料確認。比較材料 ID 和每次用量時忽略顯示順序。讀取客戶端 `SpellReagents` 時檢查完整槽位，白色婚紗的漂白液在空槽之後。
-- 已確認對應的配方可取官方名稱、成品 ID、圖示及一致的材料。固定產量採用明確的 `crafted_quantity.value`，遇到 `minimum` 和 `maximum` 就保留完整區間。現行 `scripts/collect_guild.py` 的快照會把區間存成下限，求解器仍使用現行固定估算，直到有實測產量分布可校正。直接附魔可取名稱、效果和材料，求解器維持效果型配方。變色門檻、學費、訓練師、專精、工具與解鎖條件沿用現有來源。
+- 已確認對應的配方可取官方名稱、成品 ID、圖示及一致的材料。固定產量採用明確的 `crafted_quantity.value`。有 `minimum` 和 `maximum` 時，收集程式以 `outputRange` 保留完整區間，配方目錄的保守估價使用下限。求解器使用既有的固定估算，直到有實測產量分布可校正。直接附魔可取名稱、效果和材料，求解器維持效果型配方。變色門檻、學費、訓練師、專精、工具與解鎖條件沿用現有來源。
 
 | 工程配方 | Battle.net 配方 ID | 每次官方產量 | 自動選路估算 |
 | --- | ---: | ---: | ---: |
@@ -48,7 +48,7 @@
 | EZ-Thro Tru-Trigger | 1266921 | 260808 | 官方配方 `56773` 回 200，固定產量 1，材料一致。省略 `locale` 可取英文配方名。 |
 | 真扳機破片炸彈 | 1266922 | 260809 | 官方配方 `56774` 回 200，固定產量 1，材料一致。省略 `locale` 可取英文配方名，物品明細有繁中名。 |
 
-工程技能階段 `2941` 的繁中索引中，`56773` 和 `56774` 的 `name` 都是 `null`，現行收集程式因此在取明細前略過兩筆。維護目錄收集時，以配方 ID 決定收錄，再用繁中配方名、繁中成品名、英文配方名依序補上顯示名稱。 [正式配方快照](https://dawnblade-guild-data.jakeuj.workers.dev/recipes.json)
+工程技能階段 `2941` 的繁中索引中，`56773` 和 `56774` 的 `name` 都是 `null`，核對時的收集程式因此在取明細前略過兩筆。新版收集程式按配方 ID 取明細，顯示名稱依序使用繁中配方名、繁中成品名、英文配方名。 [正式配方快照](https://dawnblade-guild-data.jakeuj.workers.dev/recipes.json)
 
 ## 官方指南重點
 
@@ -68,7 +68,6 @@
 - Token：`POST https://oauth.battle.net/token`，`grant_type=client_credentials`，以 client ID／secret 做 Basic 驗證。US、EU、APAC（取代舊的 kr／tw）共用 `oauth.battle.net`；中國用 `oauth.battlenet.com.cn`，且要中國註冊的 client。
 - Token 有效 24 小時；請求失敗時重新取得，不要假設一定還有效。`/check_token?token=…` 可確認 token 是否屬於自己的 client。
 - 大部分端點用 client credentials token。下列要使用者授權碼流程（authorization code，scope `wow.profile`，HTTPS redirect URI）：`/profile/user/wow`、`protected-character`、帳號 collections，以及 `/userinfo`（scope `openid`）。純靜態網站做不到，需要伺服器端接回呼。
-- 速率（官方文件，通用）：每個 client 每小時 36,000 次、每秒 100 次。
 
 ```sh
 TOKEN=$(curl -s -u "$BLIZZARD_CLIENT_ID:$BLIZZARD_CLIENT_SECRET" \
@@ -77,6 +76,12 @@ TOKEN=$(curl -s -u "$BLIZZARD_CLIENT_ID:$BLIZZARD_CLIENT_SECRET" \
 curl -s -H "Authorization: Bearer $TOKEN" \
   "https://tw.api.blizzard.com/data/wow/ruleset/index?namespace=dynamic-forever-tw&locale=zh_TW"
 ```
+
+### 額度與節流
+
+- 每個 API client 每小時有 **36,000 次請求**額度，持續使用相當於平均每秒 10 次。短時間同時受 **每秒 100 次請求**限制。每小時用量超過額度會降速，每秒超限則在該秒剩餘時間回 `HTTP 429`。 [Blizzard 官方節流說明](https://community.developer.battle.net/api/pages/content/documentation/guides/game-data-apis.json)
+- 用量按 HTTP 請求數計，單次索引回傳多個 ID 仍算一次，再逐筆取明細則依實際請求數計入。Windows、GitHub Actions 和軍械庫後端使用同一個 Client ID 時共用額度。換發 OAuth token 後仍沿用該 client 的額度。
+- 2026-11-20 台服配方核對的主掃描包含 1 次專業索引、6 次專業明細、6 次技能階段和 2,303 次配方明細，共 **2,316 次**，占一小時額度約 **6.43%**。補查和重試另計。
 
 ### 區域與語系
 
