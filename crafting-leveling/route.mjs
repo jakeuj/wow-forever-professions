@@ -15,7 +15,7 @@ function consumption(items, id, needed) {
 }
 
 function procure(snapshot, id, required, offer) {
-  const quote = buyFromDepth(snapshot, id, required);
+  const quote = buyFromDepth(snapshot, id, required, offer ? offer[0] / offer[1] : Infinity);
   if (!offer || !quote.missing) return { ...quote, vendorUnits: 0 };
   const [price, pack, vendor] = offer;
   const packs = Math.ceil(quote.missing / pack);

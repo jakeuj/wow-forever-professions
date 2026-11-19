@@ -17,6 +17,7 @@ test('批量報價只消耗實際價階，逾期及其他拍賣場不報價', ()
     depth: { 12359: [[10, 8], [12, 92]] } };
   const buy = buyFromDepth(currentDepth(snapshot, now), 12359, 103);
   assert.deepEqual([buy.bought, buy.spent, buy.missing], [100, 1184, 3]);
+  assert.equal(buyFromDepth(snapshot, 12359, 100, 12).bought, 8);
   assert.equal(currentDepth(snapshot, now + quoteLifetime), null);
   assert.equal(currentDepth({ ...snapshot, house: 114 }, now), null);
   assert.equal(buyFromDepth(null, 12359, 5).unknown, true);

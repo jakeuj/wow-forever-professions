@@ -31,13 +31,13 @@ export function quoteLabel(snapshot) {
     : `${marketName} · 行情待更新`;
 }
 
-export function buyFromDepth(snapshot, id, needed) {
+export function buyFromDepth(snapshot, id, needed, priceLimit = Infinity) {
   const ladder = snapshot?.depth[id];
   let remaining = needed;
   let spent = 0;
   const tiers = [];
   for (const [price, count] of ladder || []) {
-    if (!remaining) break;
+    if (!remaining || price >= priceLimit) break;
     const units = Math.min(count, remaining);
     tiers.push({ price, units });
     spent += price * units;
