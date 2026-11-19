@@ -14,6 +14,7 @@ import re
 from string import Template
 import sys
 import tempfile
+from unicodedata import normalize
 from zipfile import ZipFile
 from profession_learning import learning_sources
 
@@ -530,6 +531,49 @@ def export_leveling_catalog(archive, output, enabled=()):
     output.write_text(json.dumps(catalog, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
 
 
+def build_battle_net_recipe_map(catalog, snapshot):
+    if snapshot["schema"] != 1 or not snapshot["recipes"]:
+        raise ValueError("無法識別 Battle.net 配方快照。")
+    profession_ids = {
+        171: "alchemy", 164: "blacksmithing", 333: "enchanting",
+        202: "engineering", 165: "leatherworking", 197: "tailoring",
+    }
+
+    def name_key(name):
+        return "".join(char for char in normalize("NFKC", name) if char.isalnum()).casefold()
+
+    def signature(product, output, name, materials):
+        ingredients = tuple(sorted(materials))
+        return (product, output, ingredients) if product else (name_key(name), ingredients)
+
+    official = {slug: {} for slug in profession_ids.values()}
+    for recipe in snapshot["recipes"]:
+        slug = profession_ids.get(recipe["profession"])
+        if not slug or recipe["materials"] is None:
+            continue
+        product = recipe["product"]
+        if not product and slug != "enchanting":
+            continue
+        key = signature(product["id"] if product else 0, recipe["units"], recipe["name"],
+                        ((item["id"], item["quantity"]) for item in recipe["materials"]))
+        official[slug].setdefault(key, set()).add(recipe["id"])
+
+    professions = {}
+    for slug, profession in catalog["professions"].items():
+        matches = []
+        for spell, recipe in profession["recipes"].items():
+            if not recipe["product"] and slug != "enchanting":
+                continue
+            key = signature(recipe["product"], recipe["output"], recipe["name"], map(tuple, recipe["reagents"]))
+            candidates = official[slug].get(key, ())
+            if len(candidates) == 1:
+                matches.append((next(iter(candidates)), int(spell)))
+        counts = Counter(recipe for recipe, _ in matches)
+        professions[slug] = {recipe: spell for recipe, spell in sorted(matches) if counts[recipe] == 1}
+    return {"schema": 1, "catalogRelease": catalog["release"], "fetchedAt": snapshot["fetchedAt"],
+            "professions": professions}
+
+
 def gold(copper):
     return f"{copper / 10000:,.2f} 金"
 
@@ -713,7 +757,9 @@ def render(stamp, name, results, first_round, *, official=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, help="WoW install root or _forever_")
-    parser.add_argument("--addon-zip", type=Path, help="verified DungeonsForever ZIP for a browser leveling catalog")
+    build = parser.add_mutually_exclusive_group()
+    build.add_argument("--addon-zip", type=Path, help="verified DungeonsForever ZIP for a browser leveling catalog")
+    build.add_argument("--battle-net-catalog", type=Path, help="local public recipes.json snapshot for the armory recipe map")
     parser.add_argument("--catalog-out", type=Path)
     parser.add_argument("--auto-professions", nargs="+", choices=PROFESSIONS, help="produce the automatic routing catalogue")
     parser.add_argument("--scan-depth-out", type=Path, help="write the validated Horde scan as a browser fallback")
@@ -724,6 +770,13 @@ def main():
     parser.add_argument("--check", action="store_true", help="verify that the published HTML matches the input")
     args = parser.parse_args()
     try:
+        if args.battle_net_catalog:
+            catalog = REPO / "crafting-leveling/auto-recipes.json"
+            snapshot = json.loads(args.battle_net_catalog.read_text(encoding="utf-8"))
+            mapping = build_battle_net_recipe_map(json.loads(catalog.read_text(encoding="utf-8")), snapshot)
+            output = args.catalog_out or REPO / "crafting-leveling/battle-net-recipe-map.json"
+            output.write_text(json.dumps(mapping, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+            return
         if args.addon_zip:
             filename = "auto-recipes.json" if args.auto_professions else "routes.json"
             output = args.catalog_out or REPO / "crafting-leveling" / filename

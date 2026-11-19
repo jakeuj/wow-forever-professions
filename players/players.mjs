@@ -3,6 +3,7 @@ import { copyButton, element, link, readLocal, saveLocal, table } from '../marke
 import { countPoints, crafting, normalizeProgress, professions as professionList } from '../professions/data.mjs';
 import { gearComparison, slotLabel } from './gear.mjs';
 import { characterKey, characterSlug, classNames, knownRecipeKey, professionIds } from './model.mjs';
+import { armoryLevelingPlan, levelingKey, levelingPlanKey, readLevelingPlan, writeLevelingPlan } from '../crafting-leveling/state.mjs';
 
 const search = document.querySelector('#armory-search');
 const status = document.querySelector('#armory-status');
@@ -20,6 +21,10 @@ const milestonesKey = 'wow-forever-professions:milestones:v1';
 let sequence = 0;
 let editing = '';
 
+function levelingUrl(params) {
+  return `../crafting-leveling/?${new URLSearchParams(params)}#calculator`;
+}
+
 function renderFavorites() {
   favoritesList.replaceChildren(...Object.entries(favorites).map(([slug, name]) =>
     link(name, `?character=${encodeURIComponent(slug)}`)));
@@ -27,6 +32,7 @@ function renderFavorites() {
 
 function renderCharacters() {
   const progress = normalizeProgress(readLocal(milestonesKey, {}));
+  const plans = readLocal(levelingKey, {});
   const assigned = new Set();
   cards.replaceChildren();
   for (const [id, person] of Object.entries(saved)) {
@@ -36,14 +42,19 @@ function renderCharacters() {
     for (const skill of person.skills) {
       assigned.add(skill.slug);
       const next = [150, 225, 300].find(rank => rank > skill.skill);
-      if (crafting.some(profession => profession.id === skill.slug)) {
+      const manufacturing = crafting.some(profession => profession.id === skill.slug);
+      if (manufacturing) {
         const stage = [150, 225, 300].filter(rank => rank <= skill.skill).length;
         progress[skill.slug] = Math.max(progress[skill.slug] || 0, stage);
       }
       const row = element('p', `${namesBySlug[skill.slug]} · ${skill.skill}`);
-      if (next && crafting.some(profession => profession.id === skill.slug)) {
-        const params = new URLSearchParams({ profession: skill.slug, from: skill.skill || 1, target: next, character: person.name });
-        row.append(' ', link(`試算至 ${next}`, `../crafting-leveling/?${params}#calculator`));
+      if (manufacturing) {
+        const params = { profession: skill.slug, characterId: id };
+        if (readLevelingPlan(plans, saved, skill.slug, id)) {
+          row.append(' ', link('開啟練等計畫', levelingUrl(params)));
+        } else if (next) {
+          row.append(' ', link(`試算至 ${next}`, levelingUrl({ ...params, from: skill.skill || 1, target: next })));
+        }
       }
       card.append(row);
     }
@@ -112,6 +123,15 @@ function importCharacter(profile) {
   renderCharacters();
 }
 
+async function loadRecipeMap() {
+  const url = new URL('../crafting-leveling/battle-net-recipe-map.json', import.meta.url);
+  const response = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+  if (!response.ok) throw new Error('配方對照暫時無法讀取。');
+  const mapping = await response.json();
+  if (mapping?.schema !== 1 || !mapping.professions) throw new Error('配方對照暫時無法讀取。');
+  return mapping.professions;
+}
+
 function renderProfile(profile) {
   result.replaceChildren(element('h2', profile.name));
   const detail = [profile.level ? `${profile.level} 級` : '', profile.className, profile.guild].filter(Boolean);
@@ -141,11 +161,65 @@ function renderProfile(profile) {
   }
   result.append(actions, element('h3', '專業與配方'));
   if (!profile.professions.length) result.append(element('p', '目前沒有可顯示的專業。'));
+  const lookupId = sequence;
+  const plans = readLocal(levelingKey, {});
+  let importing = false;
   for (const skill of profile.professions) {
+    const knownRecipes = Array.isArray(skill.recipes) ? skill.recipes.filter(Array.isArray) : [];
     const details = element('details');
-    details.append(element('summary', `${namesBySlug[professionIds[skill.id]] || skill.name || skill.id} · ${skill.skill}／${skill.maxSkill} · ${skill.recipes.length} 項配方`));
+    details.append(element('summary', `${namesBySlug[professionIds[skill.id]] || skill.name || skill.id} · ${skill.skill}／${skill.maxSkill} · ${knownRecipes.length} 項配方`));
+    const profession = professionIds[skill.id];
+    if (crafting.some(entry => entry.id === profession)) {
+      const characterId = profile.slug;
+      const key = levelingPlanKey(profession, characterId);
+      const url = levelingUrl({ profession, characterId });
+      const routeActions = element('div');
+      routeActions.className = 'tool-actions';
+      if (Object.hasOwn(plans, key)) routeActions.append(link('開啟練等計畫', url));
+      if (skill.skill >= 300) {
+        if (routeActions.childElementCount) details.append(routeActions);
+        details.append(element('p', '這項專業已達練等上限 300。'));
+      } else {
+        const button = element('button', '匯入自動選路');
+        const feedback = element('p');
+        button.type = 'button';
+        button.className = 'button-compact';
+        feedback.className = 'tool-note';
+        feedback.setAttribute('role', 'status');
+        feedback.hidden = true;
+        button.addEventListener('click', async () => {
+          if (importing) return;
+          importing = button.disabled = true;
+          feedback.hidden = false;
+          feedback.textContent = '讀取配方對照…';
+          try {
+            if (profile.missing?.includes('professions') || !characterId || characterSlug(characterId) !== characterId) {
+              throw new Error('軍械庫的專業資料不完整。');
+            }
+            const mapping = await loadRecipeMap().catch(() => {
+              throw new Error('配方對照暫時無法讀取。');
+            });
+            if (lookupId !== sequence) return;
+            const current = readLevelingPlan(readLocal(levelingKey, {}), saved, profession, characterId);
+            const plan = armoryLevelingPlan(current, profile.name, skill, mapping[profession]);
+            try {
+              writeLevelingPlan(key, plan);
+            } catch {
+              throw new Error('無法儲存練等計畫。請確認瀏覽器允許本站儲存資料。');
+            }
+            location.assign(url);
+          } catch (error) {
+            feedback.textContent = error.message;
+          } finally {
+            importing = button.disabled = false;
+          }
+        });
+        routeActions.append(button);
+        details.append(routeActions, feedback);
+      }
+    }
     const recipes = element('ul');
-    for (const [id, name] of skill.recipes) {
+    for (const [id, name] of knownRecipes) {
       const row = element('li');
       row.append(link(name || `配方 ${id}`, `../professions/recipes/?recipe=${id}`));
       recipes.append(row);

@@ -9,6 +9,31 @@ buy = guide["buy"]
 Market = guide["Market"]
 Phase = guide["Phase"]
 Recipe = guide["Recipe"]
+build_battle_net_recipe_map = guide["build_battle_net_recipe_map"]
+
+
+class BattleNetRecipeMapTests(unittest.TestCase):
+    def test_requires_unique_matches_in_both_directions_and_matching_materials(self):
+        def local(product, name="物品"):
+            return {"product": product, "output": 1, "name": name, "reagents": [[7, 2], [6, 1]]}
+
+        def official(recipe_id, profession, product, name="物品", quantity=2):
+            return {"id": recipe_id, "profession": profession, "product": {"id": product} if product else None,
+                    "units": 1, "name": name, "materials": [{"id": 6, "quantity": 1}, {"id": 7, "quantity": quantity}]}
+
+        catalog = {"release": "fixture.zip", "professions": {
+            "blacksmithing": {"recipes": {3493: local(3850), 1: local(21), 2: local(22),
+                                          3: local(22), 4: local(23), 5: local(24)}},
+            "enchanting": {"recipes": {7418: local(0, "附魔護腕 - 下級耐力")}},
+        }}
+        snapshot = {"schema": 1, "fetchedAt": "2026-11-20T00:00:00+08:00", "recipes": [
+            official(1986, 164, 3850), official(4289, 333, 0, "附魔護腕－下級耐力"),
+            official(11, 164, 21), official(12, 164, 21),
+            official(13, 164, 22), official(14, 164, 23, quantity=3), official(15, 171, 24),
+        ]}
+        result = build_battle_net_recipe_map(catalog, snapshot)
+        self.assertEqual(result["professions"], {"blacksmithing": {1986: 3493}, "enchanting": {4289: 7418}})
+        self.assertEqual(result["catalogRelease"], catalog["release"])
 
 
 class CraftingCostsTests(unittest.TestCase):

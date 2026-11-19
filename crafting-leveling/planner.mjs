@@ -1,22 +1,38 @@
 import { currentDepth, loadDepth, money, quoteLabel } from '../market/quotes.mjs?v=2';
-import { element, readLocal, saveLocal, shoppingButtons, table } from '../market/tools.mjs';
+import { element, readLocal, shoppingButtons, table } from '../market/tools.mjs';
+import { characterKey, characterSlug } from '../players/model.mjs';
 import { compareRoutes } from './route.mjs';
 import { DEFAULT_CONFIDENCE, SEARCH_BUDGET_MS } from './auto-search.mjs';
+import { levelingKey, levelingPlanKey, readLevelingPlan, writeLevelingPlan } from './state.mjs';
 
 const form = document.querySelector('#leveling-form');
 const status = document.querySelector('#leveling-status');
+const importStatus = document.querySelector('#leveling-import-status');
 const output = document.querySelector('#leveling-result');
-const key = 'dawnblade.leveling.v1';
 const searchStatus = document.querySelector('#leveling-search-status');
 const autoRun = document.querySelector('#leveling-auto-run');
 const cancel = document.querySelector('#leveling-auto-cancel');
 const options = document.querySelector('#leveling-auto-options');
-const saved = readLocal(key, {});
+const saved = readLocal(levelingKey, {});
+const characters = readLocal(characterKey, {});
 const query = new URLSearchParams(location.search);
-const character = (query.get('character') || '').trim().slice(0, 50);
-const planKey = profession => character ? `${profession}:${character}` : profession;
+const legacyName = (query.get('character') || '').trim().slice(0, 50);
+const requestedId = query.get('characterId') || '';
+const characterId = Object.hasOwn(characters, requestedId) || characterSlug(requestedId) === requestedId ? requestedId : '';
+const planFor = profession => readLevelingPlan(saved, characters, profession, characterId, legacyName);
+const character = characters[characterId]?.name || planFor(query.get('profession'))?.characterName || characterId || legacyName;
+const planKey = profession => levelingPlanKey(profession, characterId, legacyName);
 const stampLabel = snapshot => [character, quoteLabel(snapshot)].filter(Boolean).join(' · ');
 let active;
+
+function savePlan(key, state) {
+  saved[key] = state;
+  try {
+    writeLevelingPlan(key, state);
+  } catch {
+    // The form remains usable for this visit when storage is unavailable.
+  }
+}
 
 function stop() {
   if (!active) return;
@@ -151,7 +167,7 @@ try {
   }
   const updateOptions = () => {
     const id = form.elements.profession.value;
-    const state = saved[planKey(id)] || {};
+    const state = planFor(id) || {};
     const known = new Set(state.known || []);
     const recipes = { ...catalog.professions[id].recipes, ...auto?.professions[id]?.recipes };
     form.elements.known.replaceChildren(...Object.entries(recipes)
@@ -163,12 +179,20 @@ try {
     form.elements.cap.value = state.cap || '';
     form.elements.characterLevel.value = state.level || '';
     form.elements.confidence.value = state.confidence || '.9';
+    const imported = state.armoryImport;
+    importStatus.hidden = !imported;
+    importStatus.textContent = imported
+      ? `軍械庫上次匯入 ${imported.matched} 項已學配方。${imported.skipped ? ` ${imported.skipped} 項尚無對照，可手動補選。` : ''}`
+      : '';
     autoRun.hidden = options.hidden = !auto?.professions[id];
   };
   if (Object.hasOwn(catalog.professions, query.get('profession'))) form.elements.profession.value = query.get('profession');
   updateOptions();
-  for (const name of ['from', 'target']) {
-    if (/^\d{1,3}$/u.test(query.get(name) || '')) form.elements[name].value = query.get(name);
+  const prefillFromUrl = !characterId || !planFor(form.elements.profession.value);
+  if (prefillFromUrl) {
+    for (const name of ['from', 'target']) {
+      if (/^\d{1,3}$/u.test(query.get(name) || '')) form.elements[name].value = query.get(name);
+    }
   }
   form.elements.profession.addEventListener('change', updateOptions);
   const choices = document.querySelector('#leveling-choices');
@@ -211,13 +235,13 @@ try {
       if (active !== job) return;
       status.textContent = stampLabel(snapshot);
       const storage = planKey(id);
-      const state = { start, target, known, inventory: data, cap: capSetting, level, confidence, done: saved[storage]?.done || [] };
-      saved[storage] = state;
-      saveLocal(key, saved);
+      const previous = planFor(id);
+      const state = { ...previous, start, target, known, inventory: data, cap: capSetting, level, confidence, done: previous?.done || [] };
+      savePlan(storage, state);
       const checked = new Set(state.done);
       const show = plan => renderPlan(plan, checked, done => {
         state.done = done;
-        saveLocal(key, saved);
+        savePlan(storage, state);
       });
       if (runAuto) {
         const { professions, ...source } = auto;
@@ -249,7 +273,7 @@ try {
       output.append(element('p', error.message));
     }
   });
-  if (query.has('from') || query.has('target')) form.requestSubmit();
+  if (prefillFromUrl && (query.has('from') || query.has('target'))) form.requestSubmit();
 } catch (error) {
   status.textContent = error.message;
 }

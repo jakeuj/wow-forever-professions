@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { advanceRank, finishBatch, initialState, prepareBatch } from '../crafting-leveling/auto-actions.mjs';
+import { advanceRank, canCraft, finishBatch, initialState, prepareBatch } from '../crafting-leveling/auto-actions.mjs';
 import { procurement, reserve } from '../crafting-leveling/auto-cost.mjs';
 import { initialRisk, nextCraft, probabilityAtLeast, requireSkill } from '../crafting-leveling/auto-risk.mjs';
 import { DEFAULT_CONFIDENCE, searchRoute } from '../crafting-leveling/auto-search.mjs';
+import { armoryLevelingPlan, levelingPlanKey, readLevelingPlan, writeLevelingPlan } from '../crafting-leveling/state.mjs';
 
 const read = name => JSON.parse(readFileSync(new URL(`../crafting-leveling/${name}.json`, import.meta.url)));
 const catalog = read('auto-recipes');
 const fixed = read('routes');
+const recipeMap = read('battle-net-recipe-map');
 const ranks = [{ cap: 75, skill: 1, level: 5, fee: 10 }, { cap: 150, skill: 50, level: 10, fee: 500 },
   { cap: 225, skill: 125, level: 20, fee: 5000 }, { cap: 300, skill: 200, level: 35, fee: 50000 }];
 const fixture = { items: { 1: '甲材料', 2: '乙材料', 3: '半成品', 4: '圖樣' }, rods: [], tools: {}, supplies: {}, formulas: {} };
@@ -17,6 +19,71 @@ function recipe(spell, item, options = {}) {
   return { spell, name: `配方 ${spell}`, learn: 1, yellow: 300, green: 300, grey: 300,
     grant: 1, offers: [], tools: [], reagents: [[item, 1]], product: 0, output: 0, ...options };
 }
+
+test('軍械庫以已核對的法術 ID 匯入，求解器把玉蛇刀列為已學', () => {
+  assert.equal(recipeMap.catalogRelease, catalog.release);
+  for (const [profession, mapping] of Object.entries(recipeMap.professions)) {
+    const spells = Object.values(mapping);
+    assert.equal(new Set(spells).size, spells.length);
+    assert.ok(spells.every(spell => Object.hasOwn(catalog.professions[profession].recipes, spell)));
+  }
+  assert.equal(recipeMap.professions.enchanting[4289], 7418);
+  const skill = { skill: 187, maxSkill: 225, recipes: [[1986], [1986], [999999]] };
+  const plan = armoryLevelingPlan(undefined, '測試 鐵匠', skill, recipeMap.professions.blacksmithing);
+  assert.deepEqual([plan.start, plan.cap, plan.target, plan.known], [187, '225', 225, [3493]]);
+  assert.deepEqual(plan.armoryImport, { matched: 1, skipped: 1 });
+  const blade = { ...catalog.professions.blacksmithing.recipes[3493], spell: 3493, grant: 0, offers: [] };
+  assert.equal(canCraft({}, initialState(input), blade), false);
+  assert.equal(canCraft({}, initialState({ ...input, known: plan.known }), blade), true);
+});
+
+test('重新匯入只更新官方欄位，不將同名或其他專業的計畫混在一起', () => {
+  const legacy = { start: 175, cap: '225', known: [2660], target: 300, inventory: '銅錠：3', level: 40,
+    confidence: '.95', done: ['first'] };
+  const a = '測試-鐵匠';
+  const b = '另位-鐵匠';
+  const characters = { [a]: { name: '鐵匠' }, [b]: { name: '鐵匠' } };
+  const plans = { 'blacksmithing:鐵匠': legacy };
+  assert.equal(readLevelingPlan(plans, characters, 'blacksmithing', a), undefined);
+  assert.equal(readLevelingPlan(plans, { [a]: characters[a] }, 'blacksmithing', a), legacy);
+  assert.equal(readLevelingPlan(plans, {}, 'blacksmithing', '', '鐵匠'), legacy);
+
+  const makePlan = (previous, recipes, skill = 187, maxSkill = 225) =>
+    armoryLevelingPlan(previous, '鐵匠', { skill, maxSkill, recipes }, recipeMap.professions.blacksmithing);
+  const aPlan = makePlan(legacy, [[1986]]);
+  assert.deepEqual(aPlan, { ...legacy, start: 187, known: [3493], characterName: '鐵匠',
+    armoryImport: { matched: 1, skipped: 0 } });
+  plans[levelingPlanKey('blacksmithing', a)] = aPlan;
+  plans[levelingPlanKey('blacksmithing', b)] = makePlan(undefined, [], 150);
+  plans[levelingPlanKey('alchemy', a)] = { start: 75, known: [] };
+  assert.equal(readLevelingPlan(plans, characters, 'blacksmithing', a), aPlan);
+  assert.deepEqual(readLevelingPlan(plans, characters, 'blacksmithing', b).known, []);
+  assert.equal(readLevelingPlan(plans, characters, 'alchemy', a).start, 75);
+  assert.throws(() => makePlan(aPlan, undefined), /專業資料不完整/u);
+  assert.throws(() => makePlan(aPlan, [], 187, 200), /技能上限/u);
+  assert.throws(() => makePlan(aPlan, [], 300, 300), /已達練等上限/u);
+  assert.throws(() => armoryLevelingPlan(aPlan, '鐵匠', { skill: 187, maxSkill: 225, recipes: [] }, null), /配方對照/u);
+});
+
+test('保存單一角色專業能保留其他計畫，寫入失敗會回報', t => {
+  const storage = new Map();
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const local = { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) };
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: local });
+  t.after(() => {
+    if (descriptor) Object.defineProperty(globalThis, 'localStorage', descriptor);
+    else delete globalThis.localStorage;
+  });
+  const a = levelingPlanKey('blacksmithing', '測試-鐵匠');
+  const b = levelingPlanKey('alchemy', '測試-鐵匠');
+  writeLevelingPlan(a, { start: 187, known: [3493] });
+  writeLevelingPlan(b, { start: 70, known: [] });
+  const saved = [...storage];
+  assert.equal(Object.keys(JSON.parse(saved[0][1])).length, 2);
+  t.mock.method(local, 'setItem', () => { throw new Error('Storage disabled'); });
+  assert.throws(() => writeLevelingPlan(a, { start: 188 }), /Storage disabled/u);
+  assert.deepEqual([...storage], saved);
+});
 
 test('連續補貨跨價階，同一 NPC 整包不重複付款', () => {
   const shop = { ...fixture, supplies: { 2: [35, 5, '商人'] } };

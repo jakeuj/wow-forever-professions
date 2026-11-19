@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="./crafting-leveling.css?v=3">
   <script src="./crafting-leveling.js?v=2" defer></script>
   <link rel="stylesheet" href="../market/tools.css">
-  <script type="module" src="./planner.mjs?v=2"></script>
+  <script type="module" src="./planner.mjs?v=3"></script>
 </head>
 <body>
   <!-- 由 scripts/build-crafting-leveling.py 產生 -->
@@ -44,6 +44,7 @@
     <section id="calculator" class="section-wrap tool-panel" aria-labelledby="calculator-title">
       <h2 id="calculator-title">從目前技能開始算</h2>
       <p id="leveling-status" class="tool-note" role="status">讀取練等路線與行情…</p>
+      <p id="leveling-import-status" class="tool-note" role="status" hidden></p>
       <form id="leveling-form" class="tool-form" hidden>
         <label>製造專業<select name="profession"></select></label>
         <label>目前技能<input name="from" type="number" min="1" max="299" value="1" required></label>
