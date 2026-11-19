@@ -1,3 +1,5 @@
+import { change, marketItems, priceAt, sortMarketItems } from './model.mjs';
+
 // Personal market page: renders market/data.json (built by scripts/build-market-data.py
 // from the owner's Auctionator scan) as a searchable, sortable price list. Items the
 // official auction API carries (the house's listings plus its /commodities, so stackables
@@ -50,11 +52,6 @@
     toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
   };
 
-  const shortDay = iso => iso ? `${Number(iso.slice(5, 7))}/${Number(iso.slice(8, 10))}` : '';
-  // API hours are hours since the Unix epoch (UTC); show them in Taiwan time.
-  const hourDate = hour => new Date((hour + 8) * 3600e3);
-  const hourDay = hour => { const d = hourDate(hour); return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`; };
-  const hourLabel = hour => `${hourDay(hour)} ${hourDate(hour).getUTCHours()} 時`;
   const money = copper => {
     if (copper == null) return [['—', '', 'none']];
     const g = Math.floor(copper / 10000), s = Math.floor(copper / 100) % 100, c = copper % 100;
@@ -68,7 +65,6 @@
   const moneyText = copper => money(copper).map(([amount, unit]) => `${amount}${unit}`).join(' ');
 
   let items = [];
-  let latestDay = '';
   let classes = {};
   let subclasses = {};
   let shown = 0;
@@ -124,57 +120,6 @@
     history.replaceState(null, '', hash ? `#${hash}` : location.pathname + location.search);
   };
 
-  // Price in effect at `hour` in a change-point series: undefined before its first point.
-  const priceAt = (series, hour) => {
-    let value;
-    for (const [t, price] of series) {
-      if (t > hour) break;
-      value = price;
-    }
-    return value;
-  };
-
-  // The API lists every item on sale at the house (single items and /commodities alike); if a
-  // newer API snapshot lacks one the scan saw, it has sold or expired since.
-  // Give each scanned item the fields the list shows, from the API when it carries the item.
-  const merge = (auctions, apiNewer) => {
-    for (const item of items) {
-      const entry = auctions && auctions.items[item.id];
-      if (!entry || !apiNewer) {
-        const goneSinceScan = apiNewer;
-        item.now = item.price;
-        item.listed = item.day === latestDay && item.count !== 0 && !goneSinceScan;
-        item.base = item.prev;
-        item.baseLabel = shortDay(item.prevDay);
-        item.units = item.listed ? item.count : null;
-        item.when = goneSinceScan ? `${shortDay(item.day)} 掃描看到，官方已沒貨`
-          : item.listed ? `${shortDay(item.day)} 掃描` : `${shortDay(item.day)} 掃描看到`;
-        if (entry) item.series = entry[1];
-        continue;
-      }
-      const [count, series] = entry;
-      const last = series[series.length - 1];
-      const lastPrice = [...series].reverse().find(([, price]) => price != null);
-      item.series = series;
-      item.listed = last[1] != null;
-      item.now = item.listed ? last[1] : lastPrice && lastPrice[1];
-      item.units = item.listed ? count : null;
-      item.when = item.listed ? `官方 ${auctions.updatedAt.slice(11, 16)}` : `${hourLabel(last[0])}起沒貨`;
-      item.base = item.listed ? priceAt(series, apiHour - 24) : null;
-      item.baseLabel = '24 小時前';
-    }
-  };
-
-  const change = item => (item.base && item.now != null) ? (item.now - item.base) / item.base : null;
-  const sorters = {
-    quality: (a, b) => (b.quality ?? -1) - (a.quality ?? -1) || (b.now ?? 0) - (a.now ?? 0),
-    'price-desc': (a, b) => (b.now ?? 0) - (a.now ?? 0),
-    'price-asc': (a, b) => (a.now ?? Infinity) - (b.now ?? Infinity),
-    drop: (a, b) => (change(a) ?? Infinity) - (change(b) ?? Infinity),
-    count: (a, b) => (b.units ?? 0) - (a.units ?? 0),
-    name: (a, b) => a.name.localeCompare(b.name, 'zh-Hant-TW'),
-  };
-
   const apply = () => {
     const q = form.elements.q.value.trim();
     const cat = form.elements.cat.value;
@@ -182,7 +127,7 @@
     const listedOnly = form.elements.latest.checked;
     const mineOnly = form.elements.mine.checked;
     const sharedSet = shared && new Set(shared);
-    filtered = items.filter(item => {
+    const matching = items.filter(item => {
       if (sharedSet && !sharedSet.has(item.id)) return false;
       if (mineOnly && !favorites.has(item.id)) return false;
       if (q && !item.name.includes(q) && String(item.id) !== q) return false;
@@ -192,7 +137,7 @@
       if (listedOnly && !item.listed) return false;
       return true;
     });
-    filtered.sort(sorters[form.elements.sort.value] || sorters.quality);
+    filtered = sortMarketItems(matching, form.elements.sort.value);
     list.replaceChildren();
     shown = 0;
     renderMore();
@@ -535,10 +480,12 @@
 
   getJson('./data.json')
     .then(async data => {
-      latestDay = data.latestDay;
       classes = data.classes;
       subclasses = data.subclasses;
-      items = data.items.map(row => Object.fromEntries(data.fields.map((field, i) => [field, row[i]])));
+      const listing = marketItems(data, await auctionsRequest);
+      items = listing.items;
+      apiHour = listing.apiHour;
+      const { apiUpdatedAt, apiNewer } = listing;
       itemIds = new Set(items.map(item => item.id));
       // ISO strings carry the owner's +08:00 offset; show them as written, not in the viewer's zone.
       const stamp = iso => iso ? `${iso.slice(0, 10).replaceAll('-', '.')} ${iso.slice(11, 16)}` : '';
@@ -546,23 +493,15 @@
       const saved = data.savedAt ? stamp(data.savedAt) : '';
       const savedShort = saved.slice(0, 10) === scan.slice(0, 10) ? saved.slice(11) : saved;
 
-      // An older API snapshot can supply a trend, while the newer scan supplies current stock and price.
-      let auctions = await auctionsRequest;
-      const scanTime = Date.parse(data.snapshotAt || data.savedAt || data.scanStartedAt || data.latestDay);
-      if (auctions && !(Date.parse(auctions.updatedAt) >= scanTime - 3 * 3600e3 && auctions.hours?.length)) auctions = null;
-      apiHour = auctions ? auctions.hours[auctions.hours.length - 1] : null;
-      const apiNewer = auctions && Date.parse(auctions.updatedAt) > scanTime;
-      merge(auctions, apiNewer);
-
       $('[data-market-scan]').textContent = `完整掃描 ${scan}`;
       $('[data-market-total]').textContent = `${items.length.toLocaleString('zh-TW')} 件物品`;
       const apiChip = $('[data-market-api]');
-      if (apiChip && auctions) {
-        apiChip.textContent = `${apiNewer ? '官方 API' : '官方走勢'} ${stamp(auctions.updatedAt).slice(5)}`;
+      if (apiChip && apiUpdatedAt) {
+        apiChip.textContent = `${apiNewer ? '官方 API' : '官方走勢'} ${stamp(apiUpdatedAt).slice(5)}`;
         apiChip.hidden = false;
       }
       $('[data-market-generated]').textContent = `完整掃描 / ${scan}${saved ? `・存檔 ${savedShort}` : ''}`
-        + `${auctions ? `・官方 API ${stamp(auctions.updatedAt)}` : ''}・客戶端 ${data.build}`;
+        + `${apiUpdatedAt ? `・官方 API ${stamp(apiUpdatedAt)}` : ''}・客戶端 ${data.build}`;
       fillCategories();
       readHash();
       form.hidden = false;

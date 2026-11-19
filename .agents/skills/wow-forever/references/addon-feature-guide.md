@@ -118,6 +118,10 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 
 遊戲內的完整掃描、自動選路、缺料處理及匯入步驟見 [專業衝等操作](profession-addon-workflow.md)。
 
+### 常見狀況
+
+掃描、選路、同步及匯入問題見 [專業衝等常見狀況](profession-addon-workflow.md#常見狀況)。
+
 ## 選用時的功能分工
 
 | 想補足的能力 | 優先比較 |

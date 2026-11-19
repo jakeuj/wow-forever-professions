@@ -12,9 +12,10 @@
 | --- | --- |
 | 公會首頁 | `index.html` 是招募文案、公開聯絡人與玩家工具入口的來源。複製互動和首頁舊網址在 `guild/`。 |
 | 公會資料 | `guild/overview.mjs` 顯示概況，`professions/artisans/` 提供配方搜尋。`scripts/collect_guild.py` 建立快照，`guild/worker/` 發布與讀取。 |
+| 軍械庫與練等匯入 | `guild/worker/armory.mjs` 讀角色資料，`players/players.mjs` 提供匯入操作，`crafting-leveling/state.mjs` 管理練等計畫。端點規則見 [Battle.net API（永恆）](.agents/skills/wow-forever/references/battlenet-api.md#角色與公會)。 |
 | 專業與傳承 | `professions/` 內的 `data.mjs` 定義方案、配對及點數規則，`planner.mjs` 控制切換與分享，`milestones.mjs` 讀寫進度。 |
 | 六項製造升級 | `crafting-leveling/planner.mjs` 控制網頁試算，`auto-search.mjs` 搜尋自動路線。Python 建置入口為 `scripts/build-crafting-leveling.py`，各模組和產物見[練等來源與產物](#練等來源與產物)。 |
-| 行情與採購 | `market/` 讀官方拍賣資料與本機掃描快照。各採購頁的購物清單由 `endgame/ah-copy.js` 匯整。 |
+| 行情與採購 | `market/model.mjs` 合併官方與掃描快照、計算漲跌及排序，`market/market.js` 處理載入與頁面互動。購物清單由 `endgame/ah-copy.js` 匯整。行情規則可用 `node --test scripts/market.test.mjs` 驗證。 |
 
 新增工具時沿用目錄下的 `index.html` 和站內相對連結。分享網址、錨點與瀏覽器儲存鍵都屬於既有介面，變更時先驗證舊資料與連結。
 
@@ -77,7 +78,7 @@
 - 價格與角色進度是手動更新的快照，更新時同步頁面上的快照日期。
 - 行情頁讀 `market/data.json`。在遊戲內完整掃描後輸入 `/reload`，再執行 `python3 scripts/build-market-data.py`。程式優先選 `PvP Horde` 資料庫，同輪有無限副本手冊的完整快照時，採用其最低價與在售量。舊資料保留給收藏與分享，直到再次掃到前顯示為歷史掛單。名稱、分類與圖示取自遊戲資料表和 Wowhead。
 - 官方拍賣價：`.github/workflows/auction-collect.yml` 每小時執行 `scripts/collect-auctions.py`，把亞服 PvP 部落拍賣場（TW 區 113 號）單件掛單與 `/commodities`（能堆疊的物品，回應的清單 key 是 `auctions`）的最低單價與上架件數寫進 `auction-data` 分支的 `auctions.json`：`/commodities` 失敗或不是同一小時的資料時整個小時跳過；最近 7 天逐小時，更早每天留一個最低價，保留 90 天。行情頁從 `raw.githubusercontent.com` 讀這個檔，所以 `main` 不會每小時多一個 commit，Pages 也不用重建；讀不到或比掃描舊 3 小時以上時，整頁改用掃描價格。憑證放在 repo Secrets 的 `BLIZZARD_CLIENT_ID`、`BLIZZARD_CLIENT_SECRET`；手動執行的 `auction-probe.yml` 可重新確認哪一間是部落拍賣場。公開 repo 的排程在 60 天沒有活動後會被 GitHub 停用，到 Actions 分頁重新啟用即可。
-- 官方 API 涵蓋率：手動執行的 `.github/workflows/api-probe.yml` 跑技能的 `scripts/forever_api_coverage.py`，把官方 Retail／Classic 文件列出的每個端點換成永恆路徑呼叫一次，結果寫進 Step Summary 與 `api-probe` artifact，不 commit。測試角色放在選填的 repo Secret `FOREVER_PROBE_CHARACTER`（`名字-姓氏`），輸出時會遮掉。本機查詢用技能的 `scripts/forever_api.py`，憑證讀環境變數或 macOS 鑰匙圈；整理結果見技能的 `references/battlenet-api.md`。
+- 官方 API 涵蓋率：手動執行的 `.github/workflows/api-probe.yml` 跑技能的 `scripts/forever_api_coverage.py`，把官方 Retail／Classic 文件列出的每個端點換成永恆路徑呼叫一次，結果寫進 Step Summary 與 `api-probe` artifact。選填的 repo Secret `FOREVER_PROBE_CHARACTER`（`名字-姓氏`）供角色端點取樣，輸出時會遮掉。操作見 [端點實測與探測](.agents/skills/wow-forever/references/battlenet-api-coverage.md)，個別查詢與憑證設定見 [本機查詢工具](.agents/skills/wow-forever/references/battlenet-local-tools.md)。
 - 練等頁的 HTML 是路線與價格的快照；`leveling/leveling.js` 開頁時讀 `market/data.json`（依物品 ID），重算單價、小計、佔比、階段合計與設計圖價，所以重建行情資料後材料費會跟著更新。路線本身要重排時，執行技能的 `scripts/leveling_route.py --from 200 --market-json market/data.json --json > route.json`，再跑 `python3 scripts/build-leveling-page.py route.json` 填好頁面的路線、材料與設計圖表（標記外的說明文字手改）。路線會扣掉拍賣場買掉的件數，不夠就換配方或自製中間材料。
 
 ## 六項製造升級總覽
