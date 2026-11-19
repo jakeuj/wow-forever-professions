@@ -32,7 +32,9 @@ jobs:
         env:
           BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
           BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
-        run: python3 scripts/collect-auctions.py --out auction-data/auctions.json
+          DAWNBLADE_PUBLISH_URL: ${{ vars.DAWNBLADE_PUBLISH_URL }}
+          DAWNBLADE_PUBLISH_TOKEN: ${{ secrets.DAWNBLADE_PUBLISH_TOKEN }}
+        run: python3 scripts/collect-auctions.py --out auction-data/auctions.json --publish-depth
       - name: Commit to the data branch
         working-directory: auction-data
         run: |

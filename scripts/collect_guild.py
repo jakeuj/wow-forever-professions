@@ -78,7 +78,7 @@ def build_overview(guild, characters, classes, last_modified, now):
     }
 
 
-def load_catalog(api, pool):
+def load_catalog(api, pool, with_profession=False):
     def get_profession(profession_id):
         return get_data(api, f"/data/wow/profession/{profession_id}", "static")["payload"]
 
@@ -90,12 +90,64 @@ def load_catalog(api, pool):
     professions = list(pool.map(get_profession, MANUFACTURING))
     tiers = [(entry["id"], tier["id"]) for entry in professions for tier in entry["skill_tiers"]]
     return {
-        row["id"]: label(row.get("name"))
-        for tier in pool.map(get_tier, tiers)
+        row["id"]: (profession_id, label(row.get("name"))) if with_profession else label(row.get("name"))
+        for (profession_id, _), tier in zip(tiers, pool.map(get_tier, tiers))
         for category in tier.get("categories", [])
         for row in category.get("recipes", [])
         if label(row.get("name"))
     }
+
+
+def recipe_reference(value):
+    if not isinstance(value, dict) or type(value.get("id")) is not int:
+        return None
+    return {"id": value["id"], "name": label(value.get("name"))}
+
+
+def recipe_record(recipe_id, profession_id, name, data):
+    product = recipe_reference(data.get("horde_crafted_item") or data.get("crafted_item"))
+    quantity = data.get("crafted_quantity") or {}
+    if not isinstance(quantity, dict):
+        quantity = {"value": quantity}
+    units = quantity.get("value") or quantity.get("minimum") or (1 if not quantity else None)
+    if type(units) not in (int, float) or not 1 <= units <= 1000 or not float(units).is_integer():
+        units = None
+    reagents = data.get("reagents")
+    materials = None
+    if isinstance(reagents, list):
+        materials = []
+        for row in reagents:
+            item = recipe_reference(row.get("reagent"))
+            count = row.get("quantity")
+            if not item or type(count) is not int or count <= 0:
+                materials = None
+                break
+            materials.append({**item, "quantity": count})
+    return {
+        "id": recipe_id, "profession": profession_id, "name": label(data.get("name")) or name,
+        "product": product, "units": int(units) if product and units else None, "materials": materials,
+        "effect": label(data.get("description")) if profession_id == 333 and not product else "",
+    }
+
+
+def refresh_recipes(api, publisher, now):
+    def detail(entry):
+        recipe_id, (profession_id, name) = entry
+        result = api.get(f"/data/wow/recipe/{recipe_id}", kind="static", timeout=8)
+        data = result["payload"]
+        if result["status"] == 404:
+            return None
+        if result["status"] != 200 or not isinstance(data, dict):
+            raise SnapshotError("Recipe catalog lookup failed")
+        return recipe_record(recipe_id, profession_id, name, data)
+
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        catalog = load_catalog(api, pool, with_profession=True)
+        recipes = [row for row in pool.map(detail, sorted(catalog.items())) if row]
+    if not recipes:
+        raise SnapshotError("Recipe catalog is empty")
+    publisher.send("recipes", {**snapshot_dates(now), "recipes": recipes})
+    print(f"Recipe catalog published: {len(recipes)} records")
 
 
 def read_artisan(api, character):
@@ -121,7 +173,8 @@ def read_artisan(api, character):
     name = " ".join(part for field in ("name", "surname") if (part := label(character.get(field))))
     if not name:
         raise ValueError("Character has no display name")
-    return {"characterId": character["id"], "name": name, "professions": skills}
+    return {"characterId": character["id"], "name": name, "professions": skills,
+            "slug": character["slug"], "level": character["level"], "classId": character["playable_class"]["id"]}
 
 
 def build_artisans(api, characters, excluded_ids, now):
@@ -229,7 +282,7 @@ def refresh_snapshots(api, publisher, excluded, now):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mode", choices=("refresh", "apply-exclusions"), default="refresh")
+    parser.add_argument("--mode", choices=("refresh", "apply-exclusions", "recipes"), default="refresh")
     args = parser.parse_args()
     excluded = get_excluded_ids(os.getenv("DAWNBLADE_EXCLUDED_CHARACTER_IDS"))
     url = os.getenv("DAWNBLADE_PUBLISH_URL")
@@ -238,12 +291,16 @@ def main():
         raise SnapshotError("Set DAWNBLADE_PUBLISH_URL and DAWNBLADE_PUBLISH_TOKEN in GitHub Actions")
     publisher = Publisher(url, token)
     now = datetime.now(timezone.utc).replace(microsecond=0)
+    if args.mode != "recipes":
+        publisher.send("character-exclusions", sorted(excluded), method="PUT")
 
     if excluded:
         removed = publish_exclusions(publisher, excluded, now)
         print(f"Artisan exclusions applied: {removed} removed")
     if args.mode == "refresh":
         refresh_snapshots(Api("tw", get_token()), publisher, excluded, now)
+    elif args.mode == "recipes":
+        refresh_recipes(Api("tw", get_token()), publisher, now)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>台服軍械庫與角色規劃｜黎明之劍</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../market/tools.css">
+  <script type="module" src="./players.mjs"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../"><img src="../assets/crest.svg" alt="" width="34" height="38"><span>黎明之劍<small>魔獸世界：永恆</small></span></a>
+    <nav aria-label="主要導覽"><a href="../professions/artisans/">工匠名冊</a><a href="#my-characters">我的角色</a></nav>
+  </header>
+  <main class="section-wrap">
+    <section class="tool-panel" aria-labelledby="armory-title">
+      <h1 id="armory-title">台服軍械庫</h1>
+      <form id="armory-search" class="tool-form">
+        <label>角色完整名稱<input name="character" required maxlength="49" placeholder="名字 姓氏" autocomplete="off"></label>
+        <button class="button-compact">查詢角色</button>
+      </form>
+      <p id="armory-status" role="status"></p>
+      <div id="armory-favorites" class="tool-actions" aria-label="收藏的角色"></div>
+      <div id="armory-result"></div>
+      <p><a class="text-link" href="../guild/data-policy/">資料來源與撤下</a></p>
+    </section>
+    <section class="tool-panel" id="my-characters" aria-labelledby="characters-title">
+      <h2 id="characters-title">我的角色與傳承</h2>
+      <form id="character-editor" class="tool-form">
+        <label>角色名稱<input name="name" required maxlength="50"></label>
+        <label>第一專業<select name="first"></select></label>
+        <label>技能<input name="firstSkill" type="number" min="1" max="300" value="1" required></label>
+        <label>第二專業<select name="second"></select></label>
+        <label>技能<input name="secondSkill" type="number" min="1" max="300" value="1" required></label>
+        <button class="button-compact">儲存角色</button>
+      </form>
+      <p id="character-status" role="status"></p>
+      <div id="character-progress"></div>
+      <div id="character-list" class="tool-cards"></div>
+    </section>
+  </main>
+</body>
+</html>

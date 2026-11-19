@@ -107,3 +107,23 @@ def lowest_prices(auctions, commodities):
         if unit and item is not None:
             add(item, unit, unit, row.get("quantity") or 1)
     return best
+
+
+def auction_depth(auctions, commodities):
+    """Roll up immediately purchasable listings at each unit price."""
+    depth = {}
+    invalid = set()
+    for rows, stackable in ((auctions, False), (commodities, True)):
+        for row in rows:
+            item = (row.get("item") or {}).get("id")
+            price = row.get("unit_price" if stackable else "buyout")
+            quantity = row.get("quantity", 1)
+            if not isinstance(item, int) or not isinstance(price, int) or price <= 0:
+                continue
+            if not isinstance(quantity, int) or quantity <= 0 or (not stackable and quantity != 1):
+                invalid.add(item)
+                continue
+            levels = depth.setdefault(item, {})
+            levels[price] = levels.get(price, 0) + quantity
+    return {str(item): None if item in invalid else sorted(depth[item].items())
+            for item in sorted(depth.keys() | invalid)}

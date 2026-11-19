@@ -18,9 +18,10 @@ function element(tag, className, text) {
   return node;
 }
 
-function artisanRow({ name, skill, maxSkill }) {
+function artisanRow({ name, skill, maxSkill, slug }) {
   const row = element('li', 'artisan-person');
-  const character = element('span', 'artisan-name', name);
+  const character = element('a', 'artisan-name text-link', name);
+  character.href = `../../players/?character=${encodeURIComponent(slug || name.replace(/\s+/gu, '-').toLowerCase())}`;
   const points = element('span', 'artisan-skill', `技能 ${skill} / ${maxSkill}`);
   const copy = element('button', 'button-compact', '複製名稱');
   copy.type = 'button';
@@ -58,7 +59,9 @@ function recipeRow(recipe, professions, expanded) {
   );
   const people = element('ul', 'artisan-people');
   people.append(...recipe.artisans.map(artisanRow));
-  details.append(heading, people);
+  const estimate = element('a', 'text-link', '估材料與代工費');
+  estimate.href = `../recipes/?recipe=${recipe.id}`;
+  details.append(heading, people, estimate);
   row.append(details);
   return row;
 }

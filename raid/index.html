@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>團本備戰清單｜黎明之劍</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../market/tools.css">
+  <script type="module" src="./raid.mjs"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../"><img src="../assets/crest.svg" alt="" width="34" height="38"><span>黎明之劍<small>魔獸世界：永恆</small></span></a>
+    <nav aria-label="主要導覽"><a href="../market/#bulk">批量採購</a><a href="../professions/recipes/">製造估價</a></nav>
+  </header>
+  <main class="section-wrap">
+    <section class="tool-panel" aria-labelledby="raid-title">
+      <h1 id="raid-title">團本備戰清單</h1>
+      <p id="raid-status" class="tool-note" role="status"></p>
+      <form class="tool-form" id="raid-role" hidden>
+        <label>我的職責<select name="role"><option value="tank">坦克</option><option value="healer">治療</option><option value="damage">輸出</option></select></label>
+      </form>
+      <div id="raid-checklist"></div>
+      <div id="raid-quote" aria-live="polite"></div>
+      <details id="raid-editor-panel" open>
+        <summary>編輯與分享團本清單</summary>
+        <p>每列填「物品名稱：數量」或「物品 ID：數量」。全團與職責的相同物品會合併。</p>
+        <form class="tool-form" id="raid-editor">
+          <label>清單名稱<input name="title" value="團本備戰" maxlength="60" required></label>
+          <label>全團共用<textarea name="common" rows="4" maxlength="4000"></textarea></label>
+          <label>坦克加帶<textarea name="tank" rows="4" maxlength="4000"></textarea></label>
+          <label>治療加帶<textarea name="healer" rows="4" maxlength="4000"></textarea></label>
+          <label>輸出加帶<textarea name="damage" rows="4" maxlength="4000"></textarea></label>
+          <button class="button-compact">產生清單</button>
+        </form>
+        <div class="tool-actions" id="raid-share"></div>
+      </details>
+    </section>
+  </main>
+</body>
+</html>

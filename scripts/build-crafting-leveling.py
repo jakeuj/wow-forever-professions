@@ -3,7 +3,7 @@
 
 import argparse
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta, timezone
 from fractions import Fraction
 from html import escape
@@ -14,6 +14,7 @@ import re
 from string import Template
 import sys
 import tempfile
+from zipfile import ZipFile
 
 
 REPO = Path(__file__).resolve().parent.parent
@@ -401,10 +402,7 @@ def select_route(slug, handbook, recipes, facts, market):
     return label, phases, stages, cumulative
 
 
-def load_inputs(root, selected, snapshot=None):
-    client = root if root.name == "_forever_" else root / "_forever_"
-    data_dir = client / "Interface/AddOns/DungeonsForeverProf/Core/Data"
-    stamp, depth = read_auction_snapshot(snapshot) if snapshot else read_scan(client, selected)
+def load_catalog_inputs(data_dir):
     facts = json.loads(ROUTE_FACTS.read_text(encoding="utf-8"))
     base_names = table(data_dir / "zhTW/Data_ProfItemNames.lua", "ns.ProfItemNames")
     market_json = json.loads((REPO / "market/data.json").read_text(encoding="utf-8"))
@@ -416,16 +414,68 @@ def load_inputs(root, selected, snapshot=None):
         return curated_names.get(item) or market_names.get(item) or base_names.get(item) or f"物品 {item}"
 
     vendor_names = table(data_dir / "zhTW/Data_ProfVendorNames.lua", "ns.ProfVendorNames")
-    market = Market(
-        depth,
-        offer_map(table(data_dir / "Data_ProfMaterialSupply.lua", "ns.ProfMaterialSupply"), 5, vendor_names),
-        offer_map(table(data_dir / "Data_ProfFormulaOffers.lua", "ns.ProfFormulaOffers"), 8, vendor_names, formulas=True),
-    )
+    supplies = offer_map(table(data_dir / "Data_ProfMaterialSupply.lua", "ns.ProfMaterialSupply"), 5, vendor_names)
+    formulas = offer_map(table(data_dir / "Data_ProfFormulaOffers.lua", "ns.ProfFormulaOffers"), 8, vendor_names, formulas=True)
     handbook = table(data_dir / "zhTW/Data_ProfLeveling.lua", "ns.ProfLeveling")
     recipes = load_recipes(data_dir, facts, name)
+    return name, facts, supplies, formulas, handbook, recipes
+
+
+def load_inputs(root, selected, snapshot=None):
+    client = root if root.name == "_forever_" else root / "_forever_"
+    data_dir = client / "Interface/AddOns/DungeonsForeverProf/Core/Data"
+    stamp, depth = read_auction_snapshot(snapshot) if snapshot else read_scan(client, selected)
+    name, facts, supplies, formulas, handbook, recipes = load_catalog_inputs(data_dir)
+    market = Market(depth, supplies, formulas)
     results = {slug: select_route(slug, handbook[slug], recipes[slug], facts, market) for slug in PROFESSIONS}
     first_round = market.quote([phases[0] for _, phases, _, _ in results.values()])
     return stamp, name, results, first_round
+
+
+def leveling_catalog(data_dir, release):
+    name, facts, supplies, formulas, handbook, recipes = load_catalog_inputs(data_dir)
+    professions = {}
+    items = set()
+    for slug, label in PROFESSIONS.items():
+        routes = []
+        used = set(facts["components"].get(slug, ()))
+        for title, steps in candidate_steps(slug, handbook[slug], recipes[slug], facts):
+            try:
+                compile_route(slug, steps, recipes[slug], facts)
+            except (KeyError, ValueError):
+                continue
+            routes.append({"name": title, "steps": steps})
+            used.update(row[2] for row in steps)
+        if not routes:
+            raise ValueError(f"{label}沒有完整的候選路線")
+        used.update(facts["tools"].get(str(item)) for spell in tuple(used) for item in recipes[slug][spell].tools)
+        exported = {spell: asdict(recipes[slug][spell]) for spell in sorted(used - {None})}
+        professions[slug] = {
+            "name": label, "routes": routes, "recipes": exported, "components": facts["components"].get(slug, []),
+            "rankFees": facts["rankFees"][slug],
+        }
+        for recipe in exported.values():
+            items.update((recipe["product"], recipe["formula"], *recipe["tools"]))
+            items.update(item for item, _ in (*recipe["reagents"], *recipe["unlock_materials"]))
+    return {
+        "schema": 1, "release": release, "professions": professions, "tools": facts["tools"], "rods": RODS,
+        "items": {item: name(item) for item in sorted(items - {0})},
+        "supplies": {item: value for item, value in supplies.items() if item in items},
+        "formulas": {item: value for item, value in formulas.items() if item in items},
+    }
+
+
+def export_leveling_catalog(archive, output):
+    prefix = "DungeonsForeverProf/Core/Data/"
+    names = ("Data_ProfMaterialSupply.lua", "Data_ProfFormulaOffers.lua",
+             *(f"zhTW/Data_Prof{name}.lua" for name in ("ItemNames", "Leveling", "Recipes", "VendorNames")))
+    with ZipFile(archive) as package, tempfile.TemporaryDirectory() as staging:
+        data_dir = Path(staging)
+        (data_dir / "zhTW").mkdir()
+        for filename in names:
+            (data_dir / filename).write_bytes(package.read(prefix + filename))
+        catalog = leveling_catalog(data_dir, archive.name)
+    output.write_text(json.dumps(catalog, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
 
 
 def gold(copper):
@@ -610,7 +660,10 @@ def render(stamp, name, results, first_round, *, official=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", required=True, type=Path, help="WoW install root or _forever_")
+    parser.add_argument("--root", type=Path, help="WoW install root or _forever_")
+    parser.add_argument("--addon-zip", type=Path, help="verified DungeonsForever ZIP for a browser leveling catalog")
+    parser.add_argument("--catalog-out", type=Path, default=REPO / "crafting-leveling/routes.json")
+    parser.add_argument("--scan-depth-out", type=Path, help="write the validated Horde scan as a browser fallback")
     source = parser.add_mutually_exclusive_group()
     source.add_argument("--file", type=Path, help="select a specific Auctionator.lua save")
     source.add_argument("--auction-snapshot", type=Path, help="official TW Horde snapshot JSON with updatedAt and depth by item id")
@@ -618,8 +671,24 @@ def main():
     parser.add_argument("--check", action="store_true", help="verify that the published HTML matches the input")
     args = parser.parse_args()
     try:
+        if args.addon_zip:
+            export_leveling_catalog(args.addon_zip, args.catalog_out)
+            return
+        if not args.root:
+            parser.error("--root is required when building the HTML guide")
+        if args.scan_depth_out and (args.auction_snapshot or args.check):
+            parser.error("--scan-depth-out requires a real scan and a normal build")
         stamp, name, results, first_round = load_inputs(args.root, args.file, args.auction_snapshot)
         html = render(stamp, name, results, first_round, official=bool(args.auction_snapshot))
+        if args.scan_depth_out:
+            client = args.root if args.root.name == "_forever_" else args.root / "_forever_"
+            scan_stamp, depth = read_scan(client, args.file)
+            ladder = {item: [[float(price), count] for price, count in levels] if levels else None
+                      for item, levels in depth.items()}
+            args.scan_depth_out.write_text(json.dumps({
+                "schema": 1, "source": "scan", "region": "tw", "ruleset": 1, "house": 113,
+                "updatedAt": scan_stamp.isoformat(), "depth": ladder,
+            }, separators=(",", ":")) + "\n", encoding="utf-8")
     except (OSError, ValueError, KeyError, IndexError, TypeError) as error:
         parser.exit(1, f"無法重建升級頁。{error}\n")
     if args.check:

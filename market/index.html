@@ -18,6 +18,8 @@
   <link rel="stylesheet" href="../style.css?v=20261119-guild">
   <link rel="stylesheet" href="../endgame/endgame.css?v=20261119-inline-links">
   <link rel="stylesheet" href="./market.css?v=20261119-guild">
+  <link rel="stylesheet" href="./tools.css">
+  <script type="module" src="./bulk.mjs"></script>
   <script src="../endgame/ah-copy.js?v=20261119-shopping" defer></script>
   <script src="./market.js?v=20261119-shopping" defer></script>
 </head>
@@ -42,6 +44,17 @@
       <p class="eg-privacy"><span aria-hidden="true">✧</span>價格是掛單價，不是成交價；掃描之後可能已經被買走。對面陣營與中立拍賣場的價格請看阿莫比。</p>
     </section>
 
+    <section id="bulk" class="section-wrap tool-panel" aria-labelledby="bulk-title">
+      <h2 id="bulk-title">批量採購</h2>
+      <p id="bulk-status" class="tool-note" role="status">讀取各價位在售量…</p>
+      <form id="bulk-form" class="tool-form">
+        <label>物品名稱或 ID<input name="item" list="bulk-items" required autocomplete="off"></label>
+        <datalist id="bulk-items"></datalist>
+        <label>需求件數<input name="amount" type="number" min="1" max="999999" value="100" required></label>
+        <button class="button-compact">試算採買</button>
+      </form>
+      <div id="bulk-result" aria-live="polite"></div>
+    </section>
     <section id="prices" class="eg-section section-wrap" aria-labelledby="prices-title">
       <div class="section-heading"><div><p class="eyebrow">01 / PRICES</p><h2 id="prices-title">拍賣場上的物品。</h2></div><p>點物品名稱可以複製遊戲內的完整名稱，到拍賣場搜尋欄貼上；點名稱旁的 ☆ 可以收藏，再用連結分享給朋友。</p></div>
       <form class="mk-controls" data-market-form hidden>

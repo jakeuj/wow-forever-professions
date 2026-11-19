@@ -28,8 +28,10 @@ import json
 import os
 from pathlib import Path
 import sys
+from urllib.error import URLError
 
-from blizzard_api import Api, commodity_rows, get_token, lowest_prices
+from blizzard_api import Api, auction_depth, commodity_rows, get_token, lowest_prices
+from collect_guild import Publisher, SnapshotError
 
 TW = datetime.timezone(datetime.timedelta(hours=8))
 
@@ -105,9 +107,20 @@ def main():
     parser.add_argument("--keep-days", type=int, default=90, help="days kept in all (older days: daily low)")
     parser.add_argument("--min-share", type=float, default=0.4,
                         help="skip a snapshot listing fewer items than this share of the last one")
+    parser.add_argument("--publish-depth", action="store_true", help="publish the latest TW Horde ladder to Workers KV")
     args = parser.parse_args()
 
-    api = Api(args.region, get_token())
+    token = get_token()
+    publisher = None
+    if args.publish_depth:
+        if (args.region, args.ruleset, args.house) != ("tw", 1, 113):
+            parser.error("--publish-depth requires the TW PvP Horde auction house 113")
+        publisher = Publisher(os.environ["DAWNBLADE_PUBLISH_URL"], os.environ["DAWNBLADE_PUBLISH_TOKEN"])
+        try:
+            publisher.send("battle-net-token", {"accessToken": token})
+        except (SnapshotError, URLError, TimeoutError):
+            summarize("::warning::Armory authorization could not be refreshed.")
+    api = Api(args.region, token)
     base = f"/data/wow/ruleset/{args.ruleset}/auctions/{args.house}"
     auctions = api.get(base)
     if auctions["status"] != 200 or not auctions["last_modified"]:
@@ -122,17 +135,36 @@ def main():
         summarize(f"::warning::commodities of house {args.house}: HTTP {commodities['status']}, "
                   f"Last-Modified {c_modified} vs {auctions['last_modified']}; nothing recorded")
         return
-    prices = lowest_prices((auctions["payload"] or {}).get("auctions"), commodity_rows(commodities["payload"]))
+    single_rows = (auctions["payload"] or {}).get("auctions") or []
+    stackable_rows = commodity_rows(commodities["payload"])
+    if not isinstance(single_rows, list) or not isinstance(stackable_rows, list) or (
+        (args.region, args.ruleset, args.house) == ("tw", 1, 113) and not (single_rows and stackable_rows)
+    ):
+        summarize("::warning::The latest Horde snapshot is missing auction rows; nothing recorded.")
+        return
+    prices = lowest_prices(single_rows, stackable_rows)
 
     data = json.loads(args.out.read_text(encoding="utf-8")) if args.out.is_file() else {"hours": [], "items": {}}
     items, hours = data["items"], data["hours"]
-    if hours and hour <= hours[-1]:
-        summarize(f"Snapshot {iso_tw(modified)} is already recorded; nothing to do.")
-        return
     listed_before = sum(1 for count, series in items.values() if series[-1][1] is not None)
     if not prices or len(prices) < args.min_share * listed_before:
         summarize(f"::warning::snapshot {iso_tw(modified)} lists {len(prices)} items against "
                   f"{listed_before} last time; skipped as incomplete")
+        return
+
+    if publisher:
+        try:
+            publisher.send("market-depth", {
+                "schema": 1, "source": "official", "region": args.region, "ruleset": args.ruleset,
+                "house": args.house, "updatedAt": modified.isoformat(),
+                "depth": auction_depth(single_rows, stackable_rows),
+            })
+        except (SnapshotError, URLError, TimeoutError):
+            summarize("::warning::Price ladder could not be published; continuing with market history.")
+        else:
+            summarize(f"Price ladder published for {iso_tw(modified)}.")
+    if hours and hour <= hours[-1]:
+        summarize(f"Snapshot {iso_tw(modified)} is already recorded; nothing to do.")
         return
 
     changed = gone = new = 0

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>製造估價與利潤｜黎明之劍</title>
+  <link rel="icon" type="image/svg+xml" href="../../assets/crest.svg">
+  <link rel="stylesheet" href="../../style.css">
+  <link rel="stylesheet" href="../../market/tools.css">
+  <script type="module" src="./recipes.mjs"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../../"><img src="../../assets/crest.svg" alt="" width="34" height="38"><span>黎明之劍<small>魔獸世界：永恆</small></span></a>
+    <nav aria-label="主要導覽"><a href="../artisans/">工匠名冊</a><a href="../../market/#bulk">批量採購</a></nav>
+  </header>
+  <main class="section-wrap">
+    <section class="tool-panel" aria-labelledby="recipe-title">
+      <h1 id="recipe-title">製造估價與利潤</h1>
+      <p class="tool-note" id="recipe-status" role="status">讀取配方及拍賣行情…</p>
+      <form id="recipe-search" class="tool-form" hidden>
+        <label>成品或配方<input type="search" name="keyword" placeholder="例如亞麻布包"></label>
+        <label>製造專業<select name="profession"><option value="">全部專業</option></select></label>
+        <label>材料最低在售件數<input type="number" name="stock" min="0" max="999999" value="0" required></label>
+        <label>拍賣抽成（%）<input type="number" name="fee" min="0" max="100" step=".1" placeholder="選填"></label>
+        <label><input type="checkbox" name="known">只列已學配方</label>
+        <button class="button-compact">搜尋與排序</button>
+      </form>
+      <div id="recipe-selection"></div>
+      <div id="recipe-results" aria-live="polite"></div>
+    </section>
+  </main>
+</body>
+</html>

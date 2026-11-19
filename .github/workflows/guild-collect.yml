@@ -8,7 +8,7 @@ on:
       mode:
         description: Refresh original data or remove excluded artisans from the current snapshot
         type: choice
-        options: [refresh, apply-exclusions]
+        options: [refresh, apply-exclusions, recipes]
         default: refresh
 
 permissions:
@@ -33,3 +33,11 @@ jobs:
           DAWNBLADE_EXCLUDED_CHARACTER_IDS: ${{ secrets.DAWNBLADE_EXCLUDED_CHARACTER_IDS }}
           DAWNBLADE_JOB_MODE: ${{ inputs.mode || 'refresh' }}
         run: python3 scripts/collect_guild.py --mode "$DAWNBLADE_JOB_MODE"
+      - name: Publish recipe catalog
+        if: ${{ !inputs.mode || inputs.mode == 'refresh' }}
+        env:
+          BLIZZARD_CLIENT_ID: ${{ secrets.BLIZZARD_CLIENT_ID }}
+          BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
+          DAWNBLADE_PUBLISH_URL: ${{ vars.DAWNBLADE_PUBLISH_URL }}
+          DAWNBLADE_PUBLISH_TOKEN: ${{ secrets.DAWNBLADE_PUBLISH_TOKEN }}
+        run: python3 scripts/collect_guild.py --mode recipes

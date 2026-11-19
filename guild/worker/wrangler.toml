@@ -6,3 +6,8 @@ workers_dev = true
 [[kv_namespaces]]
 binding = "SNAPSHOTS"
 id = "41656027e480400dbba01b2fa114d68c"
+
+[[ratelimits]]
+name = "PROFILE_RATE"
+namespace_id = "47113"
+simple = { limit = 20, period = 60 }

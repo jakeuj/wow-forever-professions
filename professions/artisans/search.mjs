@@ -9,7 +9,7 @@ export function buildRecipeIndex(snapshot) {
         if (!recipe) continue;
         const key = `${professionId}:${id}`;
         if (!groups.has(key)) groups.set(key, { id, professionId, ...recipe, artisans: [] });
-        groups.get(key).artisans.push({ name: artisan.name, skill, maxSkill });
+      groups.get(key).artisans.push({ name: artisan.name, skill, maxSkill, slug: artisan.slug });
       }
     }
   }

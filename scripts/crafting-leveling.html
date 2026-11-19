@@ -12,6 +12,8 @@
   <link rel="stylesheet" href="../endgame/endgame.css?v=20261119-inline-links">
   <link rel="stylesheet" href="./crafting-leveling.css?v=1">
   <script src="./crafting-leveling.js?v=1" defer></script>
+  <link rel="stylesheet" href="../market/tools.css">
+  <script type="module" src="./planner.mjs"></script>
 </head>
 <body>
   <!-- 由 scripts/build-crafting-leveling.py 產生 -->
@@ -37,6 +39,21 @@
         <p class="cl-note">$first_note</p>
         <a class="text-link" href="#priority">查看起手順序 ↓</a>
       </div>
+    </section>
+
+    <section id="calculator" class="section-wrap tool-panel" aria-labelledby="calculator-title">
+      <h2 id="calculator-title">從目前技能開始算</h2>
+      <p id="leveling-status" class="tool-note" role="status">讀取練等路線與行情…</p>
+      <form id="leveling-form" class="tool-form" hidden>
+        <label>製造專業<select name="profession"></select></label>
+        <label>目前技能<input name="from" type="number" min="1" max="299" value="1" required></label>
+        <label>目標技能<input name="target" type="number" min="2" max="300" value="150" required></label>
+        <label>已學配方<select name="known" multiple size="4"></select></label>
+        <label>手邊材料，每列一項<textarea name="inventory" placeholder="瑟銀錠：20"></textarea></label>
+        <button class="button-compact">比較路線</button>
+      </form>
+      <div id="leveling-choices" class="tool-actions" aria-label="路線方案"></div>
+      <div id="leveling-result" aria-live="polite"></div>
     </section>
 
     <section id="budget" class="eg-section section-wrap" aria-labelledby="budget-title">

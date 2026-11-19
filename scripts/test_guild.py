@@ -64,7 +64,8 @@ class GuildTests(unittest.TestCase):
         snapshot = build_artisans(api, rows, {3}, NOW)
         self.assertEqual(api.profiles, {2, 4, 5})
         self.assertEqual(snapshot["failedProfiles"], 1)
-        self.assertEqual(snapshot["artisans"], [{"characterId": 2, "name": "測試 2", "professions": [
+        self.assertEqual(snapshot["artisans"], [{"characterId": 2, "name": "測試 2", "slug": "test-2",
+                                                "level": 10, "classId": 2, "professions": [
             {"id": 197, "skill": 150, "maxSkill": 225, "recipeIds": [1, 10]},
         ]}])
         self.assertEqual(snapshot["recipes"], {

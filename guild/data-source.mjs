@@ -1,4 +1,4 @@
-const origin = 'https://dawnblade-guild-data.jakeuj.workers.dev';
+export const guildDataOrigin = 'https://dawnblade-guild-data.jakeuj.workers.dev';
 const staleAfter = 48 * 60 * 60 * 1000;
 const date = new Intl.DateTimeFormat('zh-TW', {
   timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -9,7 +9,7 @@ const stamp = new Intl.DateTimeFormat('zh-TW', {
 });
 
 export async function loadGuildSnapshot(key) {
-  const response = await fetch(`${origin}/${key}.json`, { signal: AbortSignal.timeout(10_000) });
+  const response = await fetch(`${guildDataOrigin}/${key}.json`, { signal: AbortSignal.timeout(10_000) });
   if (!response.ok) throw new Error(`Guild data HTTP ${response.status}`);
   const data = await response.json();
   if (data.schema !== 1 || !(Date.parse(data.expiresAt) > Date.now())) throw new Error('Guild data expired');
