@@ -24,7 +24,7 @@
 
 已設 `FOREVER_PROBE_CHARACTER`，[run 44447493169](https://github.com/jakeuj/wow-forever-professions/actions/runs/44447493169) 測了角色端點：31 個中 25 個回 200，結果已寫進 battlenet-api.md。報告與 artifact 裡沒有角色名。
 
-還沒確認：`professions` 的 `tiers[]` 中技能點欄位的實際名稱。探測只記三層欄位，要用本機 `forever_api.py character … --part professions` 看一次再補進文件。
+技能點欄位已在 2026-11-19 用本機 `forever_api.py`（Mac 鑰匙圈憑證）確認，寫進 battlenet-api.md：`skill_points`、`max_skill_points`、`tier`、`known_recipes`，角色端點的名稱是英文。
 
 ### 2. Windows 本機查詢
 

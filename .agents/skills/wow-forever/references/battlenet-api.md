@@ -19,7 +19,7 @@
 - **搜尋可用**：`search/item`、`search/spell`、`search/creature`、`search/mount`、`search/media`、`search/item-appearance` 回結果。搜尋結果的名稱是所有語系的物件，即使帶了 `locale`；用 `name.zh_TW=` 篩選。
 - **拍賣商品類有資料**：`/commodities` 回 200，清單的 key 是 `auctions`（不是 `commodities`），每筆 `id`、`item.id`、`quantity`、`unit_price`、`time_left`；聯盟 110 號在 10:06 UTC 有 11,725 筆。repo 的收集與探測腳本原本只讀 `commodities` key 而漏掉，2026-11-19 已修正，每小時資料現在包含材料與藥水，見[拍賣場](#拍賣場)。
 - **任務、聲望、法術、坐騎、寵物、玩具、稱號、成就、天賦**的索引與明細都有 zh_TW 資料；`quest/{id}` 有 `requirements`、`rewards`。
-- **角色專業可查**：`/profile/wow/character/{name}-{surname}/professions` 回 `primaries[]`（主專業，測試角色 2 個）與 `secondaries[]`（副專業 3 個），每項是 `profession` 加 `tiers[]`，已學配方在 `tiers[].known_recipes[]`（測試角色一個 tier 40 筆）。探測只記三層欄位，技能點的欄位名稱用 `forever_api.py character … --part professions` 直接看。中文角色名直接當 slug（`名字-姓氏`）可查。
+- **角色專業可查**：`/profile/wow/character/{name}-{surname}/professions` 回 `primaries[]`（主專業，測試角色 2 個）與 `secondaries[]`（副專業 3 個），每項是 `profession` 加 `tiers[]`，已學配方在 `tiers[].known_recipes[]`（測試角色一個 tier 40 筆）。每個 tier 有 `tier`（`name`、`id`，例如鍛造 2938）、`skill_points`、`max_skill_points`（尚未學下一階時是 225）與 `known_recipes[]`（`name`、`id`，連到鎖版本的 `static-1.60.1_70399-forever-tw`）（本次實測，2026-11-19 以 `forever_api.py` 查詢）。**角色端點的名稱一律是英文**，帶 `locale=zh_TW` 或不帶都一樣是字串；要顯示繁中，用 `id` 查 static 的 `profession/{id}`、`recipe/{id}`（例：recipe 1986 為「玉蛇刀」）。中文角色名直接當 slug（`名字-姓氏`）可查。
 - **公會用中文名當 slug 可查**：`/data/wow/guild/黎明之劍`（`profile` namespace）回 200，roster 166 人（含 `rank`）；`achievements` 與 `activity` 只有公會標頭，沒有內容。
 - **仍然沒有**：副本手冊（journal 索引全空，明細 404），所以首領掉落仍無官方來源；realm、connected realm、WoW 代幣、PvP 賽季、傳奇鑰石賽季、名人堂、住宅、盟約、艾澤萊精華、傳家寶、寵物技能、pvp／tech 天賦皆為 404 或空索引。
 
