@@ -8,7 +8,7 @@
   const PAGE = 120;
   const QUALITY = ['粗糙', '普通', '優秀', '精良', '史詩', '傳說', '神器', '傳家寶'];
   const ICON = 'https://wow.zamimg.com/images/wow/icons/medium/';
-  const AUCTIONS = 'https://raw.githubusercontent.com/jakeuj/wow-forever-professions/auction-data/auctions.json';
+  const AUCTIONS = 'https://raw.githubusercontent.com/jakeuj/wow-forever-professions/refs/heads/auction-data/auctions.json';
   const TREND_HOURS = 7 * 24;
   const $ = selector => document.querySelector(selector);
   const form = $('[data-market-form]');
@@ -27,6 +27,7 @@
   const sharedAdd = $('[data-shared-add]');
   const sharedExit = $('[data-shared-exit]');
   const ahBox = $('[data-market-ah]');
+  const ahBuy = $('[data-ah-buy]');
   const ahFav = $('[data-ah-fav]');
   const ahAll = $('[data-ah-all]');
   const ahDownload = $('[data-ah-download]');
@@ -119,6 +120,7 @@
     if (form.elements.mine.checked) params.set('mine', '1');
     if (shared) params.set('fav', shared.join('.'));
     const hash = params.toString();
+    if (!hash && location.hash && !location.hash.includes('=')) return;
     history.replaceState(null, '', hash ? `#${hash}` : location.pathname + location.search);
   };
 
@@ -138,15 +140,16 @@
   const merge = (auctions, apiNewer) => {
     for (const item of items) {
       const entry = auctions && auctions.items[item.id];
-      if (!entry) {
+      if (!entry || !apiNewer) {
         const goneSinceScan = apiNewer;
         item.now = item.price;
-        item.listed = item.day === latestDay && !goneSinceScan;
+        item.listed = item.day === latestDay && item.count !== 0 && !goneSinceScan;
         item.base = item.prev;
         item.baseLabel = shortDay(item.prevDay);
         item.units = item.listed ? item.count : null;
         item.when = goneSinceScan ? `${shortDay(item.day)} 掃描看到，官方已沒貨`
           : item.listed ? `${shortDay(item.day)} 掃描` : `${shortDay(item.day)} 掃描看到`;
+        if (entry) item.series = entry[1];
         continue;
       }
       const [count, series] = entry;
@@ -426,20 +429,21 @@
   // Auctionator shopping lists: the starred items as one exact-match list, alone or with the
   // lists of the other personal pages (helpers from endgame/ah-copy.js).
   const shopping = window.wfpShoppingLists;
+  const recommendationList = () => shopping?.pageLists || new Map();
   const favoriteList = () => {
     const names = items.filter(item => favorites.has(item.id)).map(item => item.name)
       .sort((a, b) => a.localeCompare(b, 'zh-Hant-TW'));
     const terms = shopping ? shopping.exactTerms(names) : [...new Set(names)].map(name => `"${name}"`);
     return new Map(terms.length ? [[shopping ? shopping.FAV_LIST : '行情-收藏', terms]] : []);
   };
-  const listText = lists => [...lists].map(([name, terms]) => [name, ...terms].join('^')).join('\n');
+  const listText = shopping?.listsText || (lists => [...lists].map(([name, terms]) => [name, ...terms].join('^')).join('\n'));
   const everyList = async () => {
     if (!shopping) return favoriteList();
     try {
       return await shopping.allLists([...favoriteList().values()][0] || []);
     } catch {
-      notify('讀不到其他頁面，只用這頁的收藏');
-      return favoriteList();
+      notify('讀不到其他頁面，先用本次採買清單與收藏');
+      return new Map([...recommendationList(), ...favoriteList()]);
     }
   };
   const copyLists = async (lists, label) => {
@@ -456,6 +460,7 @@
       notify('無法自動複製，已選取匯入文字，請按 Ctrl+C 或 ⌘C');
     }
   };
+  ahBuy?.addEventListener('click', () => copyLists(recommendationList(), '本次採買清單'));
   ahFav.addEventListener('click', () => copyLists(favoriteList(), `收藏清單（${favorites.size} 件）`));
   ahAll.addEventListener('click', async () => {
     const lists = await everyList();
@@ -541,18 +546,19 @@
       const saved = data.savedAt ? stamp(data.savedAt) : '';
       const savedShort = saved.slice(0, 10) === scan.slice(0, 10) ? saved.slice(11) : saved;
 
-      // Use the API only when it is not older than the scan; a stalled collector should not hide a new scan.
+      // An older API snapshot can supply a trend, while the newer scan supplies current stock and price.
       let auctions = await auctionsRequest;
-      const scanTime = Date.parse(data.savedAt || data.scanStartedAt || data.latestDay);
+      const scanTime = Date.parse(data.snapshotAt || data.savedAt || data.scanStartedAt || data.latestDay);
       if (auctions && !(Date.parse(auctions.updatedAt) >= scanTime - 3 * 3600e3 && auctions.hours?.length)) auctions = null;
       apiHour = auctions ? auctions.hours[auctions.hours.length - 1] : null;
-      merge(auctions, auctions && Date.parse(auctions.updatedAt) > scanTime);
+      const apiNewer = auctions && Date.parse(auctions.updatedAt) > scanTime;
+      merge(auctions, apiNewer);
 
       $('[data-market-scan]').textContent = `完整掃描 ${scan}`;
       $('[data-market-total]').textContent = `${items.length.toLocaleString('zh-TW')} 件物品`;
       const apiChip = $('[data-market-api]');
       if (apiChip && auctions) {
-        apiChip.textContent = `官方 API ${stamp(auctions.updatedAt).slice(5)}`;
+        apiChip.textContent = `${apiNewer ? '官方 API' : '官方走勢'} ${stamp(auctions.updatedAt).slice(5)}`;
         apiChip.hidden = false;
       }
       $('[data-market-generated]').textContent = `完整掃描 / ${scan}${saved ? `・存檔 ${savedShort}` : ''}`

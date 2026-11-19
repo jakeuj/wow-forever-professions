@@ -33,6 +33,7 @@ USER_AGENT = "Mozilla/5.0 (compatible; wow-forever-professions-site-build)"
 WAGO = "https://wago.tools/db2/{table}/csv?build={build}&locale=zhTW"
 WOWHEAD = "https://nether.wowhead.com/{env}/tw/tooltip/item/{id}"
 DAY0 = datetime.date(2020, 1, 1)
+TAIPEI = datetime.timezone(datetime.timedelta(hours=8))
 GEAR_CLASSES = {2, 4}
 
 
@@ -101,6 +102,7 @@ def main():
     parser.add_argument("--file", type=Path, help="a specific Auctionator.lua")
     parser.add_argument("--build", help="client build for name tables; default: the installed wowf build")
     parser.add_argument("--faction", default="部落", help="auction house the scan was taken at (shown on the page)")
+    parser.add_argument("--realm", help="Auctionator database key (defaults to PvP Horde when present for 部落)")
     parser.add_argument("--out", type=Path, default=REPO / "market/data.json")
     parser.add_argument("--cache", type=Path, default=Path(tempfile.gettempdir()) / "wow-forever-site-cache")
     parser.add_argument("--workers", type=int, default=4, help="parallel Wowhead lookups")
@@ -110,11 +112,27 @@ def main():
     if save is None or not save.is_file():
         sys.exit("Auctionator.lua not found; type /reload in game (or log out) first")
     realms = ap.load_price_db(save)
-    realm = max(realms, key=lambda k: len(realms[k]) if isinstance(realms[k], dict) else 0)
+    realm = args.realm
+    if realm is None:
+        realm = "PvP Horde" if args.faction == "部落" and "PvP Horde" in realms else max(
+            realms, key=lambda k: len(realms[k]) if isinstance(realms[k], dict) else 0, default=None)
+    if realm not in realms or not isinstance(realms[realm], dict) or not realms[realm]:
+        sys.exit(f"No Auctionator prices for database {realm!r}. Available: {', '.join(realms)}")
     scan = {int(k): v for k, v in realms[realm].items() if re.fullmatch(r"\d+", str(k)) and isinstance(v, dict)}
 
+    try:
+        snapshot = ap.horde_full_scan(save) if realm == "PvP Horde" else None
+    except (OSError, ValueError, IndexError) as error:
+        print(f"Could not read the companion scan: {error}", file=sys.stderr)
+        snapshot = None
+    if snapshot:
+        stamp, listings = snapshot
+        stamp = datetime.datetime.fromtimestamp(stamp, TAIPEI)
+        scan_day = (stamp.date() - DAY0).days
+        scan = {item_id: scan.get(item_id, {}) for item_id, row in listings.items()
+                if row.get("d") and row.get("q") and not row.get("failure")}
     started = ap.full_scan_started(save)
-    scan_started = datetime.datetime.fromtimestamp(started).astimezone().isoformat(timespec="minutes") if started else None
+    scan_started = datetime.datetime.fromtimestamp(started, TAIPEI).isoformat(timespec="minutes") if started else None
     build = args.build or installed_build(args.root)
     sparse = {int(r["ID"]): r for r in client_table(args.cache, build, "ItemSparse")}
     classes_of = {int(r["ID"]): (int(r["ClassID"]), int(r["SubclassID"])) for r in client_table(args.cache, build, "Item")}
@@ -126,7 +144,8 @@ def main():
     if args.out.is_file():
         old = json.loads(args.out.read_text(encoding="utf-8"))
         fields = old["fields"]
-        previous = {row[0]: dict(zip(fields, row)) for row in old["items"]}
+        if old.get("faction") == args.faction:
+            previous = {row[0]: dict(zip(fields, row)) for row in old["items"]}
 
     need_wowhead = [i for i in scan if not (previous.get(i, {}).get("icon") and (i in sparse or previous.get(i, {}).get("name")))]
     print(f"{len(scan)} items; Wowhead lookups needed: {len(need_wowhead)}", file=sys.stderr)
@@ -156,26 +175,48 @@ def main():
         if level is None and cls in GEAR_CLASSES:
             level = web.get("level", old.get("level"))
         lows, highs, avail = rec.get("l") or {}, rec.get("h") or {}, rec.get("a") or {}
-        days = sorted({int(d) for d in list(lows) + list(highs)})
+        days = {int(d) for d in list(lows) + list(highs)}
+        if snapshot:
+            days = {d for d in days if d < scan_day} | {scan_day}
+            price = round(min(tier[1] for tier in listings[item_id]["d"].values()))
+            count = listings[item_id]["q"]
+        else:
+            price = rec.get("m")
+            count = avail.get(str(max(days)), avail.get(max(days))) if days else None
         if not days:
             continue
         pick = lambda table, d: table.get(str(d), table.get(d))
-        last = days[-1]
+        last = max(days)
         latest_day = max(latest_day, last)
-        prev_day = days[-2] if len(days) > 1 else None
+        prev_day = max(days - {last}, default=None)
+        old_day = old.get("day")
+        previous_day = day_iso(prev_day) if prev_day is not None else None
+        previous_price = (pick(lows, prev_day) or pick(highs, prev_day)) if prev_day is not None else None
+        if old_day and old_day < day_iso(last) and (not previous_day or old_day > previous_day):
+            previous_day, previous_price = old_day, old.get("price")
+        elif old_day == day_iso(last) and not previous_day:
+            previous_day, previous_price = old.get("prevDay"), old.get("prev")
         rows.append([
             item_id, name, quality, cls, sub, web.get("icon") or old.get("icon"), level or None,
-            rec.get("m"), pick(avail, last), day_iso(last),
-            (pick(lows, prev_day) or pick(highs, prev_day)) if prev_day is not None else None,
-            day_iso(prev_day) if prev_day is not None else None,
+            price, count, day_iso(last),
+            previous_price, previous_day,
         ])
+
+    if realm == "PvP Horde":
+        # Auctionator 349 split the Horde database. Keep older entries addressable
+        # from favorites and shared links, with zero stock until seen again.
+        current_ids = {row[0] for row in rows}
+        for item_id, old in previous.items():
+            if item_id not in current_ids:
+                rows.append([0 if field == "count" else old.get(field) for field in fields])
 
     used_classes = {r[3] for r in rows}
     used_subclasses = {f"{r[3]}.{r[4]}" for r in rows}
     data = {
-        "generatedAt": datetime.datetime.now().astimezone().isoformat(timespec="minutes"),
+        "generatedAt": datetime.datetime.now(TAIPEI).isoformat(timespec="minutes"),
         "scanStartedAt": scan_started,
-        "savedAt": datetime.datetime.fromtimestamp(save.stat().st_mtime).astimezone().isoformat(timespec="minutes"),
+        "savedAt": datetime.datetime.fromtimestamp(save.stat().st_mtime, TAIPEI).isoformat(timespec="minutes"),
+        **({"snapshotAt": stamp.isoformat(timespec="seconds")} if snapshot else {}),
         "latestDay": day_iso(latest_day),
         "faction": args.faction,
         "build": build,

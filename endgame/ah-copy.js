@@ -5,7 +5,7 @@
 // marked .is-skip are left out. Items starred on the market page join the full export as
 // one more list, and window.wfpShoppingLists shares these helpers with market/market.js.
 (() => {
-  const PAGES = ['endgame', 'leveling', 'alchemy', 'alchemy-leveling', 'speculation'];
+  const PAGES = ['endgame', 'leveling', 'alchemy', 'alchemy-leveling', 'speculation', 'market'];
   const FAV_KEY = 'wfp.market.favorites'; // written by market/market.js
   const FAV_LIST = '行情-收藏';
   const ADDON_URL = 'https://www.curseforge.com/wow/addons/auctionator';
@@ -50,7 +50,7 @@
 
   // Read the lists before the spans below turn into buttons.
   const pageLists = collectLists(document);
-  const currentPage = (location.pathname.match(/\/(endgame|leveling|alchemy|alchemy-leveling|speculation)\/(?:index\.html)?$/) || [])[1];
+  const currentPage = (location.pathname.match(/\/([^/]+)\/(?:index\.html)?$/) || [])[1];
 
   // Names of the items starred on the market page (ids in localStorage, names in its data.json).
   const favoriteNames = async () => {
@@ -86,7 +86,7 @@
     return merged;
   };
 
-  window.wfpShoppingLists = { FAV_LIST, ADDON_URL, listsText, exactTerms, allLists };
+  window.wfpShoppingLists = { FAV_LIST, ADDON_URL, listsText, exactTerms, pageLists, allLists };
 
   const items = document.querySelectorAll('[data-ah]');
   if (!items.length) return;

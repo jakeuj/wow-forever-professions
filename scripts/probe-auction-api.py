@@ -51,7 +51,7 @@ def load_scan(path):
     data = json.loads(path.read_text(encoding="utf-8"))
     fields = data["fields"]
     rows = [dict(zip(fields, row)) for row in data["items"]]
-    rows = [r for r in rows if r["day"] == data["latestDay"] and r["price"]]
+    rows = [r for r in rows if r["day"] == data["latestDay"] and r["price"] and r.get("count") != 0]
     latest = {r["id"]: r["price"] for r in rows}
     details = {r["id"]: {"class": data["classes"].get(str(r["class"]), str(r["class"])), "count": r["count"]}
                for r in rows}

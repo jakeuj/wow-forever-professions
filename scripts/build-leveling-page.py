@@ -46,19 +46,21 @@ def card(ph):
     return ("<dl class=\"lv-figures\">\n"
             f"            <div><dt>材料</dt><dd data-lv-gross>{total(ph['gross'])}</dd></div>\n"
             f"            <div><dt>賣店收回</dt><dd>{total(ph['vendor'])}</dd></div>\n"
-            f"            <div class=\"lv-net\"><dt>實際花費</dt><dd data-lv-net>{total(ph['net'])}</dd></div>\n"
+            f"            <div class=\"lv-net\"><dt>淨成本估算</dt><dd data-lv-net>{total(ph['net'])}</dd></div>\n"
             "          </dl>")
 
 
 def plan_card(plans, counts):
-    listed = [counts.get(p["plan_id"]) for p in plans if counts.get(p["plan_id"]) is not None]
+    auction = [p for p in plans if not p["learn"].startswith("NPC ")]
+    listed = [counts[p["plan_id"]] for p in auction if counts.get(p["plan_id"])]
     stock = (f"部落各只有 {min(listed)}～{max(listed)} 張在賣" if min(listed) != max(listed)
              else f"部落各只有 {listed[0]} 張在賣") if listed else "部落目前沒貨"
     price = sum(p["plan_price"] for p in plans)
-    return (f"<h3>設計圖</h3><p>{stock}</p>\n"
+    npc_price = round(sum(p["plan_price"] for p in plans if p["learn"].startswith("NPC ")))
+    return (f"<h3>設計圖</h3><p>{stock}{'・另有商人圖紙' if npc_price else ''}</p>\n"
             "          <dl class=\"lv-figures\">\n"
-            f"            <div><dt>現在買的 {len(plans)} 張</dt><dd data-lv-plan-total>{total(price)}</dd></div>\n"
-            f"            <div><dt>學到才用</dt><dd>{'／'.join(str(p['from']) for p in plans)}</dd></div>\n"
+            f'            <div><dt>本路線 {len(plans)} 張</dt><dd data-lv-plan-total data-lv-plan-fixed="{npc_price}">{total(price)}</dd></div>\n'
+            f"            <div><dt>首次用在</dt><dd>{'／'.join(str(p['from']) for p in plans)}</dd></div>\n"
             "          </dl>")
 
 
@@ -67,7 +69,10 @@ def route_rows(segments):
     for s in segments:
         spare = f'<small class="lv-sub">多備 {s["spare"]} 次</small>' if s["spare"] else ""
         mats = "、".join(f"{esc(n)}×{q}" for n, q in s["mats"])
-        learn = ah_name(s["plan"]) if s["plan"] else esc(s["learn"])
+        if s["plan"] and s["learn"].startswith("NPC "):
+            learn = f"{esc(s['plan'])}<small class=\"lv-sub\">{esc(s['learn'][4:])}</small>"
+        else:
+            learn = ah_name(s["plan"]) if s["plan"] else esc(s["learn"])
         rows.append(f'          <tr><th scope="row">{esc(s["recipe"])}</th><td class="eg-nowrap" data-label="技能">'
                     f'{s["from"]}→{s["to"]}</td><td data-label="次數"><span>約 {round(s["crafts"])} 次{spare}</span></td>'
                     f'<td data-label="每次材料"><span>{mats}<small class="lv-sub">約 {total(s["cost"])}</small></span></td>'
@@ -103,7 +108,7 @@ def mats_table(ph, gate, end):
             "        <tbody>\n" + "\n".join(rows) + "\n        </tbody>\n"
             f'        <tfoot><tr><th scope="row">合計</th><td colspan="2" data-label="說明">賣店收回 {total(ph["vendor"])}</td>'
             f'<td class="eg-price" data-label="材料合計" data-lv-total>{total(ph["gross"])}</td>'
-            f'<td colspan="2" data-label="實際花費" data-lv-net>{total(ph["net"])}</td></tr></tfoot>\n'
+            f'<td colspan="2" data-label="淨成本估算" data-lv-net>{total(ph["net"])}</td></tr></tfoot>\n'
             "      </table>" + made)
 
 
@@ -114,6 +119,13 @@ def ph_from(ph):
 def plan_rows(plans, missing, counts, prices):
     rows = []
     for p in plans:
+        if p["learn"].startswith("NPC "):
+            rows.append(f'          <tr><th scope="row">{esc(p["plan"])}</th>'
+                        f'<td data-label="用在">{p["from"]}→{p["to"]}</td>'
+                        f'<td class="eg-price" data-label="商人價">{unit(p["plan_price"])}</td>'
+                        '<td data-label="部落件數">—</td>'
+                        f'<td data-label="建議">{esc(p["learn"][4:])}</td></tr>')
+            continue
         count = counts.get(p["plan_id"])
         rows.append(f'          <tr data-lv-id="{p["plan_id"]}" data-lv-buy><th scope="row">{plan_label(p["plan"])}</th>'
                     f'<td data-label="用在">{p["from"]}→{p["to"]}</td>'
@@ -125,7 +137,7 @@ def plan_rows(plans, missing, counts, prices):
                     f'<td data-label="用在">{m["from"]}→{m["to"]} 更省：每次淨 {total(m["net"])}</td>'
                     '<td class="eg-price" data-label="部落價" data-lv-unit>部落沒貨</td>'
                     '<td data-label="部落件數"><span data-lv-listed>—</span></td>'
-                    '<td data-label="建議"><span class="eg-tag watch">看到就買</span></td></tr>')
+                    '<td data-label="建議"><span class="eg-tag watch">補貨再看</span></td></tr>')
     return "\n".join(rows)
 
 
@@ -169,10 +181,16 @@ def main():
     page = fill(page, "route", "\n" + route_rows(route["segments"]) + "\n          ")
     page = fill(page, "mats", "\n" + "\n".join(mats_table(phases[k], route["gate"], route["to"]) for k in sorted(phases)) + "\n      ")
     page = fill(page, "plans", "\n" + plan_rows(plans, route["missing_plans"], counts, prices) + "\n          ")
-    stamp = (market.get("scanStartedAt") or market.get("savedAt") or "")[:16].replace("T", " ").replace("-", ".")
-    page = re.sub(r"(<li data-lv-date>)[^<]*(</li>)", rf"\g<1>完整掃描 {stamp}\g<2>", page, count=1)
-    saved = (market.get("savedAt") or "")[:16].replace("T", " ")
-    page = re.sub(r'(<span class="verified-date">)[^<]*(</span>)', rf"\g<1>存檔 / {saved}\g<2>", page, count=1)
+    official = market.get("source") == "official"
+    timestamp = market["updatedAt"] if official else market.get("scanStartedAt") or market.get("savedAt") or ""
+    stamp = timestamp[:16].replace("T", " ").replace("-", ".")
+    label = "官方快照" if official else "完整掃描"
+    attr = f' data-lv-snapshot="{esc(timestamp)}"' if official else ""
+    page = re.sub(r'<li data-lv-date(?: data-lv-snapshot="[^"]*")?>[^<]*</li>',
+                  f"<li data-lv-date{attr}>{label} {stamp}</li>", page, count=1)
+    saved = (timestamp if official else market.get("savedAt", ""))[:16].replace("T", " ")
+    source = "官方 API" if official else "存檔"
+    page = re.sub(r'(<span class="verified-date">)[^<]*(</span>)', rf"\g<1>{source} / {saved}\g<2>", page, count=1)
     args.page.write_text(page, encoding="utf-8")
     print(f"updated {args.page.relative_to(REPO)}: {len(route['segments'])} route rows, "
           f"{sum(len(ph['materials']) for ph in route['phases'])} material rows, {len(plans)} plans to buy, "

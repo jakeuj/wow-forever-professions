@@ -18,7 +18,7 @@ import tempfile
 
 REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO / ".agents/skills/wow-forever/scripts"))
-from auctionator_prices import LuaReader, find_saved_files, full_scan_started
+from auctionator_prices import LuaReader, find_saved_files, horde_full_scan
 
 PROFESSIONS = {
     "alchemy": "鍊金術", "blacksmithing": "鍛造", "enchanting": "附魔",
@@ -27,7 +27,6 @@ PROFESSIONS = {
 MILESTONES = (150, 225, 300)
 STARTS = (1, 150, 225)
 TAIPEI = timezone(timedelta(hours=8))
-MARKET_KEY = "rules:1:forever:2:100:Horde"
 RODS = (6218, 6339, 11130, 11145, 16207)
 ROUTE_FACTS = REPO / "scripts/crafting-leveling-routes.json"
 TEMPLATE = REPO / "scripts/crafting-leveling.html"
@@ -68,25 +67,31 @@ def read_scan(root, selected):
     candidates = [selected] if selected else find_saved_files(root)
     scans = []
     for auctionator in candidates:
-        handbook = auctionator.with_name("DungeonsForeverProf.lua")
-        if not handbook.is_file() or not auctionator.is_file():
-            continue
         try:
-            db = table(handbook, "DungeonsForeverProfDB")
-            started = full_scan_started(auctionator)
-            scan = db.get("prof", {}).get("auctionFullScans", {}).get(MARKET_KEY, {})
+            scan = horde_full_scan(auctionator)
         except (OSError, ValueError, IndexError):
             continue
-        stamp = scan.get("t")
-        if (scan.get("mk") != MARKET_KEY or scan.get("c") is not True or scan.get("dv") != 1
-                or not scan.get("items") or not scan.get("received") or scan["received"] != scan.get("expected")
-                or not started or not stamp or not started <= stamp <= scan.get("completedAt", 0)):
-            continue
-        scans.append((stamp, scan["items"]))
+        if scan:
+            scans.append(scan)
     if not scans:
         raise ValueError("找不到同一輪的部落完整掃描。請用拍賣小幫手完成慢速完整掃描，再 /reload。")
     stamp, items = max(scans, key=lambda pair: pair[0])
     return datetime.fromtimestamp(stamp, TAIPEI), {item: checked_depth(row) for item, row in items.items()}
+
+
+def read_auction_snapshot(path):
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if (data.get("region"), data.get("ruleset"), data.get("house")) != ("tw", 1, 113):
+        raise ValueError("官方快照須來自亞服 PvP 部落拍賣場 113。")
+    stamp = datetime.fromisoformat(data["updatedAt"])
+    if stamp.tzinfo is None or not data.get("depth"):
+        raise ValueError("官方快照須含有時區的時間與價位階梯。")
+    depth = {}
+    for item, tiers in data["depth"].items():
+        if not tiers or any(not isinstance(count, int) or count <= 0 or price <= 0 for price, count in tiers):
+            raise ValueError(f"物品 {item} 的官方價位階梯無效。")
+        depth[int(item)] = sorted((Fraction(str(price)).limit_denominator(100000), count) for price, count in tiers)
+    return stamp.astimezone(TAIPEI), depth
 
 
 @dataclass(frozen=True)
@@ -396,10 +401,10 @@ def select_route(slug, handbook, recipes, facts, market):
     return label, phases, stages, cumulative
 
 
-def load_inputs(root, selected):
+def load_inputs(root, selected, snapshot=None):
     client = root if root.name == "_forever_" else root / "_forever_"
     data_dir = client / "Interface/AddOns/DungeonsForeverProf/Core/Data"
-    stamp, depth = read_scan(client, selected)
+    stamp, depth = read_auction_snapshot(snapshot) if snapshot else read_scan(client, selected)
     facts = json.loads(ROUTE_FACTS.read_text(encoding="utf-8"))
     base_names = table(data_dir / "zhTW/Data_ProfItemNames.lua", "ns.ProfItemNames")
     market_json = json.loads((REPO / "market/data.json").read_text(encoding="utf-8"))
@@ -560,7 +565,7 @@ def stage_panel(slug, phase, quote, name):
     )
 
 
-def render(stamp, name, results, first_round):
+def render(stamp, name, results, first_round, *, official=False):
     summary_rows, profession_panels, jump_links = [], [], []
     for slug, (label, phases, stages, cumulative) in results.items():
         title = PROFESSIONS[slug]
@@ -594,6 +599,9 @@ def render(stamp, name, results, first_round):
         first_note += "另有未確認學費。"
     return Template(TEMPLATE.read_text(encoding="utf-8")).substitute(
         scan_iso=stamp.isoformat(), scan_label=stamp.strftime("%Y-%m-%d %H:%M"),
+        source_label="官方快照" if official else "掃描",
+        source_name="Blizzard 官方拍賣 API" if official else "拍賣小幫手",
+        source_url="https://community.developer.battle.net/" if official else "https://www.curseforge.com/wow/addons/auctionator",
         first_price=escape(first_price), first_note=escape(first_note), jump_links="".join(jump_links),
         budget=html_table(("專業", "到 150 · 1 點", "到 225 · 2 點", "到 300 · 3 點"), summary_rows, css="cl-budget"),
         priority=priority_list(results, name), routes="\n".join(profession_panels),
@@ -603,13 +611,15 @@ def render(stamp, name, results, first_round):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", required=True, type=Path, help="WoW install root or _forever_")
-    parser.add_argument("--file", type=Path, help="select a specific Auctionator.lua save")
+    source = parser.add_mutually_exclusive_group()
+    source.add_argument("--file", type=Path, help="select a specific Auctionator.lua save")
+    source.add_argument("--auction-snapshot", type=Path, help="official TW Horde snapshot JSON with updatedAt and depth by item id")
     parser.add_argument("--out", type=Path, default=REPO / "crafting-leveling/index.html")
     parser.add_argument("--check", action="store_true", help="verify that the published HTML matches the input")
     args = parser.parse_args()
     try:
-        stamp, name, results, first_round = load_inputs(args.root, args.file)
-        html = render(stamp, name, results, first_round)
+        stamp, name, results, first_round = load_inputs(args.root, args.file, args.auction_snapshot)
+        html = render(stamp, name, results, first_round, official=bool(args.auction_snapshot))
     except (OSError, ValueError, KeyError, IndexError, TypeError) as error:
         parser.exit(1, f"無法重建升級頁。{error}\n")
     if args.check:
@@ -624,7 +634,7 @@ def main():
             pending.replace(args.out)
         finally:
             pending.unlink(missing_ok=True)
-    print(f"{stamp:%Y-%m-%d %H:%M} 部落完整掃描 · 六項到 150 的已知開銷 {gold(first_round.total)}")
+    print(f"{stamp:%Y-%m-%d %H:%M} 部落行情 · 六項到 150 的已知開銷 {gold(first_round.total)}")
 
 
 if __name__ == "__main__":

@@ -212,6 +212,27 @@ def full_scan_started(path):
     return max(times) if times else None
 
 
+def horde_full_scan(path):
+    """Return the timestamp and complete DungeonsForeverProf market rows for this scan."""
+    handbook = path.with_name("DungeonsForeverProf.lua")
+    if not handbook.is_file():
+        return None
+    lua = handbook.read_bytes().decode("latin-1")
+    match = re.search(r"^DungeonsForeverProfDB\s*=\s*", lua, re.M)
+    if not match:
+        return None
+    reader = LuaReader(lua)
+    reader.i = match.end()
+    market = "rules:1:forever:2:100:Horde"
+    scan = reader.value().get("prof", {}).get("auctionFullScans", {}).get(market, {})
+    started, stamp = full_scan_started(path), scan.get("t")
+    if (not started or not stamp or not started <= stamp <= scan.get("completedAt", 0)
+            or scan.get("mk") != market or scan.get("c") is not True or scan.get("dv") != 1
+            or not scan.get("items") or not scan.get("received") or scan["received"] != scan.get("expected")):
+        return None
+    return stamp, scan["items"]
+
+
 def day_label(day):
     return (DAY0 + datetime.timedelta(days=int(day))).strftime("%m/%d")
 

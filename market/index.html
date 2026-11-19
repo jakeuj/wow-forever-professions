@@ -18,8 +18,8 @@
   <link rel="stylesheet" href="../style.css?v=20261119-guild">
   <link rel="stylesheet" href="../endgame/endgame.css?v=20261119-inline-links">
   <link rel="stylesheet" href="./market.css?v=20261119-guild">
-  <script src="../endgame/ah-copy.js?v=20261119-guild" defer></script>
-  <script src="./market.js?v=20261118-ah-lists" defer></script>
+  <script src="../endgame/ah-copy.js?v=20261119-shopping" defer></script>
+  <script src="./market.js?v=20261119-shopping" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#prices">跳至行情列表</a>
@@ -32,7 +32,7 @@
     <section class="eg-hero section-wrap" aria-labelledby="market-title">
       <p class="eyebrow"><span class="tiny-diamond" aria-hidden="true"></span>AUCTION HOUSE · HORDE FULL SCAN</p>
       <h1 id="market-title">部落拍賣<span>行情</span></h1>
-      <p class="eg-lead">裝備、配方、材料、藥水都用官方拍賣 API 每小時更新最低一口價，附 24 小時漲跌與 7 天走勢；官方資料裡沒有的物品，沿用站主在部落拍賣場用拍賣小幫手完整掃描的價格。</p>
+      <p class="eg-lead">最低一口價與存量採用較新的官方拍賣 API 或部落完整掃描。官方資料另提供 24 小時漲跌與 7 天走勢。</p>
       <ul class="eg-chips" aria-label="資料條件">
         <li>部落・亞服 PvP（台灣）</li>
         <li data-market-scan>掃描日期讀取中</li>
@@ -63,14 +63,20 @@
         <button type="button" class="button-compact" data-fav-share>複製分享連結</button>
         <label class="mk-share-field" data-fav-field hidden><span class="mk-label">分享連結（無法自動複製，請手動複製）</span><input type="text" readonly data-fav-url></label>
       </div>
+      <div id="shopping"></div>
       <div class="mk-ah" data-market-ah hidden>
         <p class="mk-ah-title">拍賣小幫手購物清單</p>
         <div class="mk-ah-actions">
+          <button type="button" class="button-compact" data-ah-buy>複製本次採買清單</button>
           <button type="button" class="button-compact" data-ah-fav>複製收藏清單</button>
           <button type="button" class="button-compact" data-ah-all>複製全部清單</button>
           <button type="button" class="button-compact" data-ah-download>下載 .txt</button>
         </div>
-        <p class="mk-ah-note">「收藏清單」是這頁收藏的物品，清單名稱「行情-收藏」；「全部清單」再加上站主鐵匠、煉金、配方期貨、鍛造練等頁的購物清單。在拍賣場打開拍賣小幫手的「購買」分頁，按左下「匯入」，貼上後再按「匯入」；同名清單會整份換成新的。</p>
+        <div data-ah-list="11-19 部落採買">
+          <p class="mk-ah-note"><strong>11/19 17:26 官方快照</strong> · <span data-ah="秘銀礦石">秘銀礦石</span> 100 個約 8.40 金，單價最多出到 8 銀 50 銅。<span data-ah="魔紋布">魔紋布</span> 最低 4 銀 30 銅，按缺口補。</p>
+          <p class="mk-ah-note"><span data-ah="設計圖：輻光護腿">設計圖：輻光護腿</span> 2 金有 2 張。<span data-ah="配方：貓鼬藥劑">配方：貓鼬藥劑</span> 7 金有 4 張，給近期要學的煉金師。</p>
+        </div>
+        <p class="mk-ah-note">到拍賣小幫手的「購買」分頁，按左下「匯入」並貼上文字。同名清單會整份換成新的。「全部清單」會包含本次採買、各專業筆記與行情收藏。</p>
         <label class="mk-share-field" data-ah-field hidden><span class="mk-label">匯入文字（無法自動複製，請手動複製）</span><textarea readonly rows="4" data-ah-text></textarea></label>
         <details class="mk-ah-more">
           <summary>從拍賣小幫手匯入到收藏</summary>
@@ -99,7 +105,7 @@
         <a href="https://www.wowhead.com/forever/tw/" target="_blank" rel="noopener noreferrer"><span>WOWHEAD</span><strong>客戶端沒有的物品名稱與圖示</strong><span>資料庫 ↗</span></a>
         <a href="https://wowamobi.com/market" target="_blank" rel="noopener noreferrer"><span>阿莫比</span><strong>聯盟、部落、中立三間拍賣場的行情</strong><span>資料站 ↗</span></a>
       </div>
-      <div class="scope-note"><span aria-hidden="true">✧</span><p>價格都是最低一口價，是掛單價不是成交價。有「官方 HH:MM」的物品來自 Blizzard 官方拍賣 API 的亞服 PvP 部落拍賣場，每小時更新一次；漲跌和 24 小時前比，走勢線是近 7 天每小時的最低價，斷掉的地方是那段時間沒貨；能堆疊的材料與藥水用的是單價，件數是目前上架的總數量。其他物品是站主在部落拍賣場用拍賣小幫手完整掃描的結果，頁首是開始完整掃描的時間（台灣時間），之後在遊戲裡搜尋過的物品也會更新價格，直到資料依據區標的存檔時間；標「掃描看到」的是最近一次掃描沒看到、之前看到的價格，多半已經賣掉；標「官方已沒貨」的是掃描時有、之後的官方資料裡沒有，多半已經賣掉或到期。掃描價格的漲跌和前一個掃描日的最低價比較。收藏只存在這個瀏覽器（localStorage），不會上傳；分享連結只帶物品編號，朋友打開看到的是當下最新的價格，按「加到我的收藏」才會存進他的瀏覽器。換裝置或清除網站資料前，可以先複製分享連結當備份。物品名稱與分類來自永恆客戶端資料表，客戶端沒有的名稱與所有圖示取自 Wowhead；少數永恆新增物品在這些資料裡還沒有中文名稱，會顯示成「[英文名稱]」，遊戲內的名稱可能不同；物品名稱與圖示的版權屬於 Blizzard Entertainment。</p></div>
+      <div class="scope-note"><span aria-hidden="true">✧</span><p>價格都是最低一口價，是掛單價不是成交價。Blizzard 官方拍賣 API 每小時提供一批亞服 PvP 部落掛單；遊戲內備援取自拍賣小幫手與同輪完整掃描。現價以兩者較新的一份為準。以官方快照為準時，漲跌與 24 小時前比較，走勢線是近 7 天每小時最低價。「掃描看到」表示舊掃描留有價格，「官方已沒貨」表示較新的官方快照未列該物品。堆疊商品用單價，件數為所有價位的總量。收藏只存在這個瀏覽器（localStorage），不會上傳；分享連結只帶物品編號，朋友打開看到的是當下最新的價格，按「加到我的收藏」才會存進他的瀏覽器。換裝置或清除網站資料前，可以先複製分享連結當備份。物品名稱與分類來自永恆客戶端資料表，客戶端沒有的名稱與所有圖示取自 Wowhead；少數永恆新增物品在這些資料裡還沒有中文名稱，會顯示成「[英文名稱]」，遊戲內的名稱可能不同；物品名稱與圖示的版權屬於 Blizzard Entertainment。</p></div>
       <a class="text-link eg-back" href="../professions/">回到專業與傳承分配規劃 <span aria-hidden="true">→</span></a>
     </section>
   </main>

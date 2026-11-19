@@ -104,6 +104,7 @@ def main():
     parser.add_argument("--learn-skills", type=Path, help="wowf learn-skill JSON (default: data/wowf-learn-skill-<profession>.json)")
     parser.add_argument("--faction", default="部落", choices=["部落", "聯盟"])
     parser.add_argument("--neutral", action="store_true", help="also buy from neutral AH listings Amobi saw in the last two days")
+    parser.add_argument("--exclude-formula", type=int, action="append", default=[], help="skip a formula by item ID")
     parser.add_argument("--no-vendor-sale", action="store_true", help="do not subtract the vendor sell price of crafted items")
     parser.add_argument("--market-json", help="read prices from the market page's data.json instead of the Auctionator save")
     parser.add_argument("--root", default="/Applications/World of Warcraft")
@@ -124,7 +125,7 @@ def main():
     for r in recipes:
         w = learn.get(r["name"], {})
         r["orange"] = r["need"] if r["need"] is not None else w.get("skill")
-        r["blocked"] = w.get("faction") == other
+        r["blocked"] = w.get("faction") == other or r["recipe_id"] in args.exclude_formula
     scan, scan_label = load_scan(args)
 
     today = datetime.date.today()

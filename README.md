@@ -65,7 +65,7 @@
 - 物品名稱以 `<span data-ah="遊戲內完整名稱">` 標記，`endgame/ah-copy.js` 會把它們變成點一下就複製的按鈕，方便貼到拍賣場搜尋；剪貼簿被拒時改為選取文字。沒有 JavaScript 時仍是一般文字。
 - 標了 `data-ah-list="清單名稱"` 的表格或區塊會變成拍賣小幫手（Auctionator）的購物清單；頁首面板可複製這頁、複製全部頁面或下載 `.txt`，到插件「購買」分頁按「匯入」貼上。名稱加引號做完全比對，套裝前綴加 `data-ah-prefix`；`.is-skip` 的列不列入。行情頁收藏的物品是另一份清單「行情-收藏」，「全部頁面」會一起帶上；行情頁也能把拍賣小幫手匯出的清單貼回來加入收藏。
 - 價格與角色進度是手動更新的快照，更新時同步頁面上的快照日期。
-- 行情頁讀 `market/data.json`。在遊戲內完整掃描後輸入 `/reload`，再執行 `python3 scripts/build-market-data.py` 重建：價格來自本機的拍賣小幫手存檔，名稱與分類來自 wago.tools 的永恆客戶端資料表，客戶端沒有的名稱與所有圖示取自 Wowhead；查詢結果有快取，已知物品沿用上一份 `data.json`。
+- 行情頁讀 `market/data.json`。在遊戲內完整掃描後輸入 `/reload`，再執行 `python3 scripts/build-market-data.py`。程式優先選 `PvP Horde` 資料庫，同輪有無限副本手冊的完整快照時，採用其最低價與在售量。舊資料保留給收藏與分享，直到再次掃到前顯示為歷史掛單。名稱、分類與圖示取自遊戲資料表和 Wowhead。
 - 官方拍賣價：`.github/workflows/auction-collect.yml` 每小時執行 `scripts/collect-auctions.py`，把亞服 PvP 部落拍賣場（TW 區 113 號）單件掛單與 `/commodities`（能堆疊的物品，回應的清單 key 是 `auctions`）的最低單價與上架件數寫進 `auction-data` 分支的 `auctions.json`：`/commodities` 失敗或不是同一小時的資料時整個小時跳過；最近 7 天逐小時，更早每天留一個最低價，保留 90 天。行情頁從 `raw.githubusercontent.com` 讀這個檔，所以 `main` 不會每小時多一個 commit，Pages 也不用重建；讀不到或比掃描舊 3 小時以上時，整頁改用掃描價格。憑證放在 repo Secrets 的 `BLIZZARD_CLIENT_ID`、`BLIZZARD_CLIENT_SECRET`；手動執行的 `auction-probe.yml` 可重新確認哪一間是部落拍賣場。公開 repo 的排程在 60 天沒有活動後會被 GitHub 停用，到 Actions 分頁重新啟用即可。
 - 官方 API 涵蓋率：手動執行的 `.github/workflows/api-probe.yml` 跑技能的 `scripts/forever_api_coverage.py`，把官方 Retail／Classic 文件列出的每個端點換成永恆路徑呼叫一次，結果寫進 Step Summary 與 `api-probe` artifact，不 commit。測試角色放在選填的 repo Secret `FOREVER_PROBE_CHARACTER`（`名字-姓氏`），輸出時會遮掉。本機查詢用技能的 `scripts/forever_api.py`，憑證讀環境變數或 macOS 鑰匙圈；整理結果見技能的 `references/battlenet-api.md`。
 - 練等頁的 HTML 是路線與價格的快照；`leveling/leveling.js` 開頁時讀 `market/data.json`（依物品 ID），重算單價、小計、佔比、階段合計與設計圖價，所以重建行情資料後材料費會跟著更新。路線本身要重排時，執行技能的 `scripts/leveling_route.py --from 200 --market-json market/data.json --json > route.json`，再跑 `python3 scripts/build-leveling-page.py route.json` 填好頁面的路線、材料與設計圖表（標記外的說明文字手改）。路線會扣掉拍賣場買掉的件數，不夠就換配方或自製中間材料。
@@ -81,6 +81,8 @@ python scripts/build-crafting-leveling.py --root 'C:/Games/World of Warcraft'
 ```
 
 重建會讀同一輪的 `Auctionator.lua` 與 `DungeonsForeverProf.lua`，使用後者保存的各價位件數。需要指定存檔時加 `--file '<Auctionator.lua 路徑>'`。資料不完整或市場不符時會留下上一份頁面。加入 `--check` 可驗證已產生的 HTML 是否與輸入一致。路線資料依本機無限副本手冊的繁中資料表與 `scripts/crafting-leveling-routes.json` 中已核對的替代段落，估價與排序會一併產生。
+
+也可用 `--auction-snapshot <JSON 路徑>` 改讀官方價位階梯。快照帶 `region: "tw"`、`ruleset: 1`、`house: 113`、含時區的 `updatedAt`，以及以物品 ID 為鍵、以 `[單價（銅）, 件數]` 陣列為值的 `depth`。價位須取同一輪官方單件掛單與 `/commodities`。
 
 ## 專案技能
 

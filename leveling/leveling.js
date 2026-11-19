@@ -16,9 +16,12 @@
   const dateChip = document.querySelector('[data-lv-date]');
 
   const apply = data => {
+    const scanTime = data.snapshotAt || data.savedAt || data.scanStartedAt || data.latestDay;
+    if (dateChip?.dataset.lvSnapshot && !(Date.parse(scanTime) > Date.parse(dateChip.dataset.lvSnapshot))) return;
     const f = data.fields;
     const [iId, iPrice, iCount] = ['id', 'price', 'count'].map(k => f.indexOf(k));
-    const live = new Map(data.items.filter(r => r[iPrice]).map(r => [r[iId], { price: r[iPrice], count: r[iCount] }]));
+    const live = new Map(data.items.filter(r => r[iPrice] && r[iCount] !== 0)
+      .map(r => [r[iId], { price: r[iPrice], count: r[iCount] }]));
 
     phases.forEach(table => {
       const body = table.querySelector('tbody');
@@ -57,14 +60,15 @@
       }
     });
 
-    let planTotal = 0;
+    const planSummary = document.querySelector('[data-lv-plan-total]');
+    let planTotal = Number(planSummary?.dataset.lvPlanFixed || 0);
     document.querySelectorAll('.lv-plans tr[data-lv-id]').forEach(row => {
       const hit = live.get(Number(row.dataset.lvId));
       setText(row, '[data-lv-unit]', hit ? unit(hit.price) : '部落沒貨');
       setText(row, '[data-lv-listed]', hit ? `${hit.count ?? '?'} 件` : '—');
       if (hit && row.hasAttribute('data-lv-buy')) planTotal += hit.price;
     });
-    if (planTotal) setText(document, '[data-lv-plan-total]', total(planTotal));
+    if (planSummary && planTotal) planSummary.textContent = total(planTotal);
 
     const stamp = data.scanStartedAt || data.savedAt;
     if (dateChip && stamp) {
