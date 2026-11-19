@@ -9,6 +9,7 @@
 - 以正式配方快照建置 1,821 筆對照。玉蛇刀與直接附魔各有一筆核對樣本。
 - 本機用 Chromium 以桌面 1440px、手機 390px 驗證軍械庫匯入及實際自動選路。使用模擬角色與行情，測試角色與專業的儲存隔離、重新匯入、舊連結、對照服務失效及儲存受限。
 - 38 個 JavaScript 測試與 15 個 Python 測試通過。
+- **正式站驗收通過（2026-11-20，台灣時間）**。公開角色的鍛造技能 153、技能上限 225 和 65 項已學配方成功匯入。自動選路使用台服 PvP 部落官方行情，算出 153 → 225 的 22 步路線，達標機率估計 97.3%，高於設定門檻 90%。重新整理後成功載入同一份計畫。 [實作 commit `bd50cd9`](https://github.com/jakeuj/wow-forever-professions/commit/bd50cd943e3c6846893b9b730eb6b86763750a55) · [GitHub Pages 部署紀錄](https://github.com/jakeuj/wow-forever-professions/actions/runs/44586064003) · [正式站軍械庫](https://jakeuj.com/wow-forever-professions/players/)
 
 ## 驗收條件
 
