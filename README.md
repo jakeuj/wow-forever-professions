@@ -22,6 +22,7 @@
 
 - 行情頁的批量估價、六項製造的互動試算、配方利潤和團本採買共用 `market-depth.json`。現有拍賣排程把同一輪台區 PvP 部落 113 號價階送到公會 Publisher，Reader 自 KV 提供三小時內的快照。維護端也可在完整站主掃描後跑 `python scripts/build-crafting-leveling.py --root <遊戲目錄> --scan-depth-out market/scan-depth.json`，提供三小時內的同市場備援。
 - 路線資料以 `python scripts/build-crafting-leveling.py --addon-zip <DungeonsForever ZIP>` 重建。現有繁中候選路線來自 [DungeonsForever 2.1.118](https://www.curseforge.com/wow/addons/dungeonsforever/files/9696731) 與 repo 的已核對路線修訂。SHA 或版本以發佈包為準，更新後重新驗證六項製造與中途起算。
+- 自動選路預設 90% 達標機率，每次試算重新抓取可用價階，依庫存與學習條件搜尋。要更新完整自動配方庫，在上面的 ZIP 指令加上 `--auto-professions alchemy blacksmithing enchanting engineering leatherworking tailoring`。角色等級用於核對配方和升階條件，留空時仍可使用已學配方及已具備的技能階級。
 - 配方目錄由公會排程以 `recipes` 模式收集官方六項製造配方，免登入訪客可瀏覽；官方目錄暫時失效時頁面提供已核對的練等配方。收藏、角色分工、勾選和已學配方存在瀏覽器。
 - 正式發布順序為 Publisher、Reader、資料排程、Pages。Publisher 沿用 `PUBLISH_TOKEN`。每小時拍賣排程使用現有 GitHub Secrets 向 Battle.net 取得應用程式 token，透過有認證的 Publisher 放進私人 KV，三小時後到期。Reader 只在伺服器端使用 token，也可選擇設定 `BLIZZARD_CLIENT_ID` 和 `BLIZZARD_CLIENT_SECRET` 直接授權。執行 `guild-collect.yml` 的 `refresh` 初始化撤下清單及配方，執行 `auction-collect.yml` 取得新價階。於正式 Pages 開放入口前驗證 Workers 的 `/market-depth.json`、`/recipes.json` 與角色查詢。
 

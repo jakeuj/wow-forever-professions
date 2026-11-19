@@ -71,3 +71,9 @@
   .cl-budget td { grid-template-columns: 94px minmax(0, 1fr); }
   .cl-priority-row { flex-wrap: wrap; }
 }
+.cl-auto-options:not([hidden]) {
+  display: flex;
+  flex: 1 0 100%;
+  flex-wrap: wrap;
+  gap: .85rem;
+}

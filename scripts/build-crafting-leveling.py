@@ -15,6 +15,7 @@ from string import Template
 import sys
 import tempfile
 from zipfile import ZipFile
+from profession_learning import learning_sources
 
 
 REPO = Path(__file__).resolve().parent.parent
@@ -111,6 +112,8 @@ class Recipe:
     tools: tuple = ()
     requirement: str = ""
     unlock_materials: tuple = ()
+    orange: int | None = None
+    restricted: bool = False
 
 
 def load_recipes(data_dir, facts, name):
@@ -121,7 +124,7 @@ def load_recipes(data_dir, facts, name):
         part = literal(text, rf'^PARTS\["{slug}"\] = function\(\) return\s*')
         recipes = {}
 
-        def add(spell, product, output, skills, reagents, formula=0, title=None):
+        def add(spell, product, output, skills, reagents, formula=0, title=None, orange=None, restricted=False):
             if not spell:
                 return
             learn, yellow, green, grey = skills
@@ -139,18 +142,19 @@ def load_recipes(data_dir, facts, name):
                 yellow or learn, green or ((yellow or learn) + grey) // 2, grey, materials,
                 changes.get("formula", formula or 0), fee, fee is not None and fee > 0,
                 tuple(tool for tool in changes.get("tools", []) if tool != product),
-                changes.get("requirement", ""), tuple(map(tuple, changes.get("unlockMaterials", []))),
+                changes.get("requirement", ""), tuple(map(tuple, changes.get("unlockMaterials", []))), orange, restricted,
             )
 
         for row in series(part.get("rows")):
             add(row[1], row[2], row[3], (row[7], row[8], row[9], row[10]), row[12],
-                (row.get(13) or {}).get(1))
+                (row.get(13) or {}).get(1), orange=row.get("orange"),
+                restricted=row.get(4) == "Transmutes" or bool(row.get("cooldownVerificationRequired")) or row[1] == 18560)
         for row in series(part.get("enchants")):
             add(row.get(14), 0, 0, (row[5], row[6], row[7], row[8]), row[9], row.get(16),
-                f"附魔{row[3]} - {row[2]}")
+                f"附魔{row[3]} - {row[2]}", row.get("orange"))
         for row in series(part.get("crafted")):
             add(row[1], row[2], row[3], (row[4], row[5], row[6], row[7]), row[8],
-                int(row[9]) if str(row.get(9)).isdigit() else 0)
+                int(row[9]) if str(row.get(9)).isdigit() else 0, orange=row.get("orange"))
         catalog[slug] = recipes
     return catalog
 
@@ -449,7 +453,9 @@ def leveling_catalog(data_dir, release):
         if not routes:
             raise ValueError(f"{label}沒有完整的候選路線")
         used.update(facts["tools"].get(str(item)) for spell in tuple(used) for item in recipes[slug][spell].tools)
-        exported = {spell: asdict(recipes[slug][spell]) for spell in sorted(used - {None})}
+        exported = {spell: {key: value for key, value in asdict(recipes[slug][spell]).items()
+                            if key not in ("orange", "restricted")}
+                    for spell in sorted(used - {None})}
         professions[slug] = {
             "name": label, "routes": routes, "recipes": exported, "components": facts["components"].get(slug, []),
             "rankFees": facts["rankFees"][slug],
@@ -465,16 +471,62 @@ def leveling_catalog(data_dir, release):
     }
 
 
-def export_leveling_catalog(archive, output):
+def auto_catalog(data_dir, release, enabled):
+    name, facts, supplies, formulas, _, recipes = load_catalog_inputs(data_dir)
+    text = (data_dir / "Data_ProfLearningSources.lua").read_text(encoding="utf-8-sig")
+    sources, grants = learning_sources(text, literal, enabled)
+    gated = table(data_dir / "Data_ProfSpecializations.lua", "ns.ProfSpecializations")
+    trainers = table(data_dir / "Data_ProfTrainers.lua", "ns.ProfTrainers")
+    professions = {}
+    item_ids = set()
+    for slug in enabled:
+        available = {}
+        for spell, recipe in sorted(recipes[slug].items()):
+            if recipe.restricted or not (type(recipe.learn) is int and 1 <= recipe.learn <= 300
+                    and recipe.learn <= recipe.yellow <= recipe.green <= recipe.grey
+                    and all(type(i) is int and i > 0 and type(n) is int and n > 0 for i, n in recipe.reagents)):
+                continue
+            # For direct enchants the game supplies the required rod in its recipe UI. Use the checked rod data.
+            if slug == "enchanting" and not recipe.product and not recipe.tools:
+                continue
+            restriction = gated.get(spell, {}).get(2) or recipe.requirement
+            offers = [] if restriction else sources[slug].get(spell, [])
+            # Checked fees and formula corrections used by the existing leveling guide.
+            if not offers and not restriction and spell in facts["recipeFacts"]:
+                if not recipe.formula and recipe.fee is not None:
+                    offers = [{"item": 0, "fee": recipe.fee, "skill": recipe.learn, "level": 0}]
+                elif recipe.formula and recipe.formula in formulas:
+                    offers = [{"item": recipe.formula, "fee": 0, "skill": recipe.learn, "level": 0}]
+            available[spell] = {**asdict(recipe), "offers": offers, "grant": grants[slug].get(spell, 0)}
+            item_ids.update((recipe.product, *recipe.tools, *(row["item"] for row in offers)))
+            item_ids.update(item for item, _ in (*recipe.reagents, *recipe.unlock_materials))
+        ranks = series(trainers[slug]["ranks"])
+        if tuple(row["cap"] for row in ranks) != (75, 150, 225, 300):
+            raise ValueError(f"{slug} 的技能上限與現有學費不一致")
+        professions[slug] = {"recipes": available, "ranks": [
+            {"cap": row["cap"], "skill": row.get("sk") or 1, "level": row.get("lv") or 0, "fee": fee}
+            for row, fee in zip(ranks, facts["rankFees"][slug], strict=True)
+        ]}
+    return {
+        "schema": 1, "release": release, "professions": professions, "tools": facts["tools"], "rods": RODS,
+        "items": {item: name(item) for item in sorted(item_ids - {0})},
+        "supplies": {item: row for item, row in supplies.items() if item in item_ids},
+        "formulas": {item: row for item, row in formulas.items() if item in item_ids},
+    }
+
+
+def export_leveling_catalog(archive, output, enabled=()):
     prefix = "DungeonsForeverProf/Core/Data/"
     names = ("Data_ProfMaterialSupply.lua", "Data_ProfFormulaOffers.lua",
              *(f"zhTW/Data_Prof{name}.lua" for name in ("ItemNames", "Leveling", "Recipes", "VendorNames")))
+    if enabled:
+        names += ("Data_ProfLearningSources.lua", "Data_ProfSpecializations.lua", "Data_ProfTrainers.lua")
     with ZipFile(archive) as package, tempfile.TemporaryDirectory() as staging:
         data_dir = Path(staging)
         (data_dir / "zhTW").mkdir()
         for filename in names:
             (data_dir / filename).write_bytes(package.read(prefix + filename))
-        catalog = leveling_catalog(data_dir, archive.name)
+        catalog = auto_catalog(data_dir, archive.name, enabled) if enabled else leveling_catalog(data_dir, archive.name)
     output.write_text(json.dumps(catalog, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
 
 
@@ -662,7 +714,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, help="WoW install root or _forever_")
     parser.add_argument("--addon-zip", type=Path, help="verified DungeonsForever ZIP for a browser leveling catalog")
-    parser.add_argument("--catalog-out", type=Path, default=REPO / "crafting-leveling/routes.json")
+    parser.add_argument("--catalog-out", type=Path)
+    parser.add_argument("--auto-professions", nargs="+", choices=PROFESSIONS, help="produce the automatic routing catalogue")
     parser.add_argument("--scan-depth-out", type=Path, help="write the validated Horde scan as a browser fallback")
     source = parser.add_mutually_exclusive_group()
     source.add_argument("--file", type=Path, help="select a specific Auctionator.lua save")
@@ -672,7 +725,9 @@ def main():
     args = parser.parse_args()
     try:
         if args.addon_zip:
-            export_leveling_catalog(args.addon_zip, args.catalog_out)
+            filename = "auto-recipes.json" if args.auto_professions else "routes.json"
+            output = args.catalog_out or REPO / "crafting-leveling" / filename
+            export_leveling_catalog(args.addon_zip, output, args.auto_professions)
             return
         if not args.root:
             parser.error("--root is required when building the HTML guide")

@@ -10,10 +10,12 @@ export function currentDepth(snapshot, now = Date.now()) {
     ? snapshot : null;
 }
 
-export async function loadDepth() {
+export async function loadDepth({ signal } = {}) {
   for (const url of [`${guildDataOrigin}/market-depth.json`, new URL('./scan-depth.json', import.meta.url)]) {
+    if (signal?.aborted) return null;
     try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      const timeout = AbortSignal.timeout(5000);
+      const response = await fetch(url, { signal: signal ? AbortSignal.any([signal, timeout]) : timeout });
       if (response.ok) {
         const snapshot = currentDepth(await response.json());
         if (snapshot) return snapshot;
