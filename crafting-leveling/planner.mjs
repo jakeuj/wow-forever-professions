@@ -1,4 +1,4 @@
-import { currentDepth, loadDepth, money, quoteLabel } from '../market/quotes.mjs';
+import { currentDepth, loadDepth, money, quoteLabel } from '../market/quotes.mjs?v=2';
 import { element, readLocal, saveLocal, shoppingButtons, table } from '../market/tools.mjs';
 import { compareRoutes } from './route.mjs';
 import { DEFAULT_CONFIDENCE, SEARCH_BUDGET_MS } from './auto-search.mjs';
