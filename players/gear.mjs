@@ -38,7 +38,7 @@ const verifiedEnchants = {
 
 function enchantStats(text) {
   const attributes = {};
-  for (const match of text.matchAll(/(力量|敏捷|耐力|智力|精神|護甲|移動速度)\s*\+\s*(\d+)(%?)|\+\s*(\d+)(%?)\s*(力量|敏捷|耐力|智力|精神|護甲|移動速度)/gu)) {
+  for (const match of text.matchAll(/(力量|敏捷|耐力|智力|精神|護甲|移動速度)\s*(?:\+|提高|增加)\s*(\d+)(%?)|\+\s*(\d+)(%?)\s*(力量|敏捷|耐力|智力|精神|護甲|移動速度)/gu)) {
     const [, stat, amount, unit, prefix, prefixUnit, suffix] = match;
     attributes[stat || suffix] = { value: Number(amount || prefix), unit: unit || prefixUnit || '' };
   }

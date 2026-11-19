@@ -8,6 +8,9 @@ const output = document.querySelector('#leveling-result');
 const key = 'dawnblade.leveling.v1';
 const saved = readLocal(key, {});
 const query = new URLSearchParams(location.search);
+const character = (query.get('character') || '').trim().slice(0, 50);
+const planKey = profession => character ? `${profession}:${character}` : profession;
+const stampLabel = snapshot => [character, quoteLabel(snapshot)].filter(Boolean).join(' · ');
 
 function inventory(text, names) {
   const counts = new Map();
@@ -76,7 +79,7 @@ try {
   }
   const updateOptions = () => {
     const id = form.elements.profession.value;
-    const state = saved[id] || {};
+    const state = saved[planKey(id)] || {};
     const known = new Set(state.known || []);
     form.elements.known.replaceChildren(...Object.entries(catalog.professions[id].recipes)
       .sort(([, a], [, b]) => a.learn - b.learn || a.name.localeCompare(b.name, 'zh-TW'))
@@ -93,7 +96,7 @@ try {
   form.elements.profession.addEventListener('change', updateOptions);
   const choices = document.querySelector('#leveling-choices');
   const stamp = () => currentDepth(initialDepth);
-  status.textContent = quoteLabel(stamp());
+  status.textContent = stampLabel(stamp());
   form.hidden = false;
   form.addEventListener('submit', event => {
     event.preventDefault();
@@ -107,11 +110,12 @@ try {
     try {
       if (start >= target) throw new Error('目標技能需高於目前技能。');
       const snapshot = stamp();
-      status.textContent = quoteLabel(snapshot);
+      status.textContent = stampLabel(snapshot);
       const routes = compareRoutes(catalog, catalog.professions[id],
         { start, target, known, inventory: inventory(data, catalog.items) }, snapshot);
-      const state = { start, target, known, inventory: data, done: saved[id]?.done || [] };
-      saved[id] = state;
+      const storage = planKey(id);
+      const state = { start, target, known, inventory: data, done: saved[storage]?.done || [] };
+      saved[storage] = state;
       saveLocal(key, saved);
       const checked = new Set(state.done);
       const show = plan => renderPlan(plan, checked, done => {
