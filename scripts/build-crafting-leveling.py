@@ -660,7 +660,7 @@ def stage_panel(slug, phase, quote, name):
     steps = html_table(("配方", "技能", "預估製作", "每次材料", "學習與工具"), step_rows, caption="依序製作")
     shopping = html_table(("物品", "需要", "採買來源", "已知小計"), shopping_rows, caption="這一段要另外買的材料與圖紙")
     return (
-        f'<details class="cl-stage" id="{slug}-{phase.end}"{" open" if phase.start == 1 else ""}>'
+        f'<details class="cl-stage" id="{slug}-{phase.end}" name="{slug}-stage">'
         f'<summary><strong>{phase.start}→{phase.end}</strong> {price_label(quote)}</summary>'
         f'<div class="cl-stage-body">{note_html}<dl class="cl-breakdown">{figures}</dl>\n'
         f'{steps}\n<h4>採買清單</h4>{shopping}\n</div></details>'

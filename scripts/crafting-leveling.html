@@ -10,17 +10,17 @@
   <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
   <link rel="stylesheet" href="../style.css?v=20261119-guild">
   <link rel="stylesheet" href="../endgame/endgame.css?v=20261119-inline-links">
-  <link rel="stylesheet" href="./crafting-leveling.css?v=2">
-  <script src="./crafting-leveling.js?v=1" defer></script>
+  <link rel="stylesheet" href="./crafting-leveling.css?v=3">
+  <script src="./crafting-leveling.js?v=2" defer></script>
   <link rel="stylesheet" href="../market/tools.css">
   <script type="module" src="./planner.mjs?v=2"></script>
 </head>
 <body>
   <!-- 由 scripts/build-crafting-leveling.py 產生 -->
-  <a class="skip-link" href="#budget">跳至預算總覽</a>
+  <a class="skip-link" href="#calculator">跳至練等試算</a>
   <header class="site-header">
     <a class="brand" href="../" aria-label="回黎明之劍公會首頁"><img src="../assets/crest.svg" alt="" width="34" height="38"><span><span class="brand-guild">黎明之劍</span><span class="brand-divider"> / </span>專業議事廳<small>WOW FOREVER · HORDE GUILD</small></span></a>
-    <nav aria-label="本頁導覽"><a href="#budget">預算</a><a href="#priority">順序</a><a href="#routes">路線</a></nav>
+    <nav aria-label="本頁導覽"><a href="#calculator">試算</a><a href="#routes">路線</a><a href="#budget">預算</a></nav>
   </header>
   <main id="top">
     <section class="eg-hero section-wrap cl-hero" aria-labelledby="title">
@@ -64,24 +64,27 @@
       <div id="leveling-result" aria-live="polite"></div>
     </section>
 
-    <section id="budget" class="eg-section section-wrap" aria-labelledby="budget-title">
-      <div class="section-heading"><div><h2 id="budget-title">各里程碑預算</h2></div><p>從技能 1 開始採買的累計開銷。階段加購預算另見下方優先順序。</p></div>
-      $budget
-      <p class="cl-note">「已知」為部分小計。「學費另計」表示另有未確認的訓練師學費。報價假設空庫存、無傳承加成或額外商人折扣。</p>
-    </section>
-
-    <section id="priority" class="eg-section section-wrap" aria-labelledby="priority-title">
-      <div class="section-heading"><div><h2 id="priority-title">先練哪項</h2></div><p>先補齊六項 150。各欄按多拿 1 點的已知開銷排序，前置條件及缺口會一起列出。</p></div>
-      <div class="cl-priority">$priority</div>
-      <p class="cl-note">加購預算假設沿同一路線練完上一段，保留工具與自製零件，以這次掃描的在售量估算該段。225 與 300 的追加成本達同欄首選兩倍時列為「可等降價」。一次跨數個階段採買時，請看累計預算。</p>
-    </section>
-
     <section id="routes" class="eg-section section-wrap" aria-labelledby="routes-title">
-      <div class="section-heading"><div><h2 id="routes-title">六項升級路線</h2></div></div>
-      <nav class="cl-jump" aria-label="跳至專業">$jump_links</nav>
+      <div class="section-heading"><div><h2 id="routes-title">專業升級路線</h2></div></div>
+      <nav class="cl-jump" aria-label="查看專業路線">$jump_links</nav>
       <p class="cl-note">開工前確認角色等級與升階。黃、綠配方可能連做幾次都不升點，達到目標技能就停手。表內「補做」的零件也可能幫你升點，依實際技能銜接下一步。</p>
       $routes
     </section>
+
+    <details class="cl-overview section-wrap">
+      <summary>六項預算與起手順序</summary>
+      <section id="budget" class="eg-section" aria-labelledby="budget-title">
+        <div class="section-heading"><div><h2 id="budget-title">各里程碑預算</h2></div><p>從技能 1 開始採買的累計開銷。階段加購預算另見下方優先順序。</p></div>
+        $budget
+        <p class="cl-note">「已知」為部分小計。「學費另計」表示另有未確認的訓練師學費。報價假設空庫存、無傳承加成或額外商人折扣。</p>
+      </section>
+
+      <section id="priority" class="eg-section" aria-labelledby="priority-title">
+        <div class="section-heading"><div><h2 id="priority-title">先練哪項</h2></div><p>先補齊六項 150。各欄按多拿 1 點的已知開銷排序，前置條件及缺口會一起列出。</p></div>
+        <div class="cl-priority">$priority</div>
+        <p class="cl-note">加購預算假設沿同一路線練完上一段，保留工具與自製零件，以這次掃描的在售量估算該段。225 與 300 的追加成本達同欄首選兩倍時列為「可等降價」。一次跨數個階段採買時，請看累計預算。</p>
+      </section>
+    </details>
 
     <section id="sources" class="eg-section section-wrap" aria-labelledby="sources-title">
       <div class="section-heading"><div><h2 id="sources-title">資料來源與估價方式</h2></div></div>
