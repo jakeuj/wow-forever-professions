@@ -94,6 +94,8 @@ GitHub 專用分支、CurseForge 無法提供相容檔案，或使用者明確�
 
 官方 Battle.net API 的用法（OAuth、namespace、搜尋、媒體）、永恆與官方文件的差異、哪些端點在永恆能用，或要用 API 查角色、專業、公會、物品時，讀 [references/battlenet-api.md](references/battlenet-api.md)。官方只文件化 Retail 與 Classic，永恆的可用性以該檔的端點實測表為準。查詢時先執行 `scripts/forever_api.py`，腳本會自動讀取環境變數、Windows 的 DPAPI 加密憑證或 macOS 鑰匙圈。逐端點探測用 `scripts/forever_api_coverage.py`（由 `api-probe.yml` 執行）。查到的角色資料只用來回答當次問題，不寫回 repo。
 
+校對練等配方的材料、產量、缺項或 Battle.net 配方 ID 時，讀 [配方材料與產量核對](references/battlenet-api.md#配方材料與產量核對)，依 API 與客戶端資料的查證結果選用欄位。
+
 ## 公會與招募文案
 
 涉及《黎明之劍》公會、招募文章、公開聯絡欄，或沿用既有文案意象與插圖時，讀 [references/dawnblade-guild.md](references/dawnblade-guild.md)。該檔記錄公開招募資訊來源、文案方向與 repo 圖片位置。
