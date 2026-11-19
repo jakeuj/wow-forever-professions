@@ -60,7 +60,7 @@
 
 ## 現行四版分配
 
-以下編號依公開網站順序整理。網站資料的當前實作見 repo 根目錄的 [data.mjs](../../../../data.mjs)；網站維護讀 [profession-planner-site.md](profession-planner-site.md)。
+以下編號依公開網站順序整理。網站資料的當前實作見 [professions/data.mjs](../../../../professions/data.mjs)；網站維護讀 [profession-planner-site.md](profession-planner-site.md)。
 
 ### 01／PLAN A：雙採集主號＋三隻雙製造小號（預設首選）
 

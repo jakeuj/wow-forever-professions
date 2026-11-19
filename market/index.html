@@ -15,16 +15,16 @@
   <meta property="og:description" content="亞服 PvP 部落拍賣場的最低一口價與 7 天走勢，不用進遊戲也能查。">
   <meta property="og:url" content="https://jakeuj.com/wow-forever-professions/market/">
   <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
-  <link rel="stylesheet" href="../style.css?v=20261118-warlock-route">
+  <link rel="stylesheet" href="../style.css?v=20261119-guild">
   <link rel="stylesheet" href="../endgame/endgame.css?v=20261119-inline-links">
-  <link rel="stylesheet" href="./market.css?v=20261118-ah-lists">
-  <script src="../endgame/ah-copy.js?v=20261119-alch-leveling" defer></script>
+  <link rel="stylesheet" href="./market.css?v=20261119-guild">
+  <script src="../endgame/ah-copy.js?v=20261119-guild" defer></script>
   <script src="./market.js?v=20261118-ah-lists" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#prices">跳至行情列表</a>
   <header class="site-header">
-    <a class="brand" href="../" aria-label="回黎明之劍・專業議事廳首頁"><img src="../assets/crest.svg" alt="" width="34" height="38"><span><span class="brand-guild">黎明之劍</span><span class="brand-divider"> / </span>專業議事廳<small>WOW FOREVER · HORDE GUILD</small></span></a>
+    <a class="brand" href="../" aria-label="回黎明之劍公會首頁"><img src="../assets/crest.svg" alt="" width="34" height="38"><span><span class="brand-guild">黎明之劍</span><span class="brand-divider"> / </span>專業議事廳<small>WOW FOREVER · HORDE GUILD</small></span></a>
     <nav aria-label="本頁導覽"><a href="#prices"><span class="nav-full">行情列表</span><span class="nav-short">行情</span></a><a href="../speculation/"><span class="nav-full">配方期貨</span><span class="nav-short">期貨</span></a><a class="nav-secondary" href="#sources">資料依據</a></nav>
   </header>
 
@@ -39,7 +39,7 @@
         <li data-market-total>物品數讀取中</li>
         <li data-market-api hidden></li>
       </ul>
-      <p class="eg-privacy"><span aria-hidden="true">✧</span>這是個人整理頁，首頁只在頁尾放連結，也請搜尋引擎不要收錄；網址本身是公開的。價格是掛單價，不是成交價；掃描之後可能已經被買走。對面陣營與中立拍賣場的價格請看阿莫比。</p>
+      <p class="eg-privacy"><span aria-hidden="true">✧</span>價格是掛單價，不是成交價；掃描之後可能已經被買走。對面陣營與中立拍賣場的價格請看阿莫比。</p>
     </section>
 
     <section id="prices" class="eg-section section-wrap" aria-labelledby="prices-title">
@@ -56,19 +56,19 @@
       </form>
       <div class="mk-shared" data-market-shared role="region" aria-label="分享的收藏" hidden>
         <p data-shared-text></p>
-        <div class="mk-shared-actions"><button type="button" class="guild-copy-button" data-shared-add>加到我的收藏</button><button type="button" class="guild-copy-button" data-shared-exit>看全部物品</button></div>
+        <div class="mk-shared-actions"><button type="button" class="button-compact" data-shared-add>加到我的收藏</button><button type="button" class="button-compact" data-shared-exit>看全部物品</button></div>
       </div>
       <div class="mk-favbar" data-market-favbar hidden>
         <p data-fav-hint></p>
-        <button type="button" class="guild-copy-button" data-fav-share>複製分享連結</button>
+        <button type="button" class="button-compact" data-fav-share>複製分享連結</button>
         <label class="mk-share-field" data-fav-field hidden><span class="mk-label">分享連結（無法自動複製，請手動複製）</span><input type="text" readonly data-fav-url></label>
       </div>
       <div class="mk-ah" data-market-ah hidden>
         <p class="mk-ah-title">拍賣小幫手購物清單</p>
         <div class="mk-ah-actions">
-          <button type="button" class="guild-copy-button" data-ah-fav>複製收藏清單</button>
-          <button type="button" class="guild-copy-button" data-ah-all>複製全部清單</button>
-          <button type="button" class="guild-copy-button" data-ah-download>下載 .txt</button>
+          <button type="button" class="button-compact" data-ah-fav>複製收藏清單</button>
+          <button type="button" class="button-compact" data-ah-all>複製全部清單</button>
+          <button type="button" class="button-compact" data-ah-download>下載 .txt</button>
         </div>
         <p class="mk-ah-note">「收藏清單」是這頁收藏的物品，清單名稱「行情-收藏」；「全部清單」再加上站主鐵匠、煉金、配方期貨、鍛造練等頁的購物清單。在拍賣場打開拍賣小幫手的「購買」分頁，按左下「匯入」，貼上後再按「匯入」；同名清單會整份換成新的。</p>
         <label class="mk-share-field" data-ah-field hidden><span class="mk-label">匯入文字（無法自動複製，請手動複製）</span><textarea readonly rows="4" data-ah-text></textarea></label>
@@ -76,7 +76,7 @@
           <summary>從拍賣小幫手匯入到收藏</summary>
           <p>在拍賣小幫手「購買」分頁按「匯出」，把清單文字貼在這裡；也可以一行貼一個物品名稱。加了引號的名稱要完全相同，沒加引號的會收藏所有名稱含有這段文字的物品。</p>
           <label class="mk-share-field"><span class="mk-label">清單文字</span><textarea rows="4" data-ah-import-text placeholder="期貨-A買^&quot;配方：貓鼬藥劑&quot;^&quot;設計圖：瑟銀頭盔&quot;"></textarea></label>
-          <button type="button" class="guild-copy-button" data-ah-import>加入收藏</button>
+          <button type="button" class="button-compact" data-ah-import>加入收藏</button>
           <p class="mk-ah-result" data-ah-import-result aria-live="polite"></p>
         </details>
         <details class="mk-ah-more">
@@ -87,7 +87,7 @@
       <p class="mk-summary" data-market-summary aria-live="polite">行情讀取中…</p>
       <noscript><p class="mk-summary">這頁需要 JavaScript 才能顯示行情列表。</p></noscript>
       <ol class="mk-list" data-market-list></ol>
-      <button type="button" class="guild-copy-button mk-more" data-market-more hidden>顯示更多</button>
+      <button type="button" class="button-compact mk-more" data-market-more hidden>顯示更多</button>
     </section>
 
     <section id="sources" class="section-wrap sources-section eg-sources" aria-labelledby="sources-title">
@@ -100,10 +100,10 @@
         <a href="https://wowamobi.com/market" target="_blank" rel="noopener noreferrer"><span>阿莫比</span><strong>聯盟、部落、中立三間拍賣場的行情</strong><span>資料站 ↗</span></a>
       </div>
       <div class="scope-note"><span aria-hidden="true">✧</span><p>價格都是最低一口價，是掛單價不是成交價。有「官方 HH:MM」的物品來自 Blizzard 官方拍賣 API 的亞服 PvP 部落拍賣場，每小時更新一次；漲跌和 24 小時前比，走勢線是近 7 天每小時的最低價，斷掉的地方是那段時間沒貨；能堆疊的材料與藥水用的是單價，件數是目前上架的總數量。其他物品是站主在部落拍賣場用拍賣小幫手完整掃描的結果，頁首是開始完整掃描的時間（台灣時間），之後在遊戲裡搜尋過的物品也會更新價格，直到資料依據區標的存檔時間；標「掃描看到」的是最近一次掃描沒看到、之前看到的價格，多半已經賣掉；標「官方已沒貨」的是掃描時有、之後的官方資料裡沒有，多半已經賣掉或到期。掃描價格的漲跌和前一個掃描日的最低價比較。收藏只存在這個瀏覽器（localStorage），不會上傳；分享連結只帶物品編號，朋友打開看到的是當下最新的價格，按「加到我的收藏」才會存進他的瀏覽器。換裝置或清除網站資料前，可以先複製分享連結當備份。物品名稱與分類來自永恆客戶端資料表，客戶端沒有的名稱與所有圖示取自 Wowhead；少數永恆新增物品在這些資料裡還沒有中文名稱，會顯示成「[英文名稱]」，遊戲內的名稱可能不同；物品名稱與圖示的版權屬於 Blizzard Entertainment。</p></div>
-      <a class="text-link eg-back" href="../">回到專業與傳承分配規劃 <span aria-hidden="true">→</span></a>
+      <a class="text-link eg-back" href="../professions/">回到專業與傳承分配規劃 <span aria-hidden="true">→</span></a>
     </section>
   </main>
 
-  <footer class="site-footer section-wrap"><a class="brand footer-brand" href="../"><img src="../assets/crest.svg" alt="" width="26" height="30"><span>永恆・專業議事廳</span></a><p>由 jakeuj 整理 · 個人規劃筆記，非 Blizzard 官方網站</p><nav class="footer-links" aria-label="頁尾導覽"><a href="../">專業規劃首頁</a><a href="../endgame/">鐵匠清單</a><a href="../alchemy/">煉金清單</a><a href="../speculation/">配方期貨</a><a href="../leveling/">鍛造練等</a><a href="../alchemy-leveling/">煉金練等</a><a href="#sources">資料依據</a><a href="https://github.com/jakeuj/wow-forever-professions" target="_blank" rel="noopener noreferrer">原始碼 ↗</a></nav></footer>
+  <footer class="site-footer section-wrap"><a class="brand footer-brand" href="../professions/"><img src="../assets/crest.svg" alt="" width="26" height="30"><span>永恆・專業議事廳</span></a><p>由 jakeuj 整理 · 個人規劃筆記，非 Blizzard 官方網站</p><nav class="footer-links" aria-label="頁尾導覽"><a href="../professions/">專業與傳承</a><a href="../endgame/">鐵匠清單</a><a href="../alchemy/">煉金清單</a><a href="../speculation/">配方期貨</a><a href="../leveling/">鍛造練等</a><a href="../alchemy-leveling/">煉金練等</a><a href="#sources">資料依據</a><a href="https://github.com/jakeuj/wow-forever-professions" target="_blank" rel="noopener noreferrer">原始碼 ↗</a></nav></footer>
 </body>
 </html>

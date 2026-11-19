@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { professions, crafting, paladinRoutes, getPaladinRoute, getRows, summarize, normalizeProgress, countPoints } from '../data.mjs';
+import { professions, crafting, paladinRoutes, getPaladinRoute, getRows, summarize, normalizeProgress, countPoints } from '../professions/data.mjs';
 
 for (const plan of ['crafting', 'gathering', 'balanced', 'paladin']) {
   test(`${plan}: 五種職業、九項專業與十八點長期里程碑`, () => {

@@ -102,7 +102,7 @@ API 與客戶端都缺的資料（掉落、任務、NPC 位置、人口、行情
 
 依成本由低到高。網站目前是純靜態 GitHub Pages，網站維護方式見 [profession-planner-site.md](profession-planner-site.md)。
 
-1. **物品提示框**：在材料、成品或配方名稱加上 Wowhead 永恆繁中連結並載入 tooltips 腳本。需要在 `data.mjs` 補物品或法術 ID，不需要後端。
+1. **物品提示框**：在材料、成品或配方名稱加上 Wowhead 永恆繁中連結並載入 tooltips 腳本。需要在 `professions/data.mjs` 補物品或法術 ID，不需要後端。
 2. **版本與查證標示**：在頁尾顯示目前客戶端 build 與資料查證日期，可手動更新，或由排程讀 TACT。
 3. **官方物品圖示與名稱**：`scripts/build-market-data.py` 目前用 Wowhead 補客戶端沒有的名稱與所有圖示。官方 `item/{id}` 有 zh_TW 名稱與品質，`media/item/{id}` 有圖示（render.worldofwarcraft.com），可以先查官方、404 再退回 Wowhead，同樣只在建置時查並快取。官方建議把圖片存到自己的空間，不要熱連結。
 4. **材料行情**：每小時排程 2026-11-19 起也收 `/commodities`（清單 key 是 `auctions`，見[拍賣場](battlenet-api.md#拍賣場)），部落材料的最低單價與上架量已在 `auctions.json`。專業分配頁可再挑方案用到的材料（草藥、礦、布、皮、附魔材料）顯示中位單價與上架量。

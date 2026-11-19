@@ -1,14 +1,12 @@
-import { professions, crafting, plans, paladinRoutes, getPaladinRoute, getRows, summarize, normalizeProgress, countPoints } from './data.mjs?v=20261118-warlock-route';
+import { professions, plans, paladinRoutes, getPaladinRoute, getRows, summarize } from './data.mjs?v=20261119-guild';
+import { initMilestones } from './milestones.mjs?v=20261119-guild';
 
 const $ = selector => document.querySelector(selector);
-const storageKey = 'wow-forever-professions:milestones:v1';
 const byId = Object.fromEntries(professions.map(p => [p.id, p]));
 const tabs = [...document.querySelectorAll('[data-plan]')];
 let selectedPlan = 'crafting';
 let selectedStage = 'start';
 let selectedPaladinRoute = 'keep';
-let progress = normalizeProgress(null);
-let storageAvailable = true;
 let toastTimer;
 
 function notify(message) {
@@ -27,11 +25,15 @@ function readHash() {
   else if (params.get('plan') === 'paladin') selectedPaladinRoute = 'keep';
 }
 
-function writeHash() {
+function planHash() {
   const params = new URLSearchParams({ plan: selectedPlan });
   if (selectedPlan === 'gathering') params.set('stage', selectedStage);
   if (selectedPlan === 'paladin') params.set('route', selectedPaladinRoute);
-  history.replaceState(null, '', `${location.pathname}${location.search}#${params}`);
+  return params.toString();
+}
+
+function writeHash() {
+  history.replaceState(null, '', `#${planHash()}`);
 }
 
 function renderPlan() {
@@ -100,46 +102,14 @@ document.querySelectorAll('[data-stage]').forEach(button => button.addEventListe
 
 window.addEventListener('hashchange', () => { readHash(); renderPlan(); });
 
-// Guild navigation keeps the active profession route in the share URL.
-document.querySelectorAll('[data-guild-link]').forEach(link => link.addEventListener('click', event => {
-  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-  event.preventDefault();
-  $('#guild-title').focus({ preventScroll: true });
-  $('#guild').scrollIntoView({ block: 'start' });
-}));
-
-document.querySelectorAll('[data-copy-target]').forEach(button => {
-  const label = button.querySelector('[data-copy-label]');
-  const defaultLabel = label.textContent;
-  let resetLabelTimer;
-  button.hidden = false;
-  button.addEventListener('click', async () => {
-    const text = document.getElementById(button.dataset.copyTarget).textContent.trim();
-    const status = $('#guild-copy-status');
-    status.textContent = '';
-    try {
-      await navigator.clipboard.writeText(text);
-      clearTimeout(resetLabelTimer);
-      label.textContent = '已複製';
-      button.classList.add('is-copied');
-      resetLabelTimer = setTimeout(() => {
-        label.textContent = defaultLabel;
-        button.classList.remove('is-copied');
-      }, 2400);
-      status.textContent = `已複製「${text}」`;
-    } catch {
-      status.textContent = '無法自動複製，請選取上方文字手動複製。';
-    }
-  });
-});
-
 $('#copy-plan').addEventListener('click', async () => {
   const rows = getRows(selectedPlan, selectedStage, selectedPaladinRoute);
   const summary = summarize(rows);
   const route = selectedPlan === 'paladin' ? getPaladinRoute(selectedPaladinRoute) : null;
   const phase = route ? `（路線 ${route.letter}：${route.label}）` : selectedPlan === 'gathering' ? `（${selectedStage === 'start' ? '開局階段' : '長期配置'}）` : '';
-  const shareUrl = new URL(location.href);
-  shareUrl.hash = new URLSearchParams({ plan: selectedPlan, ...(selectedPlan === 'gathering' ? { stage: selectedStage } : {}), ...(route ? { route: selectedPaladinRoute } : {}) }).toString();
+  const shareUrl = new URL('./', location.href);
+  shareUrl.search = location.search;
+  shareUrl.hash = planHash();
   const text = [`魔獸世界：永恆｜${plans[selectedPlan].label}${phase}`, ...rows.map(row => `${row.name}：${[...row.profs.map(id => byId[id].name), ...(row.flexibleSlot ? ['彈性一格'] : [])].join('／')}`), ...(route ? ['', `聖騎士調整：${route.change}`, `材料流向：${route.flow}`] : []), '', `${summary.covered}/9 專業覆蓋，${summary.craftCharacters} 位製造工匠，${summary.points} 點製造傳承上限（非已取得點數）。`, '技能 150／225／300，帳號首次里程碑各 1 點。', shareUrl.href].join('\n');
   try {
     await navigator.clipboard.writeText(text);
@@ -156,56 +126,6 @@ $('#copy-plan').addEventListener('click', async () => {
   }
 });
 
-try {
-  progress = normalizeProgress(JSON.parse(localStorage.getItem(storageKey)));
-} catch {
-  progress = normalizeProgress(null);
-  try { localStorage.getItem(storageKey); } catch { storageAvailable = false; }
-}
-
-$('#milestone-rows').innerHTML = crafting.map(p => `<div class="milestone-row"><span class="milestone-name"><span class="profession-mark" aria-hidden="true">${p.mark}</span>${p.name}</span>${[1, 2, 3].map(rank => `<span class="milestone-dot" data-milestone="${p.id}-${rank}" role="img" aria-label="${p.name} ${[150, 225, 300][rank - 1]} 尚未達成"></span>`).join('')}<select data-progress="${p.id}" aria-label="${p.name}目前階段"><option value="0">未達 150</option><option value="1">已達 150</option><option value="2">已達 225</option><option value="3">已達 300</option></select></div>`).join('');
-
-function renderProgress() {
-  const points = countPoints(progress);
-  $('#earned-points').textContent = points;
-  $('#legacy-progress').setAttribute('aria-valuenow', String(points));
-  $('#legacy-progress>span').style.width = `${points / 18 * 100}%`;
-  crafting.forEach(p => {
-    const rank = progress[p.id];
-    $(`[data-progress="${p.id}"]`).value = String(rank);
-    [1, 2, 3].forEach(step => {
-      const dot = $(`[data-milestone="${p.id}-${step}"]`);
-      dot.classList.toggle('complete', rank >= step);
-      dot.setAttribute('aria-label', `${p.name} ${[150, 225, 300][step - 1]} ${rank >= step ? '已達成' : '尚未達成'}`);
-    });
-  });
-  $('#progress-description').textContent = points === 18 ? '六項製造里程碑全數完成。18 點製造傳承，已全部記錄！' : points >= 16 ? '製造點數已達首發每角色可投入的 16 點；仍可繼續完成其餘里程碑。' : points >= 12 ? '已累積 12 點以上，繼續往各專業的 300 點里程碑推進。' : points >= 6 ? '已累積 6 點以上，下一步可把各項製造推到 225。' : '先讓六項製造各到 150，累積第一輪 6 點。';
-  if (!storageAvailable) $('#storage-note').textContent = '此瀏覽器無法儲存本機資料；進度會保留在目前頁面，重新開啟後需重新設定。';
-}
-
-function saveProgress() {
-  try { localStorage.setItem(storageKey, JSON.stringify(progress)); storageAvailable = true; }
-  catch { storageAvailable = false; }
-  renderProgress();
-}
-
-document.querySelectorAll('[data-progress]').forEach(select => select.addEventListener('change', () => {
-  progress[select.dataset.progress] = Number(select.value);
-  saveProgress();
-}));
-
-$('#reset-progress').addEventListener('click', () => {
-  progress = normalizeProgress(null);
-  saveProgress();
-  notify('已清除這個瀏覽器的製造進度');
-});
-
-window.addEventListener('storage', event => {
-  if (event.key !== storageKey && event.key !== null) return;
-  try { progress = normalizeProgress(JSON.parse(event.newValue)); } catch { progress = normalizeProgress(null); }
-  renderProgress();
-});
-
 readHash();
 renderPlan();
-renderProgress();
+initMilestones(notify);

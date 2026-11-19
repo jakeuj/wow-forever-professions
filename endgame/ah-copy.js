@@ -143,7 +143,7 @@
   const makeButton = text => {
     const button = document.createElement('button');
     button.type = 'button';
-    button.className = 'guild-copy-button';
+    button.className = 'button-compact';
     button.textContent = text;
     actions.append(button);
     return button;
