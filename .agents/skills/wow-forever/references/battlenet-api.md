@@ -199,16 +199,29 @@ TW 區實測（2026-11-18，`scripts/probe-auction-api.py`，在 GitHub Actions 
 
 `scripts/forever_api.py` 只用標準庫，依路徑自動選 namespace（`/profile/` 與公會用 profile，ruleset 與拍賣用 dynamic，其餘 static），`--ns` 可覆寫。預設 TW 區、`zh_TW`；`--locale all` 回傳所有語系。
 
-憑證先讀環境變數 `BLIZZARD_CLIENT_ID`／`BLIZZARD_CLIENT_SECRET`。macOS 沒設環境變數時讀鑰匙圈 service `wow-forever-battlenet`（帳號＝client ID、密碼＝secret）；Windows 用環境變數：
+憑證先讀環境變數 `BLIZZARD_CLIENT_ID`／`BLIZZARD_CLIENT_SECRET`，沒設時（只限 macOS）讀鑰匙圈 service `wow-forever-battlenet`（帳號＝client ID、密碼＝secret）。Client ID 與 secret 到 [API Access](https://community.developer.battle.net/access/clients) 的 Manage Client 複製；repo Secrets 存了讀不回來。在入口重新產生 secret 時，要同步更新 repo 的 `BLIZZARD_CLIENT_SECRET`，否則每小時排程會失敗。各台電腦設了哪種方式，記在 `local.md` 的「Battle.net API 憑證位置」。
+
+**macOS**：存一次即可。提示輸入的 password 兩次都貼 client secret；第一次讀取若跳出鑰匙圈存取詢問，選「永遠允許」。
 
 ```sh
 security add-generic-password -s wow-forever-battlenet -a '<client id>' -w
+security find-generic-password -s wow-forever-battlenet  # 確認有這筆，不會顯示 secret
 ```
+
+**Windows**：工具不讀認證管理員，每開一個 PowerShell 視窗設一次環境變數，關掉視窗就消失。下面的寫法在 Windows PowerShell 5.1 與 PowerShell 7 都能用，secret 遮罩輸入、不留在指令歷史：
 
 ```powershell
 $env:BLIZZARD_CLIENT_ID = '<client id>'
-$env:BLIZZARD_CLIENT_SECRET = Read-Host 'client secret' -MaskInput
+$env:BLIZZARD_CLIENT_SECRET = [Net.NetworkCredential]::new('', (Read-Host 'client secret' -AsSecureString)).Password
+python '<skill-dir>\scripts\forever_api.py' get /data/wow/ruleset/index
 ```
+
+- 在 repo 根目錄時 `<skill-dir>` 是 `.agents\skills\wow-forever`。Windows 的 Python 指令通常是 `python` 或 `py`，macOS 是 `python3`。
+- 不要用 `setx` 或系統設定把 secret 存成永久的使用者環境變數：會以明文留在登錄檔，之後開的每個程式都讀得到。
+- 中文角色名在 PowerShell 直接輸入即可。輸出是 UTF-8；導向檔案或管線時中文變亂碼，先執行 `[Console]::OutputEncoding = [Text.Encoding]::UTF8`。
+- 成功時 stderr 第一行是 `HTTP 200 dynamic-forever-tw`；出現 `No Battle.net credentials` 表示這個視窗的環境變數沒設好（macOS 則是鑰匙圈沒有那筆）。
+
+查詢範例（Windows 把 `python3` 換成 `python`、路徑分隔改成 `\`）：
 
 ```sh
 python3 '<skill-dir>/scripts/forever_api.py' get /data/wow/ruleset/index

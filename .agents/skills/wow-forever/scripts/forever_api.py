@@ -7,10 +7,11 @@ not set (macOS only), from the Keychain item whose service is `wow-forever-battl
 
     security add-generic-password -s wow-forever-battlenet -a '<client id>' -w
 
-On Windows set the two variables for the current PowerShell session instead:
+On Windows set the two variables for the current PowerShell session instead
+(works in Windows PowerShell 5.1 and PowerShell 7; the secret is not echoed):
 
     $env:BLIZZARD_CLIENT_ID = '<client id>'
-    $env:BLIZZARD_CLIENT_SECRET = Read-Host 'client secret' -MaskInput
+    $env:BLIZZARD_CLIENT_SECRET = [Net.NetworkCredential]::new('', (Read-Host 'client secret' -AsSecureString)).Password
 
 The access token stays in memory and in the Authorization header; it is never
 printed or written to disk.
@@ -84,9 +85,12 @@ def credentials():
                                       capture_output=True, text=True)
             if password.returncode == 0 and password.stdout.strip():
                 return account.group(1), password.stdout.strip()
-    hint = (f"or add them to the Keychain with: security add-generic-password -s {KEYCHAIN_SERVICE} "
-            "-a '<client id>' -w") if sys.platform == "darwin" else \
-        "e.g. in PowerShell: $env:BLIZZARD_CLIENT_SECRET = Read-Host 'client secret' -MaskInput"
+    if sys.platform == "darwin":
+        hint = ("or add them to the Keychain with: "
+                f"security add-generic-password -s {KEYCHAIN_SERVICE} -a '<client id>' -w")
+    else:
+        hint = ("e.g. in PowerShell: $env:BLIZZARD_CLIENT_SECRET = "
+                "[Net.NetworkCredential]::new('', (Read-Host 'client secret' -AsSecureString)).Password")
     sys.exit(f"No Battle.net credentials: set BLIZZARD_CLIENT_ID and BLIZZARD_CLIENT_SECRET, {hint}")
 
 

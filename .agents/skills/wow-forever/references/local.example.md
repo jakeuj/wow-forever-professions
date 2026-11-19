@@ -20,7 +20,7 @@
 
 - GitHub repo Secrets：`BLIZZARD_CLIENT_ID`、`BLIZZARD_CLIENT_SECRET`、`FOREVER_PROBE_CHARACTER` 的設定狀態
 - macOS 鑰匙圈 service：`wow-forever-battlenet`（已建立／未建立）
-- Windows：環境變數或其他保存方式
+- Windows：每個 PowerShell 視窗設環境變數，不永久保存（步驟見 battlenet-api.md 的「本機查詢工具」）
 
 ## 電腦
 
