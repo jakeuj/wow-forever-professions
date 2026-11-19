@@ -34,7 +34,7 @@
 
 .addon-filters {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(10rem, 14rem) auto;
+  grid-template-columns: minmax(0, 1fr) repeat(2, minmax(8rem, 12rem)) auto;
   align-items: end;
   gap: 0.75rem;
   padding: 1rem 1.25rem;
@@ -145,7 +145,27 @@
 }
 
 .addon-card a:hover { color: var(--gold-bright); }
-.addon-card .addon-source { font-size: 0.875rem; }
+.addon-card .addon-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.addon-state {
+  padding-inline: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  color: var(--muted);
+}
+
+.addon-state[data-addon-state="enabled"] {
+  background: #263b2d;
+  border-color: #42654b;
+  color: #c0e1c6;
+}
 
 .addon-card details {
   border-top: 1px solid var(--line);
@@ -175,8 +195,17 @@
   .addon-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 640px) {
-  .addon-filters { grid-template-columns: minmax(0, 1fr) auto; padding: 0.85rem; }
+@media (max-width: 800px) {
+  .addon-filters { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; }
   .addon-search-field { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .addon-filters { padding: 0.85rem; }
   .addon-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .addon-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .addon-status { grid-column: auto; align-self: center; }
 }

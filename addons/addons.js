@@ -1,6 +1,7 @@
 const filters = document.querySelector('#addon-filters');
 const query = document.querySelector('#addon-search');
 const category = document.querySelector('#addon-category');
+const addonState = document.querySelector('#addon-state');
 const status = document.querySelector('#addon-status');
 const empty = document.querySelector('#addon-empty');
 
@@ -10,6 +11,7 @@ const groups = Array.from(document.querySelectorAll('[data-addon-group]'), (sect
   cards: Array.from(section.querySelectorAll('.addon-card'), (card) => ({
     card,
     text: normalize(card.textContent),
+    state: card.querySelector('[data-addon-state]').dataset.addonState,
   })),
 }));
 
@@ -21,8 +23,9 @@ function updateResults() {
     const inCategory = !category.value || category.value === section.dataset.addonGroup;
     let visible = 0;
 
-    for (const { card, text } of cards) {
-      card.hidden = !inCategory || !terms.every((term) => text.includes(term));
+    for (const { card, text, state } of cards) {
+      const matchesState = !addonState.value || addonState.value === state;
+      card.hidden = !inCategory || !matchesState || !terms.every((term) => text.includes(term));
       if (!card.hidden) visible += 1;
     }
 
@@ -36,6 +39,7 @@ function updateResults() {
 
 query.addEventListener('input', updateResults);
 category.addEventListener('change', updateResults);
+addonState.addEventListener('change', updateResults);
 filters.querySelector('button').addEventListener('click', () => {
   filters.reset();
   updateResults();
