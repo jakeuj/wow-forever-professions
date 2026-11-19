@@ -20,7 +20,7 @@ from pathlib import Path
 import re
 import time
 
-from blizzard_api import Api, get_token, lowest_prices
+from blizzard_api import Api, commodity_rows, get_token, lowest_prices
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -147,7 +147,7 @@ def probe_region(region, token, ruleset, scan, details, lines):
         base = f"/data/wow/ruleset/{ruleset}/auctions/{hid}"
         auctions, commodities = api.get(base), api.get(f"{base}/commodities")
         a_rows = (auctions["payload"] or {}).get("auctions")
-        c_rows = (commodities["payload"] or {}).get("commodities")
+        c_rows = commodity_rows(commodities["payload"])  # Forever lists them under "auctions"
         prices = lowest_prices(a_rows, c_rows)
         match = compare(prices, scan)
         owner = (auctions["payload"] or {}).get("ruleset")
@@ -157,6 +157,7 @@ def probe_region(region, token, ruleset, scan, details, lines):
             "ruleset": ruleset_of(owner), "ruleset_raw": strip_links(owner),
             "row_keys": sorted({k for row in a_rows or [] for k in row}),
             "item_keys": sorted({k for row in a_rows or [] for k in (row.get("item") or {})}),
+            "commodity_keys": sorted({k for row in c_rows for k in row}),
             "sample": (a_rows or [])[:3],
             "stack_listings": sum((row.get("quantity") or 1) > 1 for row in a_rows or []),
             "max_quantity": max([row.get("quantity") or 1 for row in a_rows or []], default=0),

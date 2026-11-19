@@ -77,14 +77,20 @@ class Api:
                 "last_modified": headers.get("Last-Modified") if headers else None}
 
 
+def commodity_rows(payload):
+    """Listings of a /commodities response. Forever names the list `auctions`; Retail calls it `commodities`."""
+    payload = payload or {}
+    return payload.get("commodities") or payload.get("auctions") or []
+
+
 def lowest_prices(auctions, commodities):
-    """item id -> (lowest buyout / quantity, lowest buyout, largest quantity in one listing, listings)."""
+    """item id -> (lowest buyout / quantity, lowest buyout, largest quantity in one listing, listings, units)."""
     best = {}
 
     def add(item, unit, whole, quantity):
         old = best.get(item)
-        best[item] = (unit, whole, quantity, 1) if old is None else \
-            (min(unit, old[0]), min(whole, old[1]), max(quantity, old[2]), old[3] + 1)
+        best[item] = (unit, whole, quantity, 1, quantity) if old is None else \
+            (min(unit, old[0]), min(whole, old[1]), max(quantity, old[2]), old[3] + 1, old[4] + quantity)
 
     for row in auctions or []:
         buyout = row.get("buyout")

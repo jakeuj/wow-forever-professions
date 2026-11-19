@@ -3,21 +3,22 @@
 
 Runs hourly in GitHub Actions (.github/workflows/auction-collect.yml), which keeps
 the file on the `auction-data` branch; the market page reads it from there. The
-Battle.net API refreshes WoW Forever auction data once an hour and lists only items
-that do not stack (gear, weapons, recipes); herbs, ore and potions are missing, so
-the page keeps using the owner's Auctionator scan for those.
+Battle.net API refreshes WoW Forever auction data once an hour: the house endpoint
+lists items that do not stack (gear, weapons, recipes) and /commodities lists the
+stackable ones (herbs, ore, potions) under the key `auctions`.
 
     BLIZZARD_CLIENT_ID=... BLIZZARD_CLIENT_SECRET=... \\
         python3 scripts/collect-auctions.py --out auction-data/auctions.json
 
-auctions.json keeps, per item id, the current number of listings and the lowest
-buyout as change points: [count, [[hour, price], ...]], where hour is hours since
+auctions.json keeps, per item id, the units on sale now and the lowest unit price as
+change points: [count, [[hour, price], ...]], where hour is hours since
 the Unix epoch (UTC) and price is copper, or null once the item is gone. `hours`
 lists the snapshots taken since `hourlyFrom`; before that (Taiwan days older than
 --hourly-days), each day is folded into one point at its midnight holding the
 day's lowest price, and days older than --keep-days are dropped. A snapshot that is
 already recorded, or one that looks broken (far fewer listings than the last one),
-is skipped without touching the file.
+is skipped without touching the file, and so is an hour whose /commodities request
+failed or comes from another hour, so stackables are not marked gone by mistake.
 """
 
 import argparse
@@ -28,7 +29,7 @@ import os
 from pathlib import Path
 import sys
 
-from blizzard_api import Api, get_token, lowest_prices
+from blizzard_api import Api, commodity_rows, get_token, lowest_prices
 
 TW = datetime.timezone(datetime.timedelta(hours=8))
 
@@ -112,11 +113,16 @@ def main():
     if auctions["status"] != 200 or not auctions["last_modified"]:
         summarize(f"::warning::auction house {args.house}: HTTP {auctions['status']}; nothing recorded")
         return
-    commodities = api.get(f"{base}/commodities")  # empty in Forever so far; picked up if that changes
-    prices = lowest_prices((auctions["payload"] or {}).get("auctions"),
-                           (commodities["payload"] or {}).get("commodities"))
     modified = email.utils.parsedate_to_datetime(auctions["last_modified"])
     hour = int(modified.timestamp() // 3600)
+    commodities = api.get(f"{base}/commodities")
+    c_modified = commodities["last_modified"]
+    if commodities["status"] != 200 or not c_modified \
+            or int(email.utils.parsedate_to_datetime(c_modified).timestamp() // 3600) != hour:
+        summarize(f"::warning::commodities of house {args.house}: HTTP {commodities['status']}, "
+                  f"Last-Modified {c_modified} vs {auctions['last_modified']}; nothing recorded")
+        return
+    prices = lowest_prices((auctions["payload"] or {}).get("auctions"), commodity_rows(commodities["payload"]))
 
     data = json.loads(args.out.read_text(encoding="utf-8")) if args.out.is_file() else {"hours": [], "items": {}}
     items, hours = data["items"], data["hours"]
@@ -130,7 +136,7 @@ def main():
         return
 
     changed = gone = new = 0
-    for item, (unit, _whole, _largest, listings) in prices.items():
+    for item, (unit, _whole, _largest, _listings, units) in prices.items():
         price = round(unit)
         entry = items.setdefault(str(item), [0, []])
         if not entry[1]:
@@ -138,7 +144,7 @@ def main():
         if not entry[1] or entry[1][-1][1] != price:
             entry[1].append([hour, price])
             changed += 1
-        entry[0] = listings
+        entry[0] = units
     for key, entry in items.items():
         if int(key) not in prices and entry[1][-1][1] is not None:
             entry[1].append([hour, None])
