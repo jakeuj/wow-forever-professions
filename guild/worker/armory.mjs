@@ -82,8 +82,10 @@ function skills(data) {
 }
 
 function talents(data) {
-  return (data?.specializations || []).map(row => ({
-    name: name(row.specialization?.name) || name(row.name),
+  const groups = data?.specialization_groups || [];
+  const selected = groups.find(group => group.is_active) || groups[0];
+  return (selected?.specializations || data?.specializations || []).map(row => ({
+    name: name(row.specialization?.name) || name(row.specialization_name) || name(row.name),
     loadouts: (row.loadouts || []).map(loadout => ({
       active: Boolean(loadout.is_active),
       talents: [...(loadout.selected_class_talents || []), ...(loadout.selected_spec_talents || []), ...(loadout.selected_talents || [])]

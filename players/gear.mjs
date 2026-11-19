@@ -3,9 +3,12 @@ import { loadItems } from '../market/quotes.mjs';
 import { element, link, table } from '../market/tools.mjs';
 
 const drops = {
-  5191: ['殘酷倒鉤', '死亡礦坑', 'deadmines', 'MAIN_HAND'],
-  5193: ['兄弟會斗篷', '死亡礦坑', 'deadmines', 'BACK'],
-  6449: ['發光的蜥蜴披風', '哀嚎洞穴', 'wailing-caverns', 'BACK'],
+  5191: { name: '殘酷倒鉤', dungeon: '死亡礦坑', slug: 'deadmines', slot: 'WEAPON', requiredLevel: 19,
+    stats: { '每秒傷害': 15.54, ATTACK_POWER: 12 } },
+  5193: { name: '兄弟會斗篷', dungeon: '死亡礦坑', slug: 'deadmines', slot: 'BACK', requiredLevel: 19,
+    stats: { '護甲': 21, AGILITY: 5, STAMINA: 3 } },
+  6449: { name: '發光的蜥蜴披風', dungeon: '哀嚎洞穴', slug: 'wailing-caverns', slot: 'BACK', requiredLevel: 18,
+    stats: { '護甲': 20, AGILITY: 6, NATURE_RESISTANCE: 2 } },
 };
 const slots = {
   HEAD: '頭部', NECK: '頸部', SHOULDER: '肩部', BACK: '背部', CHEST: '胸部', WRIST: '手腕',
@@ -25,6 +28,7 @@ const enchantSlots = {
 const statNames = {
   STRENGTH: '力量', AGILITY: '敏捷', STAMINA: '耐力', INTELLECT: '智力', SPIRIT: '精神',
   CRIT_RATING: '致命一擊', HASTE_RATING: '加速', ATTACK_POWER: '攻擊強度', SPELL_POWER: '法術能量',
+  NATURE_RESISTANCE: '自然抗性',
 };
 const verifiedEnchants = {
   '附魔護腕-強效智力': ['智力 +7', 20008],
@@ -80,8 +84,9 @@ export function gearComparison(profile) {
     enchant.replaceChildren(new Option('保留或比較裝備本身', ''), ...recipes
       .filter(recipe => recipe.profession === 333 && allowed?.test(recipe.name))
       .map(recipe => new Option(recipe.name, recipe.id)));
-    const suggestions = Object.entries(drops).filter(([, row]) => row[3] === current.slot);
-    options.replaceChildren(...suggestions.map(([id, row]) => new Option(`${row[0]} · ${id}`)));
+    const allowedSlots = compatible[current.slot] || [current.slot];
+    const suggestions = Object.entries(drops).filter(([, row]) => allowedSlots.includes(row.slot));
+    options.replaceChildren(...suggestions.map(([id, row]) => new Option(`${row.name} · ${id}`)));
   };
   Promise.all([loadItems().catch(() => new Map()), loadGuildSnapshot('recipes').catch(() => null)]).then(([items, catalog]) => {
     names = items;
@@ -96,23 +101,24 @@ export function gearComparison(profile) {
     const current = profile.equipment[Number(slot.value)];
     const input = item.value.trim();
     const id = input.match(/(?:^| · )(\d{1,9})$/u)?.[1] ||
-      [...names].find(([, name]) => name === input)?.[0] || Object.keys(drops).find(id => drops[id][0] === input);
+      [...names].find(([, name]) => name === input)?.[0] || Object.keys(drops).find(id => drops[id].name === input);
     if (!id) {
       output.replaceChildren(element('p', '請輸入拍賣行情中的完整名稱或物品 ID。'));
       return;
     }
     const candidateEnchant = recipes.find(recipe => String(recipe.id) === enchant.value);
     output.replaceChildren(element('p', '讀取候選裝備…'));
-    const candidate = await fetch(`${guildDataOrigin}/items/${id}.json`, { signal: AbortSignal.timeout(9000) })
+    const official = await fetch(`${guildDataOrigin}/items/${id}.json`, { signal: AbortSignal.timeout(9000) })
       .then(response => response.ok ? response.json() : null).catch(() => null);
     if (lookup !== request) return;
     const allowed = compatible[current.slot] || [current.slot];
     const source = drops[id];
+    const candidate = official || (source && { ...source, binding: 'ON_ACQUIRE' });
     if (candidate?.slot && !allowed.includes(candidate.slot)) {
       output.replaceChildren(element('p', `候選裝備的部位為${candidate.slotName || candidate.slot}。請選擇相同部位。`));
       return;
     }
-    const title = candidate?.name || source?.[0] || names.get(Number(id)) || `物品 ${id}`;
+    const title = candidate?.name || names.get(Number(id)) || `物品 ${id}`;
     output.replaceChildren(element('h4', `${current.name} → ${title}`));
     if (candidate?.requiredLevel > profile.level) output.append(element('p', `候選裝備需要等級 ${candidate.requiredLevel}。`));
     const entries = Object.keys({ ...current.stats, ...candidate?.stats });
@@ -125,7 +131,7 @@ export function gearComparison(profile) {
     else output.append(element('p', '此裝備的屬性暫時無法比較。'));
     const access = element('div');
     access.className = 'tool-actions';
-    if (source) access.append(link(`掉落 · ${source[1]}`, `https://wowf.io/tw/dungeons/${source[2]}`));
+    if (source) access.append(link(`掉落 · ${source.dungeon}`, `https://wowf.io/tw/dungeons/${source.slug}`));
     if (candidate?.binding !== 'ON_ACQUIRE') access.append(link('查拍賣掛單', `../market/?item=${id}#bulk`));
     if (recipes.some(recipe => Number(recipe.product?.id) === Number(id))) {
       access.append(link('配方與公會代工', `../professions/recipes/?item=${id}`));

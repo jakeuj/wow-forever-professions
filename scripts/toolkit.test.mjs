@@ -56,6 +56,11 @@ test('雙名正規化與撤下名單會阻擋角色查詢和舊名冊', async t 
     if (String(url).includes('oauth')) return Response.json({ access_token: 'demo', expires_in: 86400 });
     const path = decodeURIComponent(new URL(url).pathname);
     if (path.endsWith('/測試-鐵匠')) return Response.json({ id: 123, name: '測試', surname: '鐵匠', level: 50 });
+    if (path.endsWith('/specializations')) return Response.json({
+      specialization_groups: [{ is_active: true, specializations: [{
+        specialization: { name: '武器' }, spent_points: 3, talents: [{ talent: { name: '強化英勇打擊' }, talent_rank: 3 }],
+      }] }],
+    });
     return Response.json({});
   });
   const fetched = new Date();
@@ -66,7 +71,9 @@ test('雙名正規化與撤下名單會阻擋角色查詢和舊名冊', async t 
   const request = new Request(`${endpoint}/characters/${encodeURIComponent('測試-鐵匠')}.json`);
   const first = await reader.fetch(request, env);
   assert.equal(first.status, 200);
-  assert.equal(Object.hasOwn(await first.json(), 'id'), false);
+  const data = await first.json();
+  assert.equal(Object.hasOwn(data, 'id'), false);
+  assert.deepEqual(data.talents[0].talents, [{ name: '強化英勇打擊', rank: 3 }]);
   const previous = upstream;
   excluded = [123];
   assert.equal((await reader.fetch(request, env)).status, 404);
