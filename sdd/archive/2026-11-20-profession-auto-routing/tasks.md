@@ -14,6 +14,7 @@
 
 - 先以鍛造 187 → 225 和鍊金術 1 → 20，核對價階變動、庫存替代、預設 90% 門檻、取消重算及匯出，再擴充四項製造資料。
 - 以同一份測試行情驗證六項製造的 1 → 300 自動路線。桌面 1440 px 和手機 390 px 驗證六項入口、達標機率、舊分享連結與購物清單。
+- **正式站驗收通過（2026-11-20）**。使用者以預填連結驗收自動選路，確認 [鍛造 187 → 225](https://jakeuj.com/wow-forever-professions/crafting-leveling/?profession=blacksmithing&from=187&target=225#calculator) 與 [鍊金術 1 → 20](https://jakeuj.com/wow-forever-professions/crafting-leveling/?profession=alchemy&from=1&target=20#calculator) 兩個案例皆通過。
 
 ## 驗收條件
 
