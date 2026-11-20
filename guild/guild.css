@@ -329,12 +329,15 @@
 
 .guild-contact-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   margin-top: 24px;
 }
 
 .guild-contact-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 10px;
   min-width: 0;
   padding: 22px;
   border: 1px solid #665b415c;
@@ -370,16 +373,9 @@
   pointer-events: none;
 }
 
-.guild-contact-identity { min-width: 0; flex: 1; }
-
-.guild-contact-identity > p {
-  margin: 0 0 3px;
-  color: #b5b3a0;
-  font-size: 10px;
-  letter-spacing: 1px;
-}
-
-.guild-contact-identity h3 {
+.guild-contact-person h3 {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   font-family: var(--serif);
   font-size: 23px;
@@ -388,36 +384,50 @@
   line-height: 1.5;
   color: var(--gold-bright);
   user-select: all;
+  overflow-wrap: anywhere;
 }
 
-.guild-contact-details {
-  margin: 18px 0 0;
-  padding-top: 15px;
-  border-top: 1px solid #cfb17a1c;
-}
-
-.guild-contact-details dt {
-  margin-bottom: 3px;
-  font-size: 10px;
-  color: #b5b3a0;
-  letter-spacing: .6px;
-}
-
-.guild-contact-details dd {
+.guild-contact-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 0;
   min-height: 44px;
 }
 
-.guild-contact-details dd > span {
+.guild-contact-details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 6px;
   min-width: 0;
-  font-size: 16px;
+  margin: 0;
+}
+
+.guild-contact-details dd {
+  min-width: 0;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
   color: var(--text);
   user-select: all;
   overflow-wrap: anywhere;
+}
+
+.guild-contact-tag {
+  padding: 2px 6px;
+  border: 1px solid #cfb17a4d;
+  border-radius: 4px;
+  color: var(--gold);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.guild-contact-tag--availability {
+  border-color: transparent;
+  background: #cfb17a1a;
+  color: var(--muted);
 }
 
 .guild-greeting {
@@ -462,6 +472,10 @@
   overflow-wrap: anywhere;
 }
 
+@media (min-width: 1000px) {
+  .guild-contact-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 @media (max-width: 1120px) {
   .guild-tool-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
@@ -481,7 +495,7 @@
 
   .guild-contact-person { gap: 12px; }
 
-  .guild-contact-identity h3 { font-size: 21px; }
+  .guild-contact-person h3 { font-size: 21px; }
 }
 
 @media (max-width: 800px) {
@@ -515,18 +529,13 @@
   .guild-contact-heading p { font-size: 11px; }
 
   .guild-contact-cards {
-    grid-template-columns: 1fr;
     gap: 12px;
     margin-top: 20px;
   }
 
   .guild-contact-card { padding: 18px 16px; }
 
-  .guild-contact-identity h3 { font-size: 22px; }
-
-  .guild-contact-details { margin-top: 16px; padding-top: 12px; }
-
-  .guild-contact-details dd > span { font-size: 15px; }
+  .guild-contact-person h3 { font-size: 22px; }
 
   .guild-greeting {
     align-items: flex-start;
