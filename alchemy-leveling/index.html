@@ -17,9 +17,9 @@
   <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
   <link rel="stylesheet" href="../style.css?v=20261119-guild">
   <link rel="stylesheet" href="../endgame/endgame.css?v=20261119-inline-links">
-  <link rel="stylesheet" href="../leveling/leveling.css?v=20261118-stock">
+  <link rel="stylesheet" href="../leveling/leveling.css?v=20261120-variants">
   <script src="../endgame/ah-copy.js?v=20261119-shopping" defer></script>
-  <script src="../leveling/leveling.js?v=20261119-stock" defer></script>
+  <script src="../leveling/leveling.js?v=20261120-variants" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#materials">跳至材料總成本</a>
@@ -43,6 +43,12 @@
       <p class="eg-privacy"><span aria-hidden="true">✧</span>這是個人整理頁，可從專業與傳承頁尾開啟。價格是部落拍賣場的掛單價，不是成交價；頁面打開時會讀「部落行情」頁的最新資料重算材料費。</p>
     </section>
 
+    <nav class="lv-variants section-wrap" style="grid-template-columns: repeat(2, minmax(0, 1fr))" aria-label="路線版本" data-lv-tabs>
+      <a href="#cheapest" data-lv-tab="cheapest"><strong>最省錢</strong><small>材料費最低</small></a>
+      <a href="#practical" data-lv-tab="practical"><strong>實用</strong><small>聖騎、術士喝得到</small></a>
+    </nav>
+
+    <div id="cheapest" class="lv-variant" data-lv-variant>
     <section id="summary" class="eg-section section-wrap" aria-labelledby="summary-title">
       <div class="section-heading"><div><p class="eyebrow">01 / BUDGET</p><h2 id="summary-title">先準備多少錢。</h2></div><p>材料錢扣掉做完賣給商人的收入，才是實際花費；次級石盾藥水與強效防禦藥劑掛拍賣場能收回更多。</p></div>
       <div class="eg-spec-grid lv-cards">
@@ -160,6 +166,138 @@
         </tbody>
       </table>
     </section>
+
+    </div>
+
+    <div id="practical" class="lv-variant" data-lv-variant>
+    <section id="use-summary" class="eg-section section-wrap" aria-labelledby="use-summary-title">
+      <div class="section-heading"><div><p class="eyebrow">01 / BUDGET</p><h2 id="use-summary-title">比最省錢多花多少。</h2></div><p>材料費會照部落行情重算；「比最省錢多」是 11/19 16:38 掃描價下，兩條路線同一階段的材料差價，不會自動更新。</p></div>
+      <p class="eg-note eg-note-lead">實用路線給兩隻角色：主角是防護聖騎（11/20 是 34 級），煉金改由術士小號來練（附魔＋煉金，現在 1 級）。成品挑兩隻喝得到的，只在多花不多的段落換掉最省錢路線；要留幾瓶寫在路線表，多的賣商人，不掛拍賣場。</p>
+      <div class="eg-spec-grid lv-cards">
+        <article class="eg-card lv-card" data-lv-card="use-1">
+          <h3>階段 1・術士 35 級前</h3><p>1→225・技工 10 級、專家 20 級</p>
+          <dl class="lv-figures">
+            <div><dt>材料</dt><dd data-lv-gross>10.1g</dd></div>
+            <div class="lv-net"><dt>比最省錢多</dt><dd>+2.8g</dd></div>
+          </dl>
+        </article>
+        <article class="eg-card lv-card" data-lv-card="use-2">
+          <h3>階段 2・35 級後</h3><p>225→300・要先學工匠級煉金</p>
+          <dl class="lv-figures">
+            <div><dt>材料</dt><dd data-lv-gross>13.3g</dd></div>
+            <div class="lv-net"><dt>比最省錢多</dt><dd>+0.3g</dd></div>
+          </dl>
+        </article>
+        <article class="eg-card lv-card">
+          <h3>配方與學費</h3><p>少買三張配方，多學六樣</p>
+          <dl class="lv-figures">
+            <div><dt>拍賣場買的 3 張</dt><dd data-lv-plan-total>57 銀</dd></div>
+            <div><dt>NPC 買的 2 張</dt><dd>約 1.5g</dd></div>
+            <div><dt>學費比最省錢多</dt><dd>約 0.85g</dd></div>
+          </dl>
+          <p class="lv-card-note">不買怒氣、暴怒、食人妖之血三張配方，省下約 0.9g，剛好抵掉多出的學費。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="use-route" class="eg-section section-wrap" aria-labelledby="use-route-title">
+      <div class="section-heading"><div><p class="eyebrow">02 / ROUTE</p><h2 id="use-route-title">每一段做什麼、給誰喝。</h2></div><p>次數同樣是照升級機率估的期望值；「需要 N 級」是喝的人要到幾級，「比最省錢」是同一段技能改走最省錢路線的材料差價。</p></div>
+      <ol class="eg-timeline lv-timeline">
+        <li class="is-now"><span class="eg-when">1→150</span><strong>術士練功自己喝</strong><p>初級防禦、初級堅韌、次級法力與次級防禦，術士 1～30 級用得到。</p></li>
+        <li><span class="eg-when">150→225</span><strong>聖騎已經喝得到</strong><p>自由行動、巨魔之力、次級堅韌、防禦藥劑與強效法力，需要 20～31 級。</p></li>
+        <li><span class="eg-when">35 級</span><strong>術士學工匠級煉金</strong><p>技能 200 以上、角色 35 級；沒學會會卡在 225。</p></li>
+        <li><span class="eg-when">225→300</span><strong>法力、石盾、秘法、強效防禦</strong><p>275 學轉化：軍團鋼，見<a href="../alchemy/#transmute">煉金清單</a>。</p></li>
+      </ol>
+      <table class="eg-table lv-route">
+        <caption>實用路線（掃描價計算；每次材料是當下價格，瓶子算商人價）</caption>
+        <thead><tr><th scope="col">做什麼</th><th scope="col">技能</th><th scope="col">次數</th><th scope="col">每次材料</th><th scope="col">給誰用</th><th scope="col">比最省錢</th><th scope="col">學法</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">初級防禦藥劑</th><td class="eg-nowrap" data-label="技能">1→71</td><td data-label="次數"><span>約 74 次<small class="lv-sub">多備 4 次</small></span></td><td data-label="每次材料"><span>銀葉草×1、寧神花×1、空瓶×1<small class="lv-sub">約 1.2 銀</small></span></td><td data-label="給誰用"><span>術士 1～15 級練功（護甲 +50）<small class="lv-sub">不限等級・留 10 瓶</small></span></td><td class="eg-price" data-label="比最省錢">+11.3 銀</td><td data-label="學法">初始就會</td></tr>
+          <tr><th scope="row">初級堅韌藥劑</th><td class="eg-nowrap" data-label="技能">71→100</td><td data-label="次數"><span>約 36 次<small class="lv-sub">多備 5 次</small></span></td><td data-label="每次材料"><span>地根草×2、寧神花×1、空瓶×1<small class="lv-sub">約 3 銀</small></span></td><td data-label="給誰用"><span>術士 10～25 級練功（生命上限 +27）<small class="lv-sub">需要 2 級・留 10 瓶</small></span></td><td class="eg-price" data-label="比最省錢">+47.1 銀</td><td data-label="學法">訓練師（技能 50）</td></tr>
+          <tr><th scope="row">智慧藥劑</th><td class="eg-nowrap" data-label="技能">100→120</td><td data-label="次數"><span>約 20 次<small class="lv-sub">橘色，不用多備</small></span></td><td data-label="每次材料"><span>魔皇草×1、石南草×2、空瓶×1<small class="lv-sub">約 6 銀</small></span></td><td data-label="給誰用"><span>術士練功（智力 +3，加得不多）<small class="lv-sub">需要 10 級・留 5 瓶</small></span></td><td class="eg-price" data-label="比最省錢">+18.3 銀</td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">次級法力藥水</th><td class="eg-nowrap" data-label="技能">120→135</td><td data-label="次數"><span>約 15 次<small class="lv-sub">橘色，不用多備</small></span></td><td data-label="每次材料"><span>魔皇草×1、荊棘藻×1、空瓶×1<small class="lv-sub">約 8.5 銀</small></span></td><td data-label="給誰用"><span>術士 14～30 級（回 280～360 法力）<small class="lv-sub">需要 14 級・全留</small></span></td><td class="eg-price" data-label="比最省錢">+37.6 銀</td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">次級防禦藥劑</th><td class="eg-nowrap" data-label="技能">135→150</td><td data-label="次數"><span>約 15 次<small class="lv-sub">橘色，不用多備</small></span></td><td data-label="每次材料"><span>野鋼花×1、荊棘藻×1、鉛瓶×1<small class="lv-sub">約 6.9 銀</small></span></td><td data-label="給誰用"><span>術士 16～29 級（護甲 +150）<small class="lv-sub">需要 16 級・留 10 瓶</small></span></td><td class="eg-price" data-label="比最省錢">+36.6 銀</td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">自由行動藥劑</th><td class="eg-nowrap" data-label="技能">150→155</td><td data-label="次數"><span>約 5 次<small class="lv-sub">橘色，不用多備</small></span></td><td data-label="每次材料"><span>黑口魚油×2、荊棘藻×1、鉛瓶×1<small class="lv-sub">約 13.6 銀</small></span></td><td data-label="給誰用"><span>兩隻都用：PvP 服被定身、昏迷前先喝<small class="lv-sub">需要 20 級・5 瓶全留</small></span></td><td class="eg-price" data-label="比最省錢">+43.1 銀</td><td data-label="學法">配方：自由行動藥劑（NPC）；黑口魚油在訓練師學</td></tr>
+          <tr><th scope="row">巨魔之力藥劑</th><td class="eg-nowrap" data-label="技能">155→185</td><td data-label="次數"><span>約 31 次<small class="lv-sub">多備 2 次</small></span></td><td data-label="每次材料"><span>地根草×1、皇血草×1、鉛瓶×1<small class="lv-sub">約 2.1 銀</small></span></td><td data-label="給誰用"><span>聖騎（力量 +8）<small class="lv-sub">需要 20 級・留 20 瓶</small></span></td><td class="eg-price" data-label="比最省錢">省 24.1 銀</td><td data-label="學法"><span data-ah="配方：巨魔力量藥劑">配方：巨魔力量藥劑</span></td></tr>
+          <tr><th scope="row">次級堅韌藥劑</th><td class="eg-nowrap" data-label="技能">185→195</td><td data-label="次數"><span>約 10 次<small class="lv-sub">橘色，不用多備</small></span></td><td data-label="每次材料"><span>野鋼花×1、金棘草×1、鉛瓶×1<small class="lv-sub">約 7.5 銀</small></span></td><td data-label="給誰用"><span>兩隻都用（生命上限 +120）；聖騎坦怪先喝<small class="lv-sub">需要 25 級・全留</small></span></td><td class="eg-price" data-label="比最省錢">+53.7 銀</td><td data-label="學法"><span data-ah="配方：次級堅韌藥劑">配方：次級堅韌藥劑</span></td></tr>
+          <tr><th scope="row">防禦藥劑</th><td class="eg-nowrap" data-label="技能">195→215</td><td data-label="次數"><span>約 20 次<small class="lv-sub">橘色，不用多備</small></span></td><td data-label="每次材料"><span>野鋼花×1、金棘草×1、鉛瓶×1<small class="lv-sub">約 7.5 銀</small></span></td><td data-label="給誰用"><span>聖騎坦怪（護甲 +250）<small class="lv-sub">需要 29 級・全留</small></span></td><td class="eg-price" data-label="比最省錢">+40.6 銀</td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">強效法力藥水</th><td class="eg-nowrap" data-label="技能">215→225</td><td data-label="次數"><span>約 10 次<small class="lv-sub">多備 1 次</small></span></td><td data-label="每次材料"><span>卡德加的鬍鬚×1、金棘草×1、鉛瓶×1<small class="lv-sub">約 10.5 銀</small></span></td><td data-label="給誰用"><span>兩隻都用（回 700～900 法力）；聖騎坦怪補魔<small class="lv-sub">需要 31 級・全留：聖騎 20、術士其餘</small></span></td><td class="eg-price" data-label="比最省錢">+7.8 銀</td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">強效法力藥水</th><td class="eg-nowrap" data-label="技能">225→240</td><td data-label="次數"><span>約 22 次<small class="lv-sub">多備 5 次</small></span></td><td data-label="每次材料"><span>卡德加的鬍鬚×1、金棘草×1、鉛瓶×1<small class="lv-sub">約 10.5 銀</small></span></td><td data-label="給誰用"><span>兩隻都用（回 700～900 法力）；聖騎坦怪補魔<small class="lv-sub">需要 31 級・全留：聖騎 20、術士其餘</small></span></td><td class="eg-price" data-label="比最省錢">同最省錢</td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">次級石盾藥水</th><td class="eg-nowrap" data-label="技能">240→250</td><td data-label="次數"><span>約 16 次<small class="lv-sub">多備 4 次</small></span></td><td data-label="每次材料"><span>秘銀礦石×1、金棘草×1、鉛瓶×1<small class="lv-sub">約 14.9 銀</small></span></td><td data-label="給誰用"><span>聖騎危急時（護甲 +1000，90 秒）<small class="lv-sub">需要 33 級・全留</small></span></td><td class="eg-price" data-label="比最省錢">同最省錢</td><td data-label="學法"><span data-ah="配方：次級石盾藥水">配方：次級石盾藥水</span></td></tr>
+          <tr><th scope="row">石鱗魚油</th><td class="eg-nowrap" data-label="技能">250→255</td><td data-label="次數"><span>約 6 次<small class="lv-sub">多備 2 次</small></span></td><td data-label="每次材料"><span>石鱗鰻×1、鉛瓶×1<small class="lv-sub">約 2.8 銀</small></span></td><td data-label="給誰用"><span>材料：給強效防禦藥劑<small class="lv-sub">不留</small></span></td><td class="eg-price" data-label="比最省錢">同最省錢</td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">秘法藥劑</th><td class="eg-nowrap" data-label="技能">255→265</td><td data-label="次數"><span>約 13 次<small class="lv-sub">多備 3 次</small></span></td><td data-label="每次材料"><span>盲目草×1、金棘草×1、水晶瓶×1<small class="lv-sub">約 25.1 銀</small></span></td><td data-label="給誰用"><span>術士主力（法術傷害 +20）；聖騎坦怪時奉獻、聖印的神聖傷害也加<small class="lv-sub">需要 37 級・術士 8、聖騎 5</small></span></td><td class="eg-price" data-label="比最省錢">+28.1 銀</td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">強效防禦藥劑</th><td class="eg-nowrap" data-label="技能">265→300</td><td data-label="次數"><span>約 42 次<small class="lv-sub">多備 5 次</small></span></td><td data-label="每次材料"><span>石鱗魚油×2、太陽草×1、水晶瓶×1<small class="lv-sub">約 12.8 銀</small></span></td><td data-label="給誰用"><span>聖騎坦怪（護甲 +450）<small class="lv-sub">需要 43 級・留 20 瓶，其餘賣商人</small></span></td><td class="eg-price" data-label="比最省錢">同最省錢</td><td data-label="學法">配方：超強防禦藥劑（NPC）</td></tr>
+          
+        </tbody>
+      </table>
+    </section>
+
+    <section id="use-materials" class="eg-section section-wrap" aria-labelledby="use-materials-title">
+      <div class="section-heading"><div><p class="eyebrow">03 / MATERIALS</p><h2 id="use-materials-title">材料總成本。</h2></div><p>兩個階段合計約 23.4g，比最省錢多約 3.1g。部落件數是拍賣小幫手當天看到最多的件數；標「不夠」的要分幾天買或自己採。</p></div>
+      <table class="eg-table lv-mats" data-ah-list="煉金實用-練等到225" data-lv-phase="use-1">
+        <caption>階段 1・1→225：依小計排序，長條是佔這個階段材料費的比例</caption>
+        <thead><tr><th scope="col">材料</th><th scope="col">數量</th><th scope="col">單價</th><th scope="col">小計</th><th scope="col">部落件數</th><th scope="col">佔比</th></tr></thead>
+        <tbody>
+          <tr data-lv-id="3821" data-lv-qty="40" data-lv-price="609"><th scope="row"><span data-ah="金棘草">金棘草</span></th><td data-label="數量">40</td><td class="eg-price" data-label="單價" data-lv-unit>6.1 銀</td><td class="eg-price" data-label="小計" data-lv-sub>2.4g</td><td data-label="部落件數"><span><span data-lv-listed>329</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 24.1%"><span data-lv-pct>24%</span></span></td></tr>
+          <tr data-lv-id="3820" data-lv-qty="35" data-lv-price="550"><th scope="row"><span data-ah="荊棘藻">荊棘藻</span></th><td data-label="數量">35</td><td class="eg-price" data-label="單價" data-lv-unit>5.5 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.9g</td><td data-label="部落件數"><span><span data-lv-listed>308</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 19.1%"><span data-lv-pct>19%</span></span></td></tr>
+          <tr data-lv-id="2447" data-lv-qty="110" data-lv-price="96"><th scope="row"><span data-ah="寧神花">寧神花</span></th><td data-label="數量">110</td><td class="eg-price" data-label="單價" data-lv-unit>1 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.1g</td><td data-label="部落件數"><span><span data-lv-listed>323</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 10.5%"><span data-lv-pct>10%</span></span></td></tr>
+          <tr data-lv-id="785" data-lv-qty="35" data-lv-price="299"><th scope="row"><span data-ah="魔皇草">魔皇草</span></th><td data-label="數量">35</td><td class="eg-price" data-label="單價" data-lv-unit>3 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.0g</td><td data-label="部落件數"><span><span data-lv-listed>657</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 10.4%"><span data-lv-pct>10%</span></span></td></tr>
+          <tr data-lv-id="2449" data-lv-qty="104" data-lv-price="100"><th scope="row"><span data-ah="地根草">地根草</span></th><td data-label="數量">104</td><td class="eg-price" data-label="單價" data-lv-unit>1 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.0g</td><td data-label="部落件數"><span><span data-lv-listed>116</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 10.3%"><span data-lv-pct>10%</span></span></td></tr>
+          <tr data-lv-id="2450" data-lv-qty="40" data-lv-price="149"><th scope="row"><span data-ah="石南草">石南草</span></th><td data-label="數量">40</td><td class="eg-price" data-label="單價" data-lv-unit>1.5 銀</td><td class="eg-price" data-label="小計" data-lv-sub>59.6 銀</td><td data-label="部落件數"><span><span data-lv-listed>166</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 5.9%"><span data-lv-pct>6%</span></span></td></tr>
+          <tr data-lv-id="3355" data-lv-qty="45" data-lv-price="98"><th scope="row"><span data-ah="野鋼花">野鋼花</span></th><td data-label="數量">45</td><td class="eg-price" data-label="單價" data-lv-unit>1 銀</td><td class="eg-price" data-label="小計" data-lv-sub>44.1 銀</td><td data-label="部落件數"><span><span data-lv-listed>229</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 4.4%"><span data-lv-pct>4%</span></span></td></tr>
+          <tr data-lv-id="3358" data-lv-qty="10" data-lv-price="397"><th scope="row"><span data-ah="卡德加的鬍鬚">卡德加的鬍鬚</span></th><td data-label="數量">10</td><td class="eg-price" data-label="單價" data-lv-unit>4 銀</td><td class="eg-price" data-label="小計" data-lv-sub>39.7 銀</td><td data-label="部落件數"><span><span data-lv-listed>51</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 3.9%"><span data-lv-pct>4%</span></span></td></tr>
+          <tr data-lv-id="6358" data-lv-qty="20" data-lv-price="190"><th scope="row"><span data-ah="黑口魚">黑口魚</span></th><td data-label="數量">20</td><td class="eg-price" data-label="單價" data-lv-unit>1.9 銀</td><td class="eg-price" data-label="小計" data-lv-sub>38 銀</td><td data-label="部落件數"><span><span data-lv-listed>979</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 3.8%"><span data-lv-pct>4%</span></span></td></tr>
+          <tr data-lv-id="3372" data-lv-qty="0" data-lv-fixed="3680" data-lv-other="92"><th scope="row">鉛瓶</th><td data-label="數量">92</td><td class="eg-price" data-label="單價" data-lv-unit>40 銅</td><td class="eg-price" data-label="小計" data-lv-sub>36.8 銀</td><td data-label="部落件數"><span>商人</span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 3.6%"><span data-lv-pct>4%</span></span></td></tr>
+          <tr data-lv-id="3356" data-lv-qty="31" data-lv-price="70"><th scope="row"><span data-ah="皇血草">皇血草</span></th><td data-label="數量">31</td><td class="eg-price" data-label="單價" data-lv-unit>0.7 銀</td><td class="eg-price" data-label="小計" data-lv-sub>21.7 銀</td><td data-label="部落件數"><span><span data-lv-listed>439</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 2.1%"><span data-lv-pct>2%</span></span></td></tr>
+          <tr data-lv-id="765" data-lv-qty="74" data-lv-price="18"><th scope="row"><span data-ah="銀葉草">銀葉草</span></th><td data-label="數量">74</td><td class="eg-price" data-label="單價" data-lv-unit>0.2 銀</td><td class="eg-price" data-label="小計" data-lv-sub>13.3 銀</td><td data-label="部落件數"><span><span data-lv-listed>552</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 1.3%"><span data-lv-pct>1%</span></span></td></tr>
+          <tr data-lv-id="3371" data-lv-qty="0" data-lv-fixed="620" data-lv-other="155"><th scope="row">空瓶</th><td data-label="數量">155</td><td class="eg-price" data-label="單價" data-lv-unit>4 銅</td><td class="eg-price" data-label="小計" data-lv-sub>6.2 銀</td><td data-label="部落件數"><span>商人</span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 0.6%"><span data-lv-pct>1%</span></span></td></tr>
+        </tbody>
+        <tfoot><tr><th scope="row">合計</th><td colspan="2" data-label="說明">比最省錢多 2.8g</td><td class="eg-price" data-label="材料合計" data-lv-total>10.1g</td><td colspan="2" data-label="成品">用不完的賣商人</td></tr></tfoot>
+      </table>
+      <p class="lv-made"><span aria-hidden="true">⚗</span>自己做：黑口魚油 ×10 給自由行動藥劑，技能 80 以後在訓練師學（2.5 銀）；黑口魚與空瓶已經算在上表。</p>
+      <table class="eg-table lv-mats" data-ah-list="煉金實用-練等225以後" data-lv-phase="use-2">
+        <caption>階段 2・35 級後・225→300：依小計排序，長條是佔這個階段材料費的比例</caption>
+        <thead><tr><th scope="col">材料</th><th scope="col">數量</th><th scope="col">單價</th><th scope="col">小計</th><th scope="col">部落件數</th><th scope="col">佔比</th></tr></thead>
+        <tbody>
+          <tr data-lv-id="3821" data-lv-qty="51" data-lv-price="609"><th scope="row"><span data-ah="金棘草">金棘草</span></th><td data-label="數量">51</td><td class="eg-price" data-label="單價" data-lv-unit>6.1 銀</td><td class="eg-price" data-label="小計" data-lv-sub>3.1g</td><td data-label="部落件數"><span><span data-lv-listed>329</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 23.3%"><span data-lv-pct>23%</span></span></td></tr>
+          <tr data-lv-id="8925" data-lv-qty="0" data-lv-fixed="27500" data-lv-other="55"><th scope="row">水晶瓶</th><td data-label="數量">55</td><td class="eg-price" data-label="單價" data-lv-unit>5 銀</td><td class="eg-price" data-label="小計" data-lv-sub>2.8g</td><td data-label="部落件數"><span>商人</span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 20.6%"><span data-lv-pct>21%</span></span></td></tr>
+          <tr data-lv-id="8838" data-lv-qty="42" data-lv-price="500"><th scope="row"><span data-ah="太陽草">太陽草</span></th><td data-label="數量">42</td><td class="eg-price" data-label="單價" data-lv-unit>5 銀</td><td class="eg-price" data-label="小計" data-lv-sub>2.1g</td><td data-label="部落件數"><span><span data-lv-listed>559</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 15.8%"><span data-lv-pct>16%</span></span></td></tr>
+          <tr data-lv-id="8839" data-lv-qty="13" data-lv-price="1399"><th scope="row"><span data-ah="盲目草">盲目草</span></th><td data-label="數量">13</td><td class="eg-price" data-label="單價" data-lv-unit>14 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.8g</td><td data-label="部落件數"><span><span data-lv-listed>84</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 13.7%"><span data-lv-pct>14%</span></span></td></tr>
+          <tr data-lv-id="3858" data-lv-qty="16" data-lv-price="844"><th scope="row"><span data-ah="秘銀礦石">秘銀礦石</span></th><td data-label="數量">16</td><td class="eg-price" data-label="單價" data-lv-unit>8.4 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.4g</td><td data-label="部落件數"><span><span data-lv-listed>1,714</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 10.1%"><span data-lv-pct>10%</span></span></td></tr>
+          <tr data-lv-id="13422" data-lv-qty="42" data-lv-price="239"><th scope="row"><span data-ah="石鱗鰻">石鱗鰻</span></th><td data-label="數量">42</td><td class="eg-price" data-label="單價" data-lv-unit>2.4 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.0g</td><td data-label="部落件數"><span><span data-lv-listed>463</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 7.5%"><span data-lv-pct>8%</span></span></td></tr>
+          <tr data-lv-id="3358" data-lv-qty="22" data-lv-price="397"><th scope="row"><span data-ah="卡德加的鬍鬚">卡德加的鬍鬚</span></th><td data-label="數量">22</td><td class="eg-price" data-label="單價" data-lv-unit>4 銀</td><td class="eg-price" data-label="小計" data-lv-sub>87.3 銀</td><td data-label="部落件數"><span><span data-lv-listed>51</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 6.6%"><span data-lv-pct>7%</span></span></td></tr>
+          <tr data-lv-id="3372" data-lv-qty="0" data-lv-fixed="3200" data-lv-other="80"><th scope="row">鉛瓶</th><td data-label="數量">80</td><td class="eg-price" data-label="單價" data-lv-unit>40 銅</td><td class="eg-price" data-label="小計" data-lv-sub>32 銀</td><td data-label="部落件數"><span>商人</span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 2.4%"><span data-lv-pct>2%</span></span></td></tr>
+        </tbody>
+        <tfoot><tr><th scope="row">合計</th><td colspan="2" data-label="說明">比最省錢多 0.3g</td><td class="eg-price" data-label="材料合計" data-lv-total>13.3g</td><td colspan="2" data-label="成品">用不完的賣商人</td></tr></tfoot>
+      </table>
+      <p class="lv-made"><span aria-hidden="true">⚗</span>自己做：石鱗魚油 ×36，加上 250→255 那段做出來的約 13 個，共 84 個給強效防禦藥劑用；石鱗鰻與鉛瓶已經算在上表。秘銀礦石找聖騎士拿，省下約 1.4g。</p>
+    </section>
+
+    <section id="use-plans" class="eg-section section-wrap" aria-labelledby="use-plans-title">
+      <div class="section-heading"><div><p class="eyebrow">04 / RECIPES</p><h2 id="use-plans-title">配方。</h2></div><p>最省錢路線的怒氣、暴怒、食人妖之血三張都不用買。NPC 有賣的兩張別在拍賣場買。</p></div>
+      <table class="eg-table lv-plans" data-ah-list="煉金實用-練等配方">
+        <thead><tr><th scope="col">配方</th><th scope="col">用在</th><th scope="col">價格</th><th scope="col">件數／在哪買</th><th scope="col">建議</th></tr></thead>
+        <tbody>
+          <tr data-lv-id="6211" data-lv-buy><th scope="row"><span data-ah="配方：巨魔力量藥劑">巨魔之力藥劑</span></th><td data-label="用在">155→185</td><td class="eg-price" data-label="部落價" data-lv-unit>24 銀</td><td data-label="部落件數"><span data-lv-listed>12 件</span></td><td data-label="建議"><span class="eg-tag buy">拍賣場買</span></td></tr>
+          <tr data-lv-id="3830" data-lv-buy><th scope="row"><span data-ah="配方：次級堅韌藥劑">次級堅韌藥劑</span></th><td data-label="用在">185→195</td><td class="eg-price" data-label="部落價" data-lv-unit>13 銀</td><td data-label="部落件數"><span data-lv-listed>3 件</span></td><td data-label="建議"><span><span class="eg-tag buy">拍賣場買</span>沒貨就找訓練師學（60 銀）</span></td></tr>
+          <tr data-lv-id="4624" data-lv-buy><th scope="row"><span data-ah="配方：次級石盾藥水">次級石盾藥水</span></th><td data-label="用在">240→250</td><td class="eg-price" data-label="部落價" data-lv-unit>20 銀</td><td data-label="部落件數"><span data-lv-listed>2 件</span></td><td data-label="建議"><span class="eg-tag buy">拍賣場買</span></td></tr>
+          <tr><th scope="row">自由行動藥劑</th><td data-label="用在">150→155</td><td class="eg-price" data-label="NPC 價">18 銀</td><td data-label="在哪買">淒涼之地的貿易機器人 1000 型，就是賣暴怒藥水配方的那台；拍賣場約 40 銀</td><td data-label="建議"><span class="eg-tag">找 NPC</span></td></tr>
+          <tr><th scope="row">強效防禦藥劑（配方：超強防禦藥劑）</th><td data-label="用在">265→300</td><td class="eg-price" data-label="NPC 價">1.30g</td><td data-label="在哪買">奧格瑪的考吉爾德（不限量）</td><td data-label="建議"><span class="eg-tag">找 NPC</span></td></tr>
+        </tbody>
+      </table>
+      <p class="lv-made"><span aria-hidden="true">⚗</span>訓練師多學：初級堅韌藥劑 2.5 銀、黑口魚油 2.5 銀、次級法力藥水 15 銀、次級防禦藥劑 20 銀、防禦藥劑 75 銀、秘法藥劑 1g；不必學火焰之油（10 銀）與強效聰穎藥劑（1.2g）。</p>
+    </section>
+
+    <section id="use-notes" class="eg-section section-wrap" aria-labelledby="use-notes-title">
+      <div class="section-heading"><div><p class="eyebrow">05 / BEFORE YOU START</p><h2 id="use-notes-title">開始前先看。</h2></div></div>
+      <div class="eg-groups lv-notes">
+        <section class="eg-group" aria-labelledby="use-n1"><h3 id="use-n1">誰練、幾級能喝</h3><ul><li>術士練煉金要先升級：技工 10 級、專家 20 級、工匠 35 級；沒到 35 級會卡在 225，和最省錢路線一樣。</li><li>聖騎 11/20 是 34 級，150→225 的成品（需要 20～31 級）做好就能喝；秘法藥劑要 37 級，強效防禦藥劑要 43 級。</li><li>1→150 的成品只有術士練功用得到。不想多花，這段照最省錢路線做可省約 1.5g，150 以後再換回來。</li></ul></section>
+        <section class="eg-group" aria-labelledby="use-n2"><h3 id="use-n2">草藥與礦</h3><ul><li>術士練煉金時，草藥由採草小號採好郵寄；金棘草共 91 個、荊棘藻 35 個、太陽草 42 個，佔材料費最多。</li><li>秘銀礦石 16 個找聖騎士拿；黑口魚可以請聖騎順手釣。</li><li>銀葉草、寧神花、地根草很便宜，練等路上順手採就好。</li></ul></section>
+        <section class="eg-group" aria-labelledby="use-n3"><h3 id="use-n3">沒排進來的</h3><ul><li>治療藥水：永恆移到急救，聖騎的急救自己做。</li><li>法力藥水（學費 50 銀）：215 就能做強效法力藥水，聖騎也已經能喝，跳過。</li><li>暗影之力藥劑（術士 40 級）：配方在幽暗城奧格諾恩 1g，但一瓶要 3 個幽靈菇、約 3g，等要打團再做。巨人藥劑（聖騎 48 級）、超強法力藥水（41 級）的配方 1.8g、1.26g，練到 300 後需要再學。</li><li>練到 275 學轉化：軍團鋼供聖騎 300 級鍛造，奧金也在 275，見<a href="../alchemy/#transmute">煉金清單</a>。</li></ul></section>
+      </div>
+      <p class="lv-addon-note">實用路線的次數用和最省錢路線相同的升級機率估算，價格是 2026-11-19 16:38 的部落完整掃描；打開頁面時材料費會重算，「比最省錢」欄與卡片上的差價不會。配方顏色、材料與學費取自無限副本手冊的內建資料，需要等級與效果取自 Wowhead 永恆資料庫的物品說明。</p>
+    </section>
+    </div>
 
     <section id="notes" class="eg-section section-wrap" aria-labelledby="notes-title">
       <div class="section-heading"><div><p class="eyebrow">05 / BEFORE YOU START</p><h2 id="notes-title">開始前先看。</h2></div></div>
