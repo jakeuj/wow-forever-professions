@@ -313,8 +313,150 @@
 
     <div id="practical" class="lv-variant" data-lv-variant>
     <!-- variant:practical -->
-    <section class="eg-section section-wrap" aria-labelledby="pal-title">
-      <div class="section-heading"><div><p class="eyebrow">聖騎自用</p><h2 id="pal-title">做出來自己穿。</h2></div><p>整理中。</p></div>
+    <style>
+      .pal-gap { margin-bottom: 26px; }
+      .pal-gear td small { display: block; font-size: 11px; color: var(--muted); }
+      .pal-wear th[scope="row"] { color: var(--gold-bright); }
+      .pal-wear th[scope="row"]::after { content: "穿"; display: inline-block; margin-left: 6px; padding: 0 5px; border: 1px solid currentColor; font-family: var(--sans, inherit); font-size: 10px; font-weight: 400; line-height: 1.7; vertical-align: 2px; }
+    </style>
+    <section id="pal-gear" class="eg-section section-wrap" aria-labelledby="pal-title">
+      <p class="eg-note">路線和「最省錢」幾乎一樣，只在 6 個技能點改做聖騎能穿的板甲，每件只做 1 次。合計比最省錢多花約 <strong>10.1g</strong>（材料 7.5g、設計圖 2.68g）。角色等級不同，穿上的時間也不同，下表照需要等級排。</p>
+      <div class="section-heading"><div><p class="eyebrow">01 / GEAR</p><h2 id="pal-title">做出來自己穿。</h2></div><p>板甲要等聖騎 40 級向職業訓練師學會才能穿。屬性取自 Wowhead 永恆資料庫的物品說明。</p></div>
+      <table class="eg-table pal-gear">
+        <caption>裝備時間表：練等途中做得出來、防護聖騎用得到的</caption>
+        <thead><tr><th scope="col">物品</th><th scope="col">部位</th><th scope="col">屬性</th><th scope="col">需要等級</th><th scope="col">在哪一點做</th><th scope="col">之後</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">秘銀盾刺</th><td data-label="部位">盾牌附加</td><td data-label="屬性">格擋時反傷攻擊者</td><td data-label="需要等級"><span>不限<small>要鍛造 215</small></span></td><td data-label="在哪一點做"><span>不做，買成品<small>部落 1.22g・5 個</small></span></td><td data-label="之後"><span>鍛造 250 換瑟銀盾刺<small>換盾牌要重裝</small></span></td></tr>
+          <tr><th scope="row">重型秘銀護肩</th><td data-label="部位">肩・板甲</td><td data-label="屬性"><span>護甲 225<small>耐力 +12</small></span></td><td data-label="需要等級">40</td><td data-label="在哪一點做">200</td><td data-label="之後">副本掉落再換</td></tr>
+          <tr><th scope="row">秘銀短褲</th><td data-label="部位">腿・板甲</td><td data-label="屬性"><span>護甲 297＋120<small>耐力 +11</small></span></td><td data-label="需要等級">40</td><td data-label="在哪一點做">201</td><td data-label="之後">副本掉落再換</td></tr>
+          <tr><th scope="row">重型秘銀手套</th><td data-label="部位">手・板甲</td><td data-label="屬性"><span>護甲 188＋80<small>耐力 +8</small></span></td><td data-label="需要等級">40</td><td data-label="在哪一點做">202→205</td><td data-label="之後">副本掉落再換</td></tr>
+          <tr><th scope="row">重型秘銀胸甲</th><td data-label="部位">胸・板甲</td><td data-label="屬性"><span>護甲 446＋90<small>耐力 +15</small></span></td><td data-label="需要等級">41</td><td data-label="在哪一點做">205</td><td data-label="之後"><span>可以穿很久<small>瑟銀護甲的護甲反而較低</small></span></td></tr>
+          <tr><th scope="row">秘銀重靴</th><td data-label="部位">腳・板甲</td><td data-label="屬性"><span>護甲 312＋70<small>耐力 +12</small></span></td><td data-label="需要等級">42</td><td data-label="在哪一點做">210</td><td data-label="之後">副本掉落再換</td></tr>
+          <tr><th scope="row">重型秘銀頭盔</th><td data-label="部位">頭・板甲</td><td data-label="屬性"><span>護甲 369＋100<small>耐力 +15</small></span></td><td data-label="需要等級">42</td><td data-label="在哪一點做">220</td><td data-label="之後"><span>51 級可換瑟銀頭盔<small>耐力 +3、全抗 +10，護甲少 35</small></span></td></tr>
+          <tr><th scope="row">瑟銀腰帶</th><td data-label="部位">腰・板甲</td><td data-label="屬性"><span>護甲 270<small>耐力 +12、全抗 +6</small></span></td><td data-label="需要等級">45</td><td data-label="在哪一點做">225</td><td data-label="之後">副本掉落再換</td></tr>
+        </tbody>
+      </table>
+      <p class="eg-note pal-gap">路線裡的板甲都沒有防禦屬性。鍛造 300 以後的防護裝（魔法瑟銀套裝、要塞護手、充盈瑟銀頭盔、正義戰甲）見<a class="text-link" href="../endgame/#spec-prot">聖騎鐵匠終局清單的防護</a>。</p>
+      <div class="eg-spec-grid lv-cards">
+        <article class="eg-card lv-card" data-lv-card="pal-1">
+          <h3>階段 1・現在</h3><p>200→225・做護肩、短褲、手套、胸甲、重靴、頭盔</p>
+          <dl class="lv-figures">
+            <div><dt>最省錢路線</dt><dd>27.2g</dd></div>
+            <div><dt>多花</dt><dd>4.16g</dd></div>
+            <div class="lv-net"><dt>材料</dt><dd data-lv-gross>31.4g</dd></div>
+          </dl>
+        </article>
+        <article class="eg-card lv-card" data-lv-card="pal-2">
+          <h3>階段 2・35 級後</h3><p>225→300・只多做瑟銀腰帶，其餘照最省錢</p>
+          <dl class="lv-figures">
+            <div><dt>最省錢路線</dt><dd>426.9g</dd></div>
+            <div><dt>多花</dt><dd>3.31g</dd></div>
+            <div class="lv-net"><dt>材料</dt><dd data-lv-gross>430.2g</dd></div>
+          </dl>
+        </article>
+        <article class="eg-card lv-card">
+          <h3>設計圖</h3><p>比最省錢多 3 張：秘銀短褲、重型秘銀頭盔、瑟銀腰帶</p>
+          <dl class="lv-figures">
+            <div><dt>多花</dt><dd>2.68g</dd></div>
+            <div class="lv-net"><dt>本路線 6 張</dt><dd data-lv-plan-total data-lv-plan-fixed="10000">10.0g</dd></div>
+          </dl>
+          <p class="lv-card-note">秘銀短褲和瑟銀腰帶的設計圖部落各只有 1 張，先買。黑檀剃刃向商人買，1 金已算在內。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="pal-route" class="eg-section section-wrap" aria-labelledby="pal-route-title">
+      <div class="section-heading"><div><p class="eyebrow">02 / ROUTE</p><h2 id="pal-route-title">哪幾點改做裝備。</h2></div><p>要穿的裝備都排在一定會升級的技能點，做 1 次就加 1 點。其他技能點照最省錢路線，次數與「多備」算法相同。</p></div>
+      <ol class="eg-timeline lv-timeline">
+        <li class="is-now"><span class="eg-when">現在</span><strong>200→225 六件秘銀板甲</strong><p>還穿不上也先做好，40～42 級再換上。</p></li>
+        <li><span class="eg-when">35 級</span><strong>學工匠級鍛造</strong><p>沒學會會卡在 225。</p></li>
+        <li><span class="eg-when">225</span><strong>瑟銀腰帶</strong><p>45 級可穿。設計圖部落只有 1 張。</p></li>
+        <li><span class="eg-when">226→300</span><strong>照最省錢路線</strong><p>成品都不留，交給附魔分身分解。</p></li>
+      </ol>
+      <table class="eg-table lv-route">
+        <caption>路線（11/19 16:38 完整掃描最低一口價估算；標「穿」的要留下來）</caption>
+        <thead><tr><th scope="col">做什麼</th><th scope="col">技能</th><th scope="col">次數</th><th scope="col">每次材料</th><th scope="col">這段材料</th><th scope="col">留下</th><th scope="col">學法</th></tr></thead>
+        <tbody>
+          <tr class="pal-wear"><th scope="row">重型秘銀護肩</th><td class="eg-nowrap" data-label="技能">200→201</td><td data-label="次數"><span>1 次</span></td><td data-label="每次材料"><span>秘銀錠×8、重皮×6<small class="lv-sub">約 1.32g</small></span></td><td class="eg-price" data-label="這段材料"><span>1.32g<small class="lv-sub">比最省錢多 23.6 銀</small></span></td><td data-label="留下"><span>留 1 件<small class="lv-sub">肩・40 級</small></span></td><td data-label="學法">訓練師</td></tr>
+          <tr class="pal-wear"><th scope="row">秘銀短褲</th><td class="eg-nowrap" data-label="技能">201→202</td><td data-label="次數"><span>1 次</span></td><td data-label="每次材料"><span>秘銀錠×10、次級月亮石×2<small class="lv-sub">約 1.62g</small></span></td><td class="eg-price" data-label="這段材料"><span>1.62g<small class="lv-sub">比最省錢多 48 銀</small></span></td><td data-label="留下"><span>留 1 件<small class="lv-sub">腿・40 級</small></span></td><td data-label="學法"><span data-ah="設計圖：秘銀短褲">設計圖：秘銀短褲</span></td></tr>
+          <tr><th scope="row">重型秘銀手套</th><td class="eg-nowrap" data-label="技能">202→205</td><td data-label="次數"><span>約 4 次<small class="lv-sub">多備 2 次</small></span></td><td data-label="每次材料"><span>秘銀錠×6、魔紋布×4<small class="lv-sub">約 1.08g</small></span></td><td class="eg-price" data-label="這段材料"><span>3.8g<small class="lv-sub">同最省錢</small></span></td><td data-label="留下"><span>留 1 雙，其餘分解<small class="lv-sub">手・40 級</small></span></td><td data-label="學法">訓練師</td></tr>
+          <tr class="pal-wear"><th scope="row">重型秘銀胸甲</th><td class="eg-nowrap" data-label="技能">205→206</td><td data-label="次數"><span>1 次</span></td><td data-label="每次材料"><span>秘銀錠×16<small class="lv-sub">約 2.40g</small></span></td><td class="eg-price" data-label="這段材料"><span>2.40g<small class="lv-sub">比最省錢多 62.3 銀</small></span></td><td data-label="留下"><span>留 1 件<small class="lv-sub">胸・41 級</small></span></td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">秘銀罩帽</th><td class="eg-nowrap" data-label="技能">206→210</td><td data-label="次數"><span>4 次</span></td><td data-label="每次材料"><span>秘銀錠×10、魔紋布×6<small class="lv-sub">約 1.77g</small></span></td><td class="eg-price" data-label="這段材料"><span>7.1g<small class="lv-sub">同最省錢</small></span></td><td data-label="留下"><span>不留<small class="lv-sub">鎖甲，耐力＋精神</small></span></td><td data-label="學法">訓練師</td></tr>
+          <tr class="pal-wear"><th scope="row">秘銀重靴</th><td class="eg-nowrap" data-label="技能">210→211</td><td data-label="次數"><span>1 次</span></td><td data-label="每次材料"><span>秘銀錠×14、厚皮×4<small class="lv-sub">約 2.32g</small></span></td><td class="eg-price" data-label="這段材料"><span>2.32g<small class="lv-sub">比最省錢多 1.51g</small></span></td><td data-label="留下"><span>留 1 雙<small class="lv-sub">腳・42 級</small></span></td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">秘銀馬刺</th><td class="eg-nowrap" data-label="技能">211→220</td><td data-label="次數"><span>9 次</span></td><td data-label="每次材料"><span>秘銀錠×4、堅固的砂輪×3<small class="lv-sub">約 81.5 銀</small></span></td><td class="eg-price" data-label="這段材料"><span>7.3g<small class="lv-sub">同最省錢</small></span></td><td data-label="留下"><span>可留 1 個<small class="lv-sub">裝在靴子上，提高坐騎速度</small></span></td><td data-label="學法"><span data-ah="設計圖：秘銀馬刺">設計圖：秘銀馬刺</span></td></tr>
+          <tr class="pal-wear"><th scope="row">重型秘銀頭盔</th><td class="eg-nowrap" data-label="技能">220→221</td><td data-label="次數"><span>1 次</span></td><td data-label="每次材料"><span>秘銀錠×14、青綠石×1<small class="lv-sub">約 2.22g</small></span></td><td class="eg-price" data-label="這段材料"><span>2.22g<small class="lv-sub">比最省錢多 1.40g</small></span></td><td data-label="留下"><span>留 1 頂<small class="lv-sub">頭・42 級</small></span></td><td data-label="學法"><span data-ah="設計圖：重型秘銀頭盔">設計圖：重型秘銀頭盔</span></td></tr>
+          <tr><th scope="row">秘銀馬刺</th><td class="eg-nowrap" data-label="技能">221→225</td><td data-label="次數"><span>4 次</span></td><td data-label="每次材料"><span>秘銀錠×4、堅固的砂輪×3<small class="lv-sub">約 81.5 銀</small></span></td><td class="eg-price" data-label="這段材料"><span>3.3g<small class="lv-sub">同最省錢</small></span></td><td data-label="留下"><span>可留 1 個<small class="lv-sub">裝在靴子上，提高坐騎速度</small></span></td><td data-label="學法"><span data-ah="設計圖：秘銀馬刺">設計圖：秘銀馬刺</span></td></tr>
+          <tr class="pal-wear"><th scope="row">瑟銀腰帶</th><td class="eg-nowrap" data-label="技能">225→226</td><td data-label="次數"><span>1 次</span></td><td data-label="每次材料"><span>瑟銀錠×12、紅色能量水晶×4<small class="lv-sub">約 3.40g</small></span></td><td class="eg-price" data-label="這段材料"><span>3.40g<small class="lv-sub">比最省錢多 3.31g</small></span></td><td data-label="留下"><span>留 1 條<small class="lv-sub">腰・45 級</small></span></td><td data-label="學法"><span data-ah="設計圖：瑟銀腰帶">設計圖：瑟銀腰帶</span></td></tr>
+          <tr><th scope="row">緻密平衡石</th><td class="eg-nowrap" data-label="技能">226→235</td><td data-label="次數"><span>約 15 次<small class="lv-sub">多備 7 次</small></span></td><td data-label="每次材料"><span>厚重的石頭×1<small class="lv-sub">約 8.9 銀</small></span></td><td class="eg-price" data-label="這段材料"><span>1.4g<small class="lv-sub">同最省錢</small></span></td><td data-label="留下"><span>不留<small class="lv-sub">鈍器用的消耗品</small></span></td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">秘銀馬刺</th><td class="eg-nowrap" data-label="技能">235→244</td><td data-label="次數"><span>約 17 次<small class="lv-sub">多備 6 次</small></span></td><td data-label="每次材料"><span>秘銀錠×4、堅固的砂輪×3<small class="lv-sub">約 81.5 銀</small></span></td><td class="eg-price" data-label="這段材料"><span>14.2g<small class="lv-sub">同最省錢</small></span></td><td data-label="留下"><span>可留 1 個<small class="lv-sub">裝在靴子上，提高坐騎速度</small></span></td><td data-label="學法"><span data-ah="設計圖：秘銀馬刺">設計圖：秘銀馬刺</span></td></tr>
+          <tr><th scope="row">黑檀剃刃</th><td class="eg-nowrap" data-label="技能">244→260</td><td data-label="次數"><span>約 16 次<small class="lv-sub">多備 1 次</small></span></td><td data-label="每次材料"><span>秘銀錠×12、真銀錠×6、紅寶石×2、堅固的砂輪×1、厚皮×2<small class="lv-sub">約 5.54g</small></span></td><td class="eg-price" data-label="這段材料"><span>91.2g<small class="lv-sub">同最省錢</small></span></td><td data-label="留下"><span>不留<small class="lv-sub">匕首，聖騎不能用</small></span></td><td data-label="學法">設計圖：黑檀剃刃<small class="lv-sub">瑪格努斯·霜鳴（西瘟疫之地）</small></td></tr>
+          <tr><th scope="row">瑟銀巨劍</th><td class="eg-nowrap" data-label="技能">260→277</td><td data-label="次數"><span>約 27 次<small class="lv-sub">多備 6 次</small></span></td><td data-label="每次材料"><span>瑟銀錠×16、緻密砂輪×2、硬甲皮×4<small class="lv-sub">約 5.13g</small></span></td><td class="eg-price" data-label="這段材料"><span>140.7g<small class="lv-sub">同最省錢</small></span></td><td data-label="留下"><span>不留<small class="lv-sub">雙手劍，防護用不到</small></span></td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">鑲飾瑟銀戰錘</th><td class="eg-nowrap" data-label="技能">277→280</td><td data-label="次數"><span>約 4 次<small class="lv-sub">多備 2 次</small></span></td><td data-label="每次材料"><span>瑟銀錠×30、金錠×4、真銀錠×2、藍寶石×2、硬甲皮×4<small class="lv-sub">約 12.39g</small></span></td><td class="eg-price" data-label="這段材料"><span>54.8g<small class="lv-sub">同最省錢</small></span></td><td data-label="留下"><span>不留<small class="lv-sub">雙手錘，防護用不到</small></span></td><td data-label="學法">訓練師</td></tr>
+          <tr><th scope="row">輻光護腿</th><td class="eg-nowrap" data-label="技能">280→300</td><td data-label="次數"><span>20 次</span></td><td data-label="每次材料"><span>瑟銀錠×20、火焰之心×4<small class="lv-sub">約 6.20g</small></span></td><td class="eg-price" data-label="這段材料"><span>124.0g<small class="lv-sub">同最省錢</small></span></td><td data-label="留下"><span>不留<small class="lv-sub">鎖甲，只有冰霜／暗影抗性</small></span></td><td data-label="學法"><span data-ah="設計圖：輻光護腿">設計圖：輻光護腿</span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="pal-materials" class="eg-section section-wrap" aria-labelledby="pal-materials-title">
+      <div class="section-heading"><div><p class="eyebrow">03 / MATERIALS</p><h2 id="pal-materials-title">材料總成本。</h2></div><p>部落件數是 11/19 16:38 完整掃描的掛單總量。成品自己穿或拿去分解，不扣賣店價。</p></div>
+      <table class="eg-table lv-mats" data-ah-list="鍛造聖騎-到225" data-lv-phase="pal-1">
+        <caption>階段 1・現在・200→225：依小計排序，長條是佔這個階段材料費的比例</caption>
+        <thead><tr><th scope="col">材料</th><th scope="col">數量</th><th scope="col">單價</th><th scope="col">小計</th><th scope="col">部落件數</th><th scope="col">佔比</th></tr></thead>
+        <tbody>
+          <tr data-lv-id="3860" data-lv-qty="175" data-lv-price="1498"><th scope="row"><span data-ah="秘銀錠">秘銀錠</span></th><td data-label="數量">175</td><td class="eg-price" data-label="單價" data-lv-unit>15 銀</td><td class="eg-price" data-label="小計" data-lv-sub>26.2g</td><td data-label="部落件數"><span><span data-lv-listed>305</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 83.6%"><span data-lv-pct>84%</span></span></td></tr>
+          <tr data-lv-id="7912" data-lv-qty="156" data-lv-price="180"><th scope="row"><span data-ah="堅固的石頭">堅固的石頭</span></th><td data-label="數量">156</td><td class="eg-price" data-label="單價" data-lv-unit>1.8 銀</td><td class="eg-price" data-label="小計" data-lv-sub>2.8g</td><td data-label="部落件數"><span><span data-lv-listed>1,482</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 9.0%"><span data-lv-pct>9%</span></span></td></tr>
+          <tr data-lv-id="4338" data-lv-qty="38" data-lv-price="459"><th scope="row"><span data-ah="魔紋布">魔紋布</span></th><td data-label="數量">38</td><td class="eg-price" data-label="單價" data-lv-unit>4.6 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.7g</td><td data-label="部落件數"><span><span data-lv-listed>2,647</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 5.6%"><span data-lv-pct>6%</span></span></td></tr>
+          <tr data-lv-id="4304" data-lv-qty="4" data-lv-price="569"><th scope="row"><span data-ah="厚皮">厚皮</span></th><td data-label="數量">4</td><td class="eg-price" data-label="單價" data-lv-unit>5.7 銀</td><td class="eg-price" data-label="小計" data-lv-sub>22.8 銀</td><td data-label="部落件數"><span><span data-lv-listed>1,735</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 0.7%"><span data-lv-pct>1%</span></span></td></tr>
+          <tr data-lv-id="1705" data-lv-qty="2" data-lv-price="609"><th scope="row"><span data-ah="次級月亮石">次級月亮石</span></th><td data-label="數量">2</td><td class="eg-price" data-label="單價" data-lv-unit>6.1 銀</td><td class="eg-price" data-label="小計" data-lv-sub>12.2 銀</td><td data-label="部落件數"><span><span data-lv-listed>5</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 0.4%"><span data-lv-pct>0%</span></span></td></tr>
+          <tr data-lv-id="4234" data-lv-qty="6" data-lv-price="200"><th scope="row"><span data-ah="重皮">重皮</span></th><td data-label="數量">6</td><td class="eg-price" data-label="單價" data-lv-unit>2 銀</td><td class="eg-price" data-label="小計" data-lv-sub>12 銀</td><td data-label="部落件數"><span><span data-lv-listed>1,062</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 0.4%"><span data-lv-pct>0%</span></span></td></tr>
+          <tr data-lv-id="7909" data-lv-qty="1" data-lv-price="1188"><th scope="row"><span data-ah="青綠石">青綠石</span></th><td data-label="數量">1</td><td class="eg-price" data-label="單價" data-lv-unit>11.9 銀</td><td class="eg-price" data-label="小計" data-lv-sub>11.9 銀</td><td data-label="部落件數"><span><span data-lv-listed>69</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 0.4%"><span data-lv-pct>0%</span></span></td></tr>
+        </tbody>
+        <tfoot><tr><th scope="row">合計</th><td colspan="2" data-label="說明">最省錢路線同價 27.2g</td><td class="eg-price" data-label="材料合計" data-lv-total>31.4g</td><td colspan="2" data-label="多花">多 4.16g</td></tr></tfoot>
+      </table>
+      <p class="lv-made"><span aria-hidden="true">⚒</span>自己做：堅固的砂輪 ×39。拍賣場比較貴或不夠時，用上表的石頭照訓練師配方做，材料已經算在上表。</p>
+      <table class="eg-table lv-mats" data-ah-list="鍛造聖騎-225以後" data-lv-phase="pal-2">
+        <caption>階段 2・35 級後・225→300：依小計排序，長條是佔這個階段材料費的比例</caption>
+        <thead><tr><th scope="col">材料</th><th scope="col">數量</th><th scope="col">單價</th><th scope="col">小計</th><th scope="col">部落件數</th><th scope="col">佔比</th></tr></thead>
+        <tbody>
+          <tr data-lv-id="12359" data-lv-qty="984" data-lv-price="2500"><th scope="row"><span data-ah="瑟銀錠">瑟銀錠</span></th><td data-label="數量">984</td><td class="eg-price" data-label="單價" data-lv-unit>25 銀</td><td class="eg-price" data-label="小計" data-lv-sub>246.0g</td><td data-label="部落件數"><span><span data-lv-listed>380</span><span data-lv-short><span class="eg-tag skip">不夠</span></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 57.2%"><span data-lv-pct>57%</span></span></td></tr>
+          <tr data-lv-id="6037" data-lv-qty="108" data-lv-price="4000"><th scope="row"><span data-ah="真銀錠">真銀錠</span></th><td data-label="數量">108</td><td class="eg-price" data-label="單價" data-lv-unit>40 銀</td><td class="eg-price" data-label="小計" data-lv-sub>43.2g</td><td data-label="部落件數"><span><span data-lv-listed>60</span><span data-lv-short><span class="eg-tag skip">不夠</span></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 10.0%"><span data-lv-pct>10%</span></span></td></tr>
+          <tr data-lv-id="3860" data-lv-qty="267" data-lv-price="1498"><th scope="row"><span data-ah="秘銀錠">秘銀錠</span></th><td data-label="數量">267</td><td class="eg-price" data-label="單價" data-lv-unit>15 銀</td><td class="eg-price" data-label="小計" data-lv-sub>40.0g</td><td data-label="部落件數"><span><span data-lv-listed>305</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 9.3%"><span data-lv-pct>9%</span></span></td></tr>
+          <tr data-lv-id="7077" data-lv-qty="80" data-lv-price="3000"><th scope="row"><span data-ah="火焰之心">火焰之心</span></th><td data-label="數量">80</td><td class="eg-price" data-label="單價" data-lv-unit>30 銀</td><td class="eg-price" data-label="小計" data-lv-sub>24.0g</td><td data-label="部落件數"><span><span data-lv-listed>52</span><span data-lv-short><span class="eg-tag skip">不夠</span></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 5.6%"><span data-lv-pct>6%</span></span></td></tr>
+          <tr data-lv-id="12365" data-lv-qty="235" data-lv-price="889"><th scope="row"><span data-ah="厚重的石頭">厚重的石頭</span></th><td data-label="數量">235</td><td class="eg-price" data-label="單價" data-lv-unit>8.9 銀</td><td class="eg-price" data-label="小計" data-lv-sub>20.9g</td><td data-label="部落件數"><span><span data-lv-listed>140</span><span data-lv-short><span class="eg-tag skip">不夠</span></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 4.9%"><span data-lv-pct>5%</span></span></td></tr>
+          <tr data-lv-id="7910" data-lv-qty="33" data-lv-price="5800"><th scope="row"><span data-ah="紅寶石">紅寶石</span></th><td data-label="數量">33</td><td class="eg-price" data-label="單價" data-lv-unit>58 銀</td><td class="eg-price" data-label="小計" data-lv-sub>19.1g</td><td data-label="部落件數"><span><span data-lv-listed>36</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 4.4%"><span data-lv-pct>4%</span></span></td></tr>
+          <tr data-lv-id="12361" data-lv-qty="9" data-lv-price="15000"><th scope="row"><span data-ah="藍寶石">藍寶石</span></th><td data-label="數量">9</td><td class="eg-price" data-label="單價" data-lv-unit>1.50g</td><td class="eg-price" data-label="小計" data-lv-sub>13.5g</td><td data-label="部落件數"><span><span data-lv-listed>15</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 3.1%"><span data-lv-pct>3%</span></span></td></tr>
+          <tr data-lv-id="8170" data-lv-qty="127" data-lv-price="1039"><th scope="row"><span data-ah="硬甲皮">硬甲皮</span></th><td data-label="數量">127</td><td class="eg-price" data-label="單價" data-lv-unit>10.4 銀</td><td class="eg-price" data-label="小計" data-lv-sub>13.2g</td><td data-label="部落件數"><span><span data-lv-listed>232</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 3.1%"><span data-lv-pct>3%</span></span></td></tr>
+          <tr data-lv-id="7912" data-lv-qty="274" data-lv-price="180"><th scope="row"><span data-ah="堅固的石頭">堅固的石頭</span></th><td data-label="數量">274</td><td class="eg-price" data-label="單價" data-lv-unit>1.8 銀</td><td class="eg-price" data-label="小計" data-lv-sub>4.9g</td><td data-label="部落件數"><span><span data-lv-listed>1,482</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 1.1%"><span data-lv-pct>1%</span></span></td></tr>
+          <tr data-lv-id="3577" data-lv-qty="18" data-lv-price="1688"><th scope="row"><span data-ah="金錠">金錠</span></th><td data-label="數量">18</td><td class="eg-price" data-label="單價" data-lv-unit>16.9 銀</td><td class="eg-price" data-label="小計" data-lv-sub>3.0g</td><td data-label="部落件數"><span><span data-lv-listed>163</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 0.7%"><span data-lv-pct>1%</span></span></td></tr>
+          <tr data-lv-id="4304" data-lv-qty="33" data-lv-price="569"><th scope="row"><span data-ah="厚皮">厚皮</span></th><td data-label="數量">33</td><td class="eg-price" data-label="單價" data-lv-unit>5.7 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.9g</td><td data-label="部落件數"><span><span data-lv-listed>1,735</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 0.4%"><span data-lv-pct>0%</span></span></td></tr>
+          <tr data-lv-id="11186" data-lv-qty="4" data-lv-price="1000"><th scope="row"><span data-ah="紅色能量水晶">紅色能量水晶</span></th><td data-label="數量">4</td><td class="eg-price" data-label="單價" data-lv-unit>10 銀</td><td class="eg-price" data-label="小計" data-lv-sub>40 銀</td><td data-label="部落件數"><span><span data-lv-listed>42</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 0.1%"><span data-lv-pct>0%</span></span></td></tr>
+        </tbody>
+        <tfoot><tr><th scope="row">合計</th><td colspan="2" data-label="說明">最省錢路線同價 426.9g</td><td class="eg-price" data-label="材料合計" data-lv-total>430.2g</td><td colspan="2" data-label="多花">多 3.31g</td></tr></tfoot>
+      </table>
+      <p class="lv-made"><span aria-hidden="true">⚒</span>自己做：堅固的砂輪 ×69、緻密砂輪 ×55。拍賣場比較貴或不夠時，用上表的石頭照訓練師配方做，材料已經算在上表。</p>
+    </section>
+
+    <section id="pal-plans" class="eg-section section-wrap" aria-labelledby="pal-plans-title">
+      <div class="section-heading"><div><p class="eyebrow">04 / PLANS & OPTIONS</p><h2 id="pal-plans-title">設計圖與其他選擇。</h2></div><p>灰色的不在本路線，不列入購物清單。</p></div>
+      <table class="eg-table lv-plans" data-ah-list="鍛造聖騎-設計圖">
+        <thead><tr><th scope="col">設計圖</th><th scope="col">用在</th><th scope="col">最低價</th><th scope="col">部落件數</th><th scope="col">建議</th></tr></thead>
+        <tbody>
+          <tr data-lv-id="7975" data-lv-buy><th scope="row"><span data-ah="設計圖：秘銀短褲">秘銀短褲</span></th><td data-label="用在">201・腿</td><td class="eg-price" data-label="部落價" data-lv-unit>18 銀</td><td data-label="部落件數"><span data-lv-listed>1 件</span></td><td data-label="建議"><span class="eg-tag buy">現在買</span></td></tr>
+          <tr data-lv-id="7989" data-lv-buy><th scope="row"><span data-ah="設計圖：秘銀馬刺">秘銀馬刺</span></th><td data-label="用在">211→225、235→244</td><td class="eg-price" data-label="部落價" data-lv-unit>4.30g</td><td data-label="部落件數"><span data-lv-listed>9 件</span></td><td data-label="建議"><span class="eg-tag buy">現在買</span></td></tr>
+          <tr data-lv-id="7990" data-lv-buy><th scope="row"><span data-ah="設計圖：重型秘銀頭盔">重型秘銀頭盔</span></th><td data-label="用在">220・頭</td><td class="eg-price" data-label="部落價" data-lv-unit>60 銀</td><td data-label="部落件數"><span data-lv-listed>2 件</span></td><td data-label="建議"><span class="eg-tag buy">現在買</span></td></tr>
+          <tr data-lv-id="12683" data-lv-buy><th scope="row"><span data-ah="設計圖：瑟銀腰帶">瑟銀腰帶</span></th><td data-label="用在">225・腰</td><td class="eg-price" data-label="部落價" data-lv-unit>1.90g</td><td data-label="部落件數"><span data-lv-listed>1 件</span></td><td data-label="建議"><span class="eg-tag buy">現在買</span></td></tr>
+          <tr data-lv-id="12713" data-lv-buy><th scope="row"><span data-ah="設計圖：輻光護腿">輻光護腿</span></th><td data-label="用在">280→300</td><td class="eg-price" data-label="部落價" data-lv-unit>2.00g</td><td data-label="部落件數"><span data-lv-listed>3 件</span></td><td data-label="建議"><span class="eg-tag buy">現在買</span></td></tr>
+          <tr data-lv-id="7976" class="is-skip"><th scope="row"><span data-ah="設計圖：秘銀盾刺">秘銀盾刺</span></th><td data-label="用在">不做，買成品</td><td class="eg-price" data-label="部落價" data-lv-unit>1.00g</td><td data-label="部落件數"><span data-lv-listed>7 件</span></td><td data-label="建議"><span class="eg-tag skip">不用買</span></td></tr>
+          <tr data-lv-id="12694" class="is-skip"><th scope="row"><span data-ah="設計圖：瑟銀頭盔">瑟銀頭盔</span></th><td data-label="用在">可選・255・頭</td><td class="eg-price" data-label="部落價" data-lv-unit>2.00g</td><td data-label="部落件數"><span data-lv-listed>2 件</span></td><td data-label="建議"><span class="eg-tag watch">看等級</span></td></tr>
+          <tr data-lv-id="12684" class="is-skip"><th scope="row"><span data-ah="設計圖：瑟銀護腕">瑟銀護腕</span></th><td data-label="用在">可選・230・手腕</td><td class="eg-price" data-label="部落價" data-lv-unit>10.89g</td><td data-label="部落件數"><span data-lv-listed>2 件</span></td><td data-label="建議"><span class="eg-tag skip">太貴</span></td></tr>
+        </tbody>
+      </table>
+      <div class="eg-groups lv-notes">
+        <section class="eg-group" aria-labelledby="pal-n1"><h3 id="pal-n1">買成品比較省</h3><ul><li><strong>秘銀盾刺</strong>：自己做要設計圖 1 金加材料，比部落成品 1.22g 貴。換盾牌就要重裝，每次都買成品。</li><li><strong>鋼質頭盔</strong>（板甲，力量、耐力各 +12，40 級）：40～41 級想先戴，部落成品 0.90g 有 15 個，比自己做便宜。42 級換重型秘銀頭盔。</li><li>設計圖賣完時：秘銀短褲那一點改做重型秘銀手套，瑟銀腰帶那一點改做緻密平衡石。</li></ul></section>
+        <section class="eg-group" aria-labelledby="pal-n2"><h3 id="pal-n2">看角色等級再決定</h3><ul><li><strong>鋼質胸甲</strong>（鎖甲，耐力 +12、格擋 +2%，35 級）：35～40 級穿得到的坦克胸甲。在 202 做一件約多 1.6g；已滿 41 級就跳過。</li><li><strong>瑟銀頭盔</strong>（51 級）：耐力 +18、全抗 +10，護甲比重型秘銀頭盔少。在 255 做一件材料約多 1.2g，另要設計圖。</li><li><strong>華麗秘銀戰靴</strong>（44 級，訓練師）：閃躲 +1%，可解除定身，PvP 伺服器野外好用。和秘銀重靴二選一，在 226 做約多 3.2g。</li></ul></section>
+        <section class="eg-group" aria-labelledby="pal-n3"><h3 id="pal-n3">這段不建議做</h3><ul><li><strong>君王／帝國鎧甲</strong>：帝王鎧甲 2 件防禦 +7，但設計圖拾取後綁定，部落拍賣場買不到。</li><li><strong>哨兵系列</strong>：有防禦，但設計圖拾取後綁定，還要友好或尊敬聲望。</li><li><strong>瑟銀護腕</strong>只有耐力 +8，設計圖要 10.89g。<strong>瑟銀護甲</strong>的護甲比重型秘銀胸甲低。</li><li><strong>黑鐵裝</strong>要黑鐵錠，拍賣場沒有。<strong>輻光</strong>系列是鎖甲，只有冰霜與暗影抗性；路線最後 20 件輻光護腿都拿去分解。</li></ul></section>
+      </div>
+      <p class="eg-note">價格依 11/19 16:38 拍賣小幫手完整掃描（<a class="text-link" href="../market/">部落行情</a>），和「最省錢」分頁的 17:26 官方快照略有差異；「多花」是用同一份價格比較的。行情頁換成更新的掃描後，材料表會自動重算，「多花」與路線表不會。</p>
     </section>
     <!-- /variant:practical -->
     </div>
