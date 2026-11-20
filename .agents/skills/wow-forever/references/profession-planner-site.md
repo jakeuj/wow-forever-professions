@@ -38,8 +38,9 @@
 - [聖騎士 B 主角雙製造](https://jakeuj.com/wow-forever-professions/professions/#plan=paladin&route=crafting)
 - [聖騎士 C 主角雙採集](https://jakeuj.com/wow-forever-professions/professions/#plan=paladin&route=gathering)
 - [聖騎士 D 術士接布甲](https://jakeuj.com/wow-forever-professions/professions/#plan=paladin&route=warlock)
+- [聖騎士 E 術士附魔煉金](https://jakeuj.com/wow-forever-professions/professions/#plan=paladin&route=warlock-alchemy)
 
-04 內部的路線 A／B／C／D 與外層 PLAN A／B／C／D 是不同層級。四條路線都提供五職業、九專業、18 點上限；製造角色數依序為 4／3／3／5，B 的三位包含聖騎士主角。D 是 2026-11-18 依站主實際配置（術士已學裁縫／附魔、法師空出）加入的路線，`route=warlock`。每條路線列出主角調整、材料流向與適合情境，完整分工見 [professions-and-legacy.md](professions-and-legacy.md#04plan-d聖騎士多路線)。切換路線會同步更新分配表、覆蓋摘要、複製文字及分享網址；裸 `#plan=paladin` 或無效路線回 A。
+04 內部的路線 A～E 與外層 PLAN A／B／C／D 是不同層級。五條路線都提供五職業、九專業、18 點上限；製造角色數依序為 4／3／3／5／5，B 的三位包含聖騎士主角。D 是 2026-11-18 依站主實際配置（術士已學裁縫／附魔、法師空出）加入的路線，`route=warlock`。E 是 2026-11-20 依站主考慮把術士改成附魔／煉金加入，`route=warlock-alchemy`，與 D 只交換術士裁縫與法師煉金。每條路線列出主角調整、材料流向與適合情境，完整分工見 [professions-and-legacy.md](professions-and-legacy.md#04plan-d聖騎士多路線)。切換路線會同步更新分配表、覆蓋摘要、複製文字及分享網址；裸 `#plan=paladin` 或無效路線回 A。
 
 ## 修改與驗證重點
 

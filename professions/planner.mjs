@@ -1,5 +1,5 @@
-import { professions, plans, paladinRoutes, getPaladinRoute, getRows, summarize } from './data.mjs?v=20261119-guild';
-import { initMilestones } from './milestones.mjs?v=20261119-guild';
+import { professions, plans, paladinRoutes, getPaladinRoute, getRows, summarize } from './data.mjs?v=20261120-route-e';
+import { initMilestones } from './milestones.mjs?v=20261120-route-e';
 
 const $ = selector => document.querySelector(selector);
 const byId = Object.fromEntries(professions.map(p => [p.id, p]));

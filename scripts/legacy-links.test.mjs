@@ -5,7 +5,7 @@ import { legacyPlannerUrl } from '../guild/legacy-links.mjs';
 const base = 'https://jakeuj.com/wow-forever-professions/';
 
 test('舊方案轉址保留階段、路線及原始查詢字串', () => {
-  for (const hash of ['#plan=crafting', '#plan=gathering&stage=final', '#plan=paladin&route=warlock']) {
+  for (const hash of ['#plan=crafting', '#plan=gathering&stage=final', '#plan=paladin&route=warlock', '#plan=paladin&route=warlock-alchemy']) {
     const suffix = `?ref=%2F&source=bahamut${hash}`;
     assert.equal(legacyPlannerUrl(`${base}${suffix}`), `${base}professions/${suffix}`);
   }

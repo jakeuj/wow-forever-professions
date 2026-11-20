@@ -1,4 +1,4 @@
-import { crafting, normalizeProgress, countPoints } from './data.mjs?v=20261119-guild';
+import { crafting, normalizeProgress, countPoints } from './data.mjs?v=20261120-route-e';
 
 const storageKey = 'wow-forever-professions:milestones:v1';
 

@@ -82,6 +82,22 @@ export const paladinRoutes = {
       { ...rogue, order: '最後補齊', role: '工程與彈性格', profs: ['engineering'], flexibleSlot: true, reason: '接收聖騎士的礦料發展工程，第二格可學採礦自給或留空。' },
     ],
   },
+  'warlock-alchemy': {
+    letter: 'E', label: '術士附魔煉金', pair: '採礦／鍛造', short: '法師改學草藥／裁縫',
+    title: '術士學附魔／煉金，法師改練草藥／裁縫。',
+    description: '聖騎士保留採礦／鍛造，術士負責附魔與煉金，法師採草並接手裁縫。兩項不需採集的製造集中在術士，草藥由法師郵寄供應。',
+    change: '聖騎士不更換專業；術士學附魔／煉金，法師改學草藥／裁縫。已在術士練裁縫、或在法師練煉金的進度不會延續。',
+    flow: '法師採草寄給術士煉金，布料自己做裁縫；術士拆聖騎士的綠裝練附魔，轉化的軍團鋼與奧金寄給聖騎士鍛造；聖騎士的礦也供盜賊工程；獵人自己剝皮做製皮。',
+    fit: '想讓術士自用法力藥水、暗影之力藥劑，並一邊練等一邊拆鍛造綠裝的玩家。附魔上限跟著角色等級提高，術士本來就要練等，拆高階綠裝的門檻會跟著解開。',
+    note: '五種職業、九項專業全部涵蓋，五位角色都有製造，合計最多 18 點。與 D 相比，只交換術士的裁縫與法師的煉金；煉金 275 的轉化軍團鋼改由術士供應聖騎士。盜賊的第二格可學採礦自給，或留空。',
+    rows: [
+      { ...paladin, reason: '維持採礦／鍛造；礦料供自己與盜賊工程，綠裝寄給術士拆，並接收術士轉化的軍團鋼。' },
+      { ...warlock, role: '拆裝與藥水', profs: ['enchanting', 'alchemy'], reason: '附魔拆聖騎士的鍛造綠裝；煉金做自用的法力藥水與藥劑，先衝 275 拿轉化：軍團鋼。' },
+      { ...mage, order: '採草小號', role: '草藥與布甲', profs: ['herbalism', 'tailoring'], reason: '採草寄給術士煉金，布料自己做裁縫；布甲裝備與背包自用或寄給其他角色。' },
+      { ...hunter, order: '後續工匠', reason: '打獸剝皮直接供應製皮，皮甲與鎖甲成品自己也穿得到。' },
+      { ...rogue, order: '最後補齊', role: '工程與彈性格', profs: ['engineering'], flexibleSlot: true, reason: '接收聖騎士的礦料發展工程，第二格可學採礦自給或留空。' },
+    ],
+  },
 };
 export function getPaladinRoute(routeId = 'keep') {
   return Object.hasOwn(paladinRoutes, routeId) ? paladinRoutes[routeId] : paladinRoutes.keep;
@@ -114,7 +130,7 @@ export const plans = {
   },
   paladin: {
     label: '聖騎士多路線', tag: 'PLAN D · 聖騎士路線比較', title: '從現有採礦／鍛造出發，考慮四條分工路線。',
-    description: '可先保留現況、改成主角雙製造、把製造移交小號，或由術士接布甲、法師改煉金。四條路線都提供完整的全帳號分工，切換比較需要更換的專業與供料方式。',
+    description: '可先保留現況、改成主角雙製造、把製造移交小號，或由術士接布甲、法師改煉金，也可讓術士學附魔／煉金、法師改裁縫。五條路線都提供完整的全帳號分工，切換比較需要更換的專業與供料方式。',
     note: paladinRoutes.keep.note,
     rows: paladinRoutes.keep.rows,
   },
