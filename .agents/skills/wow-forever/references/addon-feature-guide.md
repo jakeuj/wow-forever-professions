@@ -61,6 +61,14 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 - `/baganator` 或 `/bgr`；`Locales.lua` 具有繁中詞條。Syndicator 是庫存資料層，不是另一套背包外觀。共用專案頁列出的虛空倉庫、帳號銀行等功能，依遊戲分支實際提供的系統判斷，不能全套套用 Forever。
 - 與 AnoUI 等整合 UI 的背包模組擇一接管外觀；跨角色查庫存表示檢視快取，不代表能遠端取出物品。846 發佈有 Forever 銀行排序修正。
 
+### Syndicator：讓 agent 讀得到背包
+
+Battle.net API 只給已穿裝備，背包、銀行與信箱要靠插件存檔。只想讓 agent 讀庫存、不換背包外觀時，單裝 Syndicator 即可；它只在提示框加各角色件數。[291，9632417](https://www.curseforge.com/wow/addons/syndicator/files/9632417)（2026-11-15）列 **Forever、1.60.1**，並修了 Forever 公會伺服器名稱。2026-11-20 站主單裝 291 後實測可讀。
+
+- **記錄時機**：新插件要完全重開遊戲才載入，`/reload` 不夠。每個角色登入一次才有背包；銀行、信箱要各開一次；公會銀行只記到「去過」與金錢，沒有物品。資料在 `/reload` 或登出時寫進帳號層 `SavedVariables/Syndicator.lua`。
+- **讀取**：`python '<skill-dir>/scripts/syndicator_inventory.py' --root '<WoW 安裝根目錄>'`，可加 `--character`、`--item` 篩選或 `--json`。`SYNDICATOR_DATA.Characters["名 姓-PvP"]` 下的 `bags` 是各背包的格子陣列，Forever 銀行在 `bankTabs[n].slots`（`bank` 是空的），`mail` 是物品平鋪陣列；每格有 `itemID`、`itemCount`、`quality`、`itemLink`，空格是 `{}`。
+- 存檔含角色名稱，只在本機讀，不寫進 repo。
+
 ## 6. Platynator：可直接套用樣式的姓名板
 
 - 內建多套樣式並可匯入配置；設計器支援拖曳元素與即時預覽。提供血條、施法條、可打斷提示、仇恨／單位狀態顏色及任務目標標示。`/platy` 開啟，Designer 分頁調整版面；此版無額外必要插件宣告。
@@ -130,7 +138,7 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 | 決定下一個任務與練等順序 | RestedXP／Polestar；先核對 Forever 指南、陣營與免費範圍。 |
 | 決定如何到目的地 | Shortest Path Forever＋正確的 ForeverCore；附近服務查詢另核對 QuestieDB。 |
 | 更醒目的畫面內目標 | Waypoint UI；先試目前導航來源已有的箭頭。 |
-| 分類背包及查其他角色庫存 | Baganator＋Syndicator；和整合背包、BagSync／Account Overview 逐項比較。 |
+| 分類背包及查其他角色庫存 | Baganator＋Syndicator；和整合背包、BagSync／Account Overview 逐項比較。只要 agent 讀庫存時單裝 Syndicator。 |
 | 姓名板、任務怪與仇恨顏色 | Platynator／Plater／Threat Plates／整合 UI 選主要來源。 |
 | 讀任務劇情 | Immersion；同步檢查自動接交設定。 |
 | 便利功能、地圖資訊、地城行前查詢 | 分別評估 Leatrix Plus、Leatrix Maps、DungeonJournal／DungeonsForever，按模組關閉重複功能。 |

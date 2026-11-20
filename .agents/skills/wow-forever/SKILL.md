@@ -43,6 +43,8 @@ python '<skill-dir>\scripts\inspect_install.py' --root '<WoW 安裝根目錄>' -
 
 操作 DungeonsForever＋Auctionator 的專業衝等、完整行情掃描、自動選路或匯入材料清單，讀 [專業衝等操作](references/profession-addon-workflow.md)。
 
+查使用者背包、銀行、信箱或跨角色庫存時，讀 [Syndicator 讀取](references/addon-feature-guide.md#syndicator讓-agent-讀得到背包)，用 `scripts/syndicator_inventory.py` 讀存檔。
+
 - 開啟作者專案頁和具體發佈檔案頁，核對專案 ID、Forever flavor、支援的遊戲版本、更新日期與變更內容。搜尋標題與網址 slug 只當作線索。
 - 將已安裝 `.toc` 的 `Version`、`Interface`、`X-Curse-Project-ID` 與上游檔案比對。不同專案的版本號不能直接比較大小；明確支援目標分支與相關修正比下載量更有判斷力。
 - 多個專案都支援時，說明可選範圍，再依使用者需求、維護狀況與既有安裝推薦。現有版本符合需求時直接指出是否需要更換。
