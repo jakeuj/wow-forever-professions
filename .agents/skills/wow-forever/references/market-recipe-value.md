@@ -86,6 +86,8 @@ curl -s https://raw.githubusercontent.com/jakeuj/wow-forever-professions/auction
 - `updatedAt` 是最新快照的時間。`items[物品 ID]` 是 `[目前件數, [[時, 價], ...]]`，只記價格改變的時點：「時」是 UTC 的 Unix 時數（台灣時間加 8 小時），「價」是銅，`null` 表示從那時起沒貨，可能是賣掉也可能是到期。物品名稱與分類用 `market/data.json` 同一個 ID 對照。
 - `hourlyFrom` 之後是逐小時資料，`hours` 列出實際收到的快照；更早的每天在台灣午夜留一個點，值是當天最低價，最多保留 90 天。格式以 `scripts/collect-auctions.py` 開頭的說明為準。
 - 這是部落最新而且連續的價格，查部落裝備與配方的走勢、配方期貨買點時優先用它；對面陣營與中立拍賣場仍看阿莫比。
+- GitHub 的每小時排程常延遲或漏跑（2026-11-20 到下午只跑了 00、01、08 時），先看 `updatedAt`。要現價又不想等時，把 `auctions.json` 複製到暫存位置，用 `forever_api.py` 的 `credentials()` 取得鑰匙圈或 DPAPI 的憑證，設成 `BLIZZARD_CLIENT_ID`／`BLIZZARD_CLIENT_SECRET` 後跑 `python3 scripts/collect-auctions.py --out <暫存複本>`；不加 `--publish-depth` 就只寫那份檔，不影響網站。各價位件數（判斷「1g 的只有 1 張」）用 `scripts/blizzard_api.py` 的 `auction_depth` 對同一次回應計算。網站要跟著更新時改跑 `gh workflow run auction-collect.yml`。
+- 阿莫比物品頁「各陣營拍賣場最近看到」的時間可能比官方快照新；部落價兩邊不同時，等下一次官方快照再寫進頁面。API 每小時更新一次，分鐘數會漂移（11/18 約 :06，11/20 約 :26），以回應的 `Last-Modified` 為準。
 
 ### 收藏清單截圖
 
