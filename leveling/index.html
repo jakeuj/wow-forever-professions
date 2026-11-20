@@ -17,9 +17,9 @@
   <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
   <link rel="stylesheet" href="../style.css?v=20261119-guild">
   <link rel="stylesheet" href="../endgame/endgame.css?v=20261119-inline-links">
-  <link rel="stylesheet" href="./leveling.css?v=20261118-stock">
+  <link rel="stylesheet" href="./leveling.css?v=20261120-variants">
   <script src="../endgame/ah-copy.js?v=20261119-shopping" defer></script>
-  <script src="./leveling.js?v=20261119-stock" defer></script>
+  <script src="./leveling.js?v=20261120-variants" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#materials">跳至材料總成本</a>
@@ -43,6 +43,13 @@
       <p class="eg-privacy"><span aria-hidden="true">✧</span>掛單與物品數量會變動。可從<a href="../market/#shopping">部落行情複製本次採買清單</a>。</p>
     </section>
 
+    <nav class="lv-variants section-wrap" aria-label="路線版本" data-lv-tabs>
+      <a href="#cheapest" data-lv-tab="cheapest"><strong>最省錢</strong><small>材料費最低</small></a>
+      <a href="#disenchant" data-lv-tab="disenchant"><strong>給附魔分解</strong><small>成品都能拆</small></a>
+      <a href="#practical" data-lv-tab="practical"><strong>聖騎自用</strong><small>邊練邊換裝</small></a>
+    </nav>
+
+    <div id="cheapest" class="lv-variant" data-lv-variant>
     <section id="summary" class="eg-section section-wrap" aria-labelledby="summary-title">
       <p class="eg-note">11/19 17:26 這輪，秘銀礦石 100 個沿價位估算約 <strong>8.40 金</strong>，直接買 100 個秘銀錠約 <strong>17.23 金</strong>。學會熔煉秘銀就可買礦自熔，每個最多出到 8 銀 50 銅。魔紋布最低 4 銀 30 銅。秘銀細劍設計圖已缺貨，輻光護腿設計圖在 2 金有 2 張。</p>
       <div class="section-heading"><div><p class="eyebrow">01 / BUDGET</p><h2 id="summary-title">先準備多少錢。</h2></div><p>淨成本估算是材料費扣掉成品賣店價。圖紙另計。</p></div>
@@ -179,6 +186,23 @@
           <!-- /lv:plans --></tbody>
       </table>
     </section>
+    </div>
+
+    <div id="disenchant" class="lv-variant" data-lv-variant>
+    <!-- variant:disenchant -->
+    <section class="eg-section section-wrap" aria-labelledby="de-title">
+      <div class="section-heading"><div><p class="eyebrow">給附魔分解</p><h2 id="de-title">成品都拿去分解。</h2></div><p>整理中。</p></div>
+    </section>
+    <!-- /variant:disenchant -->
+    </div>
+
+    <div id="practical" class="lv-variant" data-lv-variant>
+    <!-- variant:practical -->
+    <section class="eg-section section-wrap" aria-labelledby="pal-title">
+      <div class="section-heading"><div><p class="eyebrow">聖騎自用</p><h2 id="pal-title">做出來自己穿。</h2></div><p>整理中。</p></div>
+    </section>
+    <!-- /variant:practical -->
+    </div>
 
     <section id="notes" class="eg-section section-wrap" aria-labelledby="notes-title">
       <div class="section-heading"><div><p class="eyebrow">05 / BEFORE YOU START</p><h2 id="notes-title">開始前先看。</h2></div></div>

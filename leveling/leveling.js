@@ -4,6 +4,36 @@
 // Rows: <tr data-lv-id="item id" data-lv-qty="n bought at auction" data-lv-price="snapshot copper"
 // [data-lv-fixed="copper for NPC-bought units" data-lv-other="their count"]>; tables with
 // data-lv-phase also carry data-lv-vendor (copper returned by selling the crafted items).
+// Route variants: <nav data-lv-tabs> links to <div data-lv-variant id="…"> panels. Without
+// JavaScript every panel stays visible in order. The hash picks the panel; an anchor inside a
+// panel (old links such as #route or #materials) opens the panel that holds it.
+(() => {
+  const nav = document.querySelector('[data-lv-tabs]');
+  const panels = [...document.querySelectorAll('[data-lv-variant]')];
+  if (!nav || !panels.length) return;
+  const tabs = [...nav.querySelectorAll('[data-lv-tab]')];
+  const panelFor = hash => {
+    const target = hash.length > 1 && document.getElementById(decodeURIComponent(hash.slice(1)));
+    return (target && panels.find(p => p === target || p.contains(target))) || null;
+  };
+  const show = panel => {
+    panels.forEach(p => { p.hidden = p !== panel; });
+    tabs.forEach(t => {
+      if (t.dataset.lvTab === panel.id) t.setAttribute('aria-current', 'true');
+      else t.removeAttribute('aria-current');
+    });
+  };
+  nav.classList.add('is-tabs');
+  show(panelFor(location.hash) || panels[0]);
+  window.addEventListener('hashchange', () => {
+    const panel = panelFor(location.hash);
+    if (!panel) return;
+    show(panel);
+    const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (target && target !== panel) target.scrollIntoView();
+  });
+})();
+
 (() => {
   const phases = document.querySelectorAll('[data-lv-phase]');
   if (!phases.length) return;
@@ -60,15 +90,19 @@
       }
     });
 
-    const planSummary = document.querySelector('[data-lv-plan-total]');
-    let planTotal = Number(planSummary?.dataset.lvPlanFixed || 0);
-    document.querySelectorAll('.lv-plans tr[data-lv-id]').forEach(row => {
-      const hit = live.get(Number(row.dataset.lvId));
-      setText(row, '[data-lv-unit]', hit ? unit(hit.price) : '部落沒貨');
-      setText(row, '[data-lv-listed]', hit ? `${hit.count ?? '?'} 件` : '—');
-      if (hit && row.hasAttribute('data-lv-buy')) planTotal += hit.price;
+    // Plan totals stay inside each route variant, so one route's plans never add to another's.
+    const scopes = document.querySelectorAll('[data-lv-variant]');
+    (scopes.length ? [...scopes] : [document]).forEach(scope => {
+      const planSummary = scope.querySelector('[data-lv-plan-total]');
+      let planTotal = Number(planSummary?.dataset.lvPlanFixed || 0);
+      scope.querySelectorAll('.lv-plans tr[data-lv-id]').forEach(row => {
+        const hit = live.get(Number(row.dataset.lvId));
+        setText(row, '[data-lv-unit]', hit ? unit(hit.price) : '部落沒貨');
+        setText(row, '[data-lv-listed]', hit ? `${hit.count ?? '?'} 件` : '—');
+        if (hit && row.hasAttribute('data-lv-buy')) planTotal += hit.price;
+      });
+      if (planSummary && planTotal) planSummary.textContent = total(planTotal);
     });
-    if (planSummary && planTotal) planSummary.textContent = total(planTotal);
 
     const stamp = data.scanStartedAt || data.savedAt;
     if (dateChip && stamp) {
