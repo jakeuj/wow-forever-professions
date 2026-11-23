@@ -36,6 +36,18 @@ class PageItemsTest(unittest.TestCase):
         self.assertNotIn("設計圖：套裝", items)  # prefixes name no single item
         self.assertIsNone(items["材料"]["below"])
         self.assertEqual(items["材料"]["lists"], [])  # the <img> did not leave the table open
+        self.assertEqual(items["設計圖：便宜貨"]["owners"], ["期貨轉賣"])  # from the list name
+        self.assertEqual(items["材料"]["owners"], ["期貨轉賣"])  # no list: from the page
+
+    def test_alchemy_items_are_for_the_friend(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            page = Path(tmp) / "alchemy" / "index.html"
+            page.parent.mkdir()
+            page.write_text('<table data-ah-list="煉金-配方"><tr><td><span data-ah="配方：甲">甲</span></td></tr></table>'
+                            '<p><span data-ah="配方：乙">乙</span></p>', encoding="utf-8")
+            items = page_items([page])
+        self.assertEqual(items["配方：甲"]["owners"], ["煉金朋友"])
+        self.assertEqual(items["配方：乙"]["owners"], ["煉金朋友"])
 
 
 class ReferenceTest(unittest.TestCase):

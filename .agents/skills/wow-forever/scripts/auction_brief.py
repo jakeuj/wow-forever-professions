@@ -34,6 +34,9 @@ import auction_changes as ac  # noqa: E402
 
 REALM = "CAMWOW TW4 Realm 2 PvP"
 PAGES = {"endgame": "鍛造清單", "alchemy": "煉金清單", "speculation": "配方期貨"}
+# Who an item is for: by shopping-list prefix, else by page.
+OWNERS = {"鐵匠": "自己（鍛造）", "鍛造": "自己（鍛造）", "煉金": "煉金朋友", "期貨": "期貨轉賣"}
+PAGE_OWNERS = {"鍛造清單": "自己（鍛造）", "煉金清單": "煉金朋友", "配方期貨": "期貨轉賣"}
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
 FAR_BELOW = 0.25   # listed at a quarter of the market reference or less
 NEAR = 1.3         # within 30 % of the trigger
@@ -68,7 +71,7 @@ class PageItems(HTMLParser):
 
 
 def page_items(paths):
-    """name -> {below: lowest trigger in copper or None, pages: [...], lists: [...], skip: all rows skipped}."""
+    """name -> {below: lowest trigger in copper or None, pages, lists, owners: who it is for, skip: all rows skipped}."""
     out = {}
     for path in paths:
         parser = PageItems()
@@ -83,6 +86,10 @@ def page_items(paths):
             if item["list"] and item["list"] not in entry["lists"]:
                 entry["lists"].append(item["list"])
             entry["skip"] = entry["skip"] and item["skip"]
+    for entry in out.values():
+        owners = [OWNERS.get(name.split("-")[0]) for name in entry["lists"]]
+        owners = [o for o in owners if o] or [PAGE_OWNERS.get(page, page) for page in entry["pages"]]
+        entry["owners"] = list(dict.fromkeys(owners))
     return out
 
 
@@ -123,7 +130,7 @@ def classify(items, ids, levels, record, hours, realm_rows, meta, bags=None, max
             level = levels.get(item_id) or []
             lowest = level[0][0] if level else None
             ref = reference(item_id, realm_rows, record, hours)
-            base = {"name": name, "id": item_id, "pages": info["pages"], "price": lowest,
+            base = {"name": name, "id": item_id, "pages": info["pages"], "owners": info.get("owners", []), "price": lowest,
                     "units": sum(q for _, q in level), "below": info["below"], "reference": ref}
             if lowest is None:
                 if info["below"] is not None:
@@ -212,7 +219,7 @@ def render(result, extra, modified, record_time, bags_note):
     lines = [f"部落拍賣場快訊（官方即時快照 {taiwan_time(modified)}；網站每小時紀錄到 {record_time}）", "", "## 現在處理"]
     actions = []
     for r in result["now"]:
-        where = "、".join(r["pages"])
+        where = "、".join(r["owners"] or r["pages"])
         actions.append(f"買 {r['name']} {coin(r['price'])}：{reason(r)}（{where}）")
     for r in result["sell"]:
         actions.append(f"賣 {r['name']} {coin(r['price'])}：平常約 {coin(r['usual'])}，你有 {r['count']} 個，"
