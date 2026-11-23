@@ -4,9 +4,7 @@
 
 ## 安裝辨識
 
-從實際安裝根目錄的 `.build.info` 選啟用的 `Product=wowf` 列，並核對 `_forever_/.flavor.info`。插件路徑以 `_forever_/Interface/AddOns` 為基準；只讀必要的 `.toc`，有設定或錯誤排查需求時才讀 `WTF`。
-
-`AtlasLootClassic/AtlasLootClassic_Forever.toc` 的 `Interface`、`Version`、`X-Curse-Project-ID` 可協助辨認套件。目錄或 `.toc` 存在只證明檔案與宣告，不代表遊戲內已載入或運作正常。
+依[插件盤點](addon-maintenance.md#辨識分支與啟用狀態)確認客戶端後，讀 `AtlasLootClassic/AtlasLootClassic_Forever.toc` 的 `Interface`、`Version`、`X-Curse-Project-ID` 辨認套件。
 
 ## 兩個容易混淆的 AtlasLoot 專案
 

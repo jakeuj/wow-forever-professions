@@ -1,111 +1,35 @@
 ---
 name: wow-forever
-description: 處理《魔獸世界：永恆》（WoW Forever／wowf）的台服玩法、專業與傳承規劃、拍賣行情、配方利潤與 60 級製造需求、相關 GitHub Pages 網站維護與資料串接（Battle.net API、客戶端資料表、Wowhead），以及客戶端安裝與版本管理、插件管理與 Lua 錯誤排查。使用者提到魔獸永恆、_forever_、永恆版插件，或在本 repo 查詢 Battle.net API、設定本機憑證時使用。其他魔獸版本先確認分支。
+description: 查證《魔獸世界：永恆》（WoW Forever／wowf）台服玩法、插件與客戶端、專業傳承與練等、拍賣與配方利潤，並維護本 repo 的公會官網、GitHub Pages 玩家工具與 Battle.net API 資料串接。
 ---
 
 # 魔獸世界永恆
 
-使用台灣繁體中文，沿用台服名稱，保留插件名稱、指令、檔名與 API 的原文。
+使用台灣繁體中文和台服遊戲名稱，保留插件、指令、檔名與 API 原文。台服日期與時刻用台灣時間。
 
-以台灣繁中客戶端為主要查證情境。挑選插件時優先評估完整 `zhTW` 語系、中文字型與既有功能重疊；`zhCN` 回退須明確說明，不能統稱為完整繁中支援。
+依指定版本、路徑或對話確認目標。永恆是 WoW Forever（`wowf`、`_forever_`）。玩法與相容性以當前 Forever 版本和內容階段查證。公告查[永恆官網](https://worldofwarcraft.blizzard.com/zh-tw/forever/)和[台灣官方新聞](https://worldofwarcraft.blizzard.com/zh-tw/news/)，繁中物品與法術查 [Wowhead 永恆](https://www.wowhead.com/forever/tw/)。以舊經典版資料提供線索時，標明永恆的驗證狀態。
 
-遊戲版本、插件與安裝建議預設以 Forever 為目標；移除其他版本的操作範圍依當次要求判斷。
+需要個人角色、陣營、安裝目錄或 API slug 時，讀家目錄的 `.config/wow-forever/local.md`（Windows 用 `%USERPROFILE%\.config\wow-forever\local.md`）。要查個人進度時優先用指定角色，未指定時用檔內主角色。按題目重查角色等級、專業點數、已學配方或庫存，並標明資料時間。角色 API 可能落後一兩天，Syndicator 存檔在 `/reload` 或登出時更新。
 
-## 角色與設定位置
+使用者提供或更正的私人設定寫入 repo 外的 [local.md](references/local.example.md)，需要時依對話確認欄位後建立。公開文件、範例與測試資料使用佔位符或相對路徑。帳號目錄、私人角色、BattleTag、未公開聯絡資訊與本機絕對路徑留在操作環境。憑證依本機工具說明管理，local.md 只記位置。公開公會聯絡資訊以現有招募內容為準。
 
-依當次提供的角色、陣營、種族、專精、專業與玩法目標判斷。問題沒指明角色或條件時，預設是 local.md 記的主角色：先用 `forever_api.py character <slug> --part professions` 重查等級、專業點數與已學配方，用 Syndicator 存檔（`scripts/syndicator_inventory.py`）看主角色與小號拿著的材料、設計圖與配方，再依這些條件規劃回應，例如只算到主角色目前技能段的下一個門檻、扣掉已有的材料與設計圖、標出還差的角色等級。回答寫明資料時間：API 的角色資料可能落後一兩天，存檔要 `/reload` 才更新。問的是朋友或小號時改用那個角色。公開網站的方案是規劃範例，不能當成提問者的實際角色現況；角色的種族／職業組合依永恆規則核對。
+## 依任務讀取
 
-核對目前安裝根目錄及目標角色資料夾後，檢查插件啟用情況時優先讀 `_forever_/WTF/Account/<帳號>/<伺服器>/<角色>/AddOns.txt`。設定依插件宣告區分角色層 `SavedVariables` 與帳號層 `WTF/Account/<帳號>/SavedVariables`；磁碟紀錄可能落後遊戲內尚未儲存的狀態。
-
-這是公開 repo 的共用技能。文件與範例使用佔位符或 repo 相對路徑；帳號目錄、私人角色與 BattleTag、本機絕對路徑、憑證及未公開聯絡資訊留在當次操作環境，不寫回技能、範例或測試資料。公會公開聯絡方式由 repo 既有招生內容取得。
-
-需要使用者的角色、陣營、安裝目錄或 API 角色 slug 時，先讀家目錄的 `.config/wow-forever/local.md`（Windows：`%USERPROFILE%\.config\wow-forever\local.md`）。這份檔在 repo 外、每台電腦各一份，Claude Code 與 Codex 共用。欄位見 [references/local.example.md](references/local.example.md)。檔案不存在時，依當次對話確認後建立；使用者提供或更正的私人資訊寫進 local.md，不寫進 repo。不保存密碼、client secret 或 token。
-
-## 辨識目標
-
-從使用者指定的版本、路徑與既有對話確認目標；「永恆」對應 WoW Forever，不能直接套用 Classic Era、週年版、探索賽季或現代版的相容性與玩法結論。
-
-涉及本機插件時，讀安裝根目錄 `.build.info` 中啟用的 `wowf` 資料、`_forever_/.flavor.info` 與插件 `.toc`。同一根目錄可能同時裝有多種魔獸版本，依 Product 選列，不能取第一筆版本。可用隨附的唯讀工具：
-
-```powershell
-python '<skill-dir>\scripts\inspect_install.py' --root '<WoW 安裝根目錄>' --addon '*AtlasLoot*'
-```
-
-將 `<skill-dir>` 與 `<WoW 安裝根目錄>` 換成當前環境的實際目錄。`--root` 可傳安裝根目錄或 `_forever_` 目錄；省略 `--addon` 會盤點所有插件。工具列出各 `.toc` 的宣告，並不代表遊戲實際載入該檔案或已驗證執行正常。
-
-涉及只保留永恆、停用 CurseForge 的 Retail、Battle.net 解除安裝、共用 `Data` 或執行中阻擋訊息時，讀 [references/client-installation.md](references/client-installation.md)。該檔區分插件管理停用、遊戲解除安裝與實際完成狀態。
-
-## 挑選與比較插件
-
-依用途挑插件、比對現有組合，或使用者提到巴哈的永恆插件整理／開服前推薦時，讀 [references/addon-selection.md](references/addon-selection.md)。該檔合併兩篇社群主文的候選、功能取捨與已驗證的 AnoUI 語系線索；候選清單本身不保證目前相容。
-
-查永恆插件的功能、指令、相依插件、收藏進度或繁中支援，讀 [插件功能指南](references/addon-feature-guide.md)。DungeonsForever、ForeverDungeons、DungeonJournal 是不同專案，依專案 ID 與套件目錄辨識。
-
-操作 DungeonsForever＋Auctionator 的專業衝等、完整行情掃描、自動選路或匯入材料清單，讀 [專業衝等操作](references/profession-addon-workflow.md)。
-
-查使用者背包、銀行、信箱或跨角色庫存時，讀 [Syndicator 讀取](references/addon-feature-guide.md#syndicator讓-agent-讀得到背包)，用 `scripts/syndicator_inventory.py` 讀存檔。
-
-- 開啟作者專案頁和具體發佈檔案頁，核對專案 ID、Forever flavor、支援的遊戲版本、更新日期與變更內容。搜尋標題與網址 slug 只當作線索。
-- 將已安裝 `.toc` 的 `Version`、`Interface`、`X-Curse-Project-ID` 與上游檔案比對。不同專案的版本號不能直接比較大小；明確支援目標分支與相關修正比下載量更有判斷力。
-- 多個專案都支援時，說明可選範圍，再依使用者需求、維護狀況與既有安裝推薦。現有版本符合需求時直接指出是否需要更換。
-- AtlasLoot 名稱／網址對應與版本辨識，查閱 [references/environment-and-atlasloot.md](references/environment-and-atlasloot.md)。該檔的版本紀錄是有日期的快照；回答「最新」或建議更換前重新查證。
-- 比較 GearInsight 與 AnoUI+、AtlasLoot、Questie 或 LFG Forever 的功能時，讀 [references/gearinsight-overlap.md](references/gearinsight-overlap.md)，包含與 AnoUI 的攻略／介面分工、Group 子模組實際打包內容及繁中處理。官網歷史紀錄提及測試功能時，以本機版本的 `.toc`、實作及啟用條件判斷能否取代現有插件。
-- `.toc` 版本吻合屬於宣告相容。API 變動、依賴缺少或遊戲內錯誤仍需另外驗證，修改 Interface 數字不能證明修復。
-- 繁中問題分別核對遊戲版本相容、`zhTW` 選單翻譯、中文資料內容與字型顯示；作者說「支援中文」時，查清是 `zhTW`、`zhCN` 或兩者共用。比較整合 UI 時逐項判斷重複模組，避免將介面外觀當成任務／掉落資料庫的替代品。
-
-## 安裝與更新
-
-詢問哪個插件只授權查證與建議；使用者要求安裝、更新或修復時，再執行相應的檔案操作。
-
-優先沿用當前使用的插件管理器。透過 CurseForge 管理時，提供對應專案頁，並從當前安裝或系統捷徑找到程式；不預設管理器版本、使用者目錄或遊戲安裝磁碟。已由管理器維護的插件沿用相同來源。
-
-1. 在管理器確認選到 WoW **Forever**，並核對實際安裝根目錄下的 `_forever_`，最終插件位置為其 `Interface/AddOns`。開始替換前確認遊戲已關閉；執行中可先查證來源與版本。
-2. 核對要安裝的專案 ID、發佈檔案與遊戲版本。更新前將要替換的現有插件目錄備份到 `AddOns` 外；若曾做本機修補，先確認更新會覆寫的差異。保留 `WTF`、SavedVariables 與其他插件。
-3. 透過已確認的管理器執行本次要求的安裝或更新。整包插件的子模組一併核對，避免新舊混裝。
-4. 回讀最終目錄、`.toc` 版本與專案 ID；有可用遊戲環境時再驗證載入、功能與 Lua 錯誤。沒有遊戲內證據時，明確回報完成的是檔案層驗證。下載或套件驗證失敗時保留原安裝，停止替換並回報具體原因。
-
-GitHub 專用分支、CurseForge 無法提供相容檔案，或使用者明確指定手動安裝時，再採用 ZIP 流程：從已確認的作者發佈來源下載至暫存位置，檢查 ZIP 路徑、頂層插件目錄、`.toc` 與必要依賴後，只替換目標套件。最終布局應為 `AddOns/<插件目錄>/<檔名>.toc`，避免多包一層 ZIP 名稱目錄，並完成相同的備份與驗證。
-
-## 排查錯誤
-
-以完整錯誤訊息、觸發動作、遊戲版本及插件版本定位問題。核對載入的分支、缺失依賴、重複目錄與子模組版本，再縮小到最少相關插件重現。
-
-先針對可疑插件停用或修復；涉及重設時，先保留該插件的 SavedVariables 備份，讓使用者能復原設定。遊戲內驗證指令與 API 以目前 Forever 版本可用項目為準。區分作者發佈的更新與本機暫時修補，記錄修改位置、原因及復原方法。
-
-## 玩法、配裝與台服資訊
-
-以目前永恆版本與內容階段查證職業、天賦、裝備、掉落和活動資訊；依題目需要補足等級、專精、陣營與玩法目標，優先使用既有上下文。台服可用時間與活動日期以台灣時區表達。
-
-傳承點數、跨角色專業分工、雙製造小號、雙採集轉製造，或參考 GearInsight 的職業專業推薦時，讀 [references/professions-and-legacy.md](references/professions-and-legacy.md)。其中區分官方規則、插件的升級目標與現行四版分配；點數上限與專業改動仍須按當前日期重查。
-
-官方公告與更新內容從 [永恆官網](https://worldofwarcraft.blizzard.com/zh-tw/forever/) 和 [台灣官方新聞](https://worldofwarcraft.blizzard.com/zh-tw/news/) 查證；物品與法術的繁中資料可查 [Wowhead 永恆](https://www.wowhead.com/forever/tw/)；插件行為以作者文件、發佈說明與原始碼為依據。舊經典版資料僅能作待驗證線索，無法核實的永恆細節就標明不確定。
-
-回報先給可採取的結論，再列關鍵版本依據、來源連結與驗證範圍。只要確實讀過本機，就可說明目前已裝的版本；勿把磁碟上的插件目錄存在說成遊戲內運作正常。
-
-## 拍賣行情、配方利潤與 60 級製造需求
-
-問哪些配方值得從拍賣場買、哪些配方可以囤著等漲價、某項製造有沒有賺、查材料與成品的拍賣行情或走勢、幾天沒上線物價變了什麼、拍賣場現在該優先買賣什麼、幾點買材料比較便宜、排專業練等路線與成本，或要讀拍賣小幫手的掃描、給可匯入的購物清單、看遊戲內拍賣場截圖時，讀 [references/market-recipe-value.md](references/market-recipe-value.md)。該檔附 `scripts/amobi_recipe_value.py`（依專業算毛利）、`scripts/amobi_item_prices.py`（查指定物品的分陣營價）、`scripts/auction_changes.py`（部落官方每小時紀錄的期間漲跌與即時各價位件數）、`scripts/auction_hours.py`（各台灣時段或星期的價格與件數，去掉多日漲跌後比較）、`scripts/auction_brief.py`（現在該買賣什麼的快訊，先列要立刻處理的幾項；有本機 `route.json` 時加一段練等路線的材料檢查）、`scripts/auctionator_prices.py`（讀拍賣小幫手存檔）與 `scripts/leveling_route.py`（練等最省路線；`--me` 一個指令算主角色目前技能到下一個門檻，用即時價並扣掉背包已有的；加 `--goal cash` 改挑掏最少金幣、先用背包庫存的走法；加 `--save-route` 把結果寫進快訊用的 `route.json`），並涵蓋 NPC 配方、遊戲內資料對照與判讀規則；結論以當次掃描為準。
-
-找遊戲內能把已學配方按利潤排序的插件，或辨認影片介紹的利潤插件時，讀 [配方利潤排序候選](references/addon-selection.md#配方利潤排序候選)。
-
-問 60 級後期該做什麼、團本要哪些消耗品或裝備、配方該先拿哪些時，讀 [references/endgame-crafting.md](references/endgame-crafting.md)。該檔整理團本時程、軍團鋼等材料瓶頸，以及鍛造與煉金的經典版需求和永恆改動，並標註可信度。
-
-## 公會官網與玩家工具
-
-維護《黎明之劍》官網、「永恆・專業議事廳」與站主的個人頁、調整專業分配頁的預設方案、更新其 GitHub Pages 發布、檢查每小時的拍賣資料排程，或查網站用到的 Cloudflare（Worker、KV、DNS）時，讀 [references/profession-planner-site.md](references/profession-planner-site.md)。網站面向一般玩家，01 雙採集主號＋三隻雙製造小號為預設首選，聖騎士多路線放 04；repo 相對路徑、正式網址、方案連結與驗證重點集中於該檔。
-
-## 公開資料與官方 API
-
-查客戶端版本與資料表、Wowhead、官方論壇、參考資料站，或為網站規劃外部資料串接時，讀 [references/public-data-sources.md](references/public-data-sources.md)。該檔逐項標註官方文件、社群實測或本次實測；引用時沿用標記，並依日期重新查證。
-
-查軍械庫、角色專業、公會、拍賣、物品或媒體端點的 OAuth、namespace、欄位與搜尋語法，讀 [Battle.net API（永恆）](references/battlenet-api.md)。估算請求數或排查 HTTP 429 時，讀 [額度與節流](references/battlenet-api.md#額度與節流)。
-
-設定 Windows DPAPI、macOS 鑰匙圈或環境變數，或要用 `forever_api.py` 查詢，讀 [本機查詢工具](references/battlenet-local-tools.md)。角色資料僅用於當次查詢。
-
-核對端點在台服是否可用、試測參數或重跑 `forever_api_coverage.py`／`api-probe.yml`，讀 [端點實測與探測](references/battlenet-api-coverage.md)。
-
-校對練等配方的材料、產量、缺項或 Battle.net 配方 ID 時，讀 [配方材料與產量核對](references/battlenet-api.md#配方材料與產量核對)，依 API 與客戶端資料的查證結果選用欄位。
-
-## 公會與招募文案
-
-涉及《黎明之劍》公會、招募文章、公開聯絡欄，或沿用既有文案意象與插圖時，讀 [references/dawnblade-guild.md](references/dawnblade-guild.md)。該檔記錄公開招募資訊來源、文案方向與 repo 圖片位置。
+| 任務 | 參考 |
+| --- | --- |
+| 選插件、比較功能重疊或繁中支援 | [插件挑選](references/addon-selection.md)、[插件功能與指令](references/addon-feature-guide.md)。比較 GearInsight 和整合 UI、AtlasLoot、Questie 或 LFG Forever 時讀 [GearInsight 分工](references/gearinsight-overlap.md)。 |
+| 插件版本、啟用狀態、安裝、更新或 Lua 錯誤 | [插件維護](references/addon-maintenance.md)。分辨同名套件時讀 [AtlasLoot 專案與版本](references/environment-and-atlasloot.md)。 |
+| 客戶端安裝、只留永恆、停用 CurseForge Retail 或 Battle.net 卡在解除安裝 | [客戶端版本管理](references/client-installation.md) |
+| 背包、銀行、信箱或跨角色庫存 | [Syndicator 庫存](references/syndicator-inventory.md) |
+| 傳承點數、雙採集、雙製造小號或跨角色分工 | [專業與傳承](references/professions-and-legacy.md)。個人規劃依當前角色職業、種族和專業，公開網站方案可作範例。 |
+| 依技能門檻與庫存算練等路線、材料或成本 | [專業練等試算](references/leveling-route.md) |
+| 遊戲內自動選路、完整掃描與缺料清單 | [DungeonsForever＋Auctionator 專業衝等](references/profession-addon-workflow.md) |
+| 現價、期間漲跌、時段分析、購物清單或掃描截圖 | 選讀 [拍賣行情](references/auction-market.md)的對應章節。問現在該買或賣什麼時，直接讀[行情快訊](references/auction-market.md#行情快訊現在該買賣什麼)。 |
+| 配方毛利、NPC／任務來源、囤配方或回本 | [配方毛利與採買](references/market-recipe-value.md)。找遊戲內排序工具時讀 [配方利潤插件](references/addon-selection.md#配方利潤排序候選)。 |
+| 60 級製造、團本消耗品與配方取得優先序 | [後期製造需求](references/endgame-crafting.md) |
+| Battle.net 端點、OAuth、namespace、HTTP 429 或核對配方材料與產量 | [官方 API](references/battlenet-api.md) |
+| 使用 `forever_api.py` 或設定 DPAPI、macOS 鑰匙圈、環境變數 | [本機查詢與憑證](references/battlenet-local-tools.md) |
+| 端點可用性、參數與涵蓋率 | [實測與重新探測](references/battlenet-api-coverage.md) |
+| 客戶端資料表、Wowhead、論壇或外部資料整合 | [公開資料來源](references/public-data-sources.md) |
+| 公會官網、專業議事廳、個人整理頁、GitHub Pages、拍賣排程或 Cloudflare | [網站維護](references/profession-planner-site.md)。網站程式、來源與產物從 [README 維護地圖](../../../README.md#維護地圖)找。 |
+| 《黎明之劍》招募、公開聯絡、文案或插圖 | [公會招募素材](references/dawnblade-guild.md) |

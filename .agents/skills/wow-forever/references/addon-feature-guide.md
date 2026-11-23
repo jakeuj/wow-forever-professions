@@ -2,7 +2,7 @@
 
 查證日：2026-11-11（台灣）。依 [CurseForge WoW](https://www.curseforge.com/wow) 入口，核對作者專案、具體發佈檔及套件內容。以下版本是查證快照，安裝／更新時重新核對 Forever 檔案。
 
-查證範圍為套件 `.toc`、語系及必要實作；DungeonJournal 使用同版本原始碼，其餘 11 款檢查對應發佈 ZIP。這些證據支持「宣告相容／具有語系資料」，不代表已安裝或在遊戲內測試，也不保證每段翻譯完整或符合台服用語。
+查證範圍為套件 `.toc`、語系及必要實作；首輪 12 款以 DungeonJournal 同版本原始碼與其餘 11 款的發佈 ZIP 查證。後續補充的 CraftProfit Forever 和 Syndicator 各有查證日期。這些證據支持「宣告相容／具有語系資料」，不代表已安裝或在遊戲內測試，也不保證每段翻譯完整或符合台服用語。
 
 DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個插件，專業沖點不費腦，也不浪費一分錢！〉](https://www.youtube.com/watch?v=HmOf69erYRw)。以下操作依作者發佈套件查證，不作影片逐字轉述；遊戲版本與插件自身版本分開辨識。
 
@@ -64,13 +64,7 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 
 ### Syndicator：讓 agent 讀得到背包
 
-Battle.net API 只給已穿裝備，背包、銀行與信箱要靠插件存檔。只想讓 agent 讀庫存、不換背包外觀時，單裝 Syndicator 即可；它只在提示框加各角色件數。[291，9632417](https://www.curseforge.com/wow/addons/syndicator/files/9632417)（2026-11-15）列 **Forever、1.60.1**，並修了 Forever 公會伺服器名稱。2026-11-20 站主單裝 291 後實測可讀；2026-11-23 本機已是 293，存檔照樣讀得到，也列在[插件清單](https://jakeuj.com/wow-forever-professions/addons/)上。
-
-- **記錄時機**：新插件要完全重開遊戲才載入，`/reload` 不夠。每個角色登入一次才有背包；銀行、信箱要各開一次；公會銀行只記到「去過」與金錢，沒有物品。資料在 `/reload` 或登出時寫進帳號層 `SavedVariables/Syndicator.lua`。
-- **讀取**：`python '<skill-dir>/scripts/syndicator_inventory.py' --root '<WoW 安裝根目錄>'`，可加 `--character`、`--item` 篩選或 `--json`。`SYNDICATOR_DATA.Characters["名 姓-PvP"]` 下的 `bags` 是各背包的格子陣列，Forever 銀行在 `bankTabs[n].slots`（`bank` 是空的），`mail` 是物品平鋪陣列；每格有 `itemID`、`itemCount`、`quality`、`itemLink`，空格是 `{}`。
-- **用在哪**：`scripts/auction_brief.py` 讀同一份存檔，扣掉已有的再推薦買、找可以賣的，並寫出在哪個角色的背包、銀行或信箱，見[行情快訊](market-recipe-value.md#行情快訊現在該買賣什麼)。2026-11-23 第一次讀到時，小號銀行與信箱已放著頁面上「再收」的配方（替朋友收或要轉賣的），所以第一次接上存檔就對照個人頁，把已有的標起來。
-- **信箱**：拍賣場買到的東西先寄到信箱，例如 2026-11-23 的奧金斧設計圖。站主說買到了、存檔裡卻還在信箱時，提醒去領；經典版信件 30 天後退回或刪除，永恆以遊戲內為準。
-- 存檔含角色名稱，只在本機讀，不寫進 repo。
+讀取、刷新和核對角色背包、銀行與信箱，見 [Syndicator 跨角色庫存](syndicator-inventory.md)。
 
 ## 6. Platynator：可直接套用樣式的姓名板
 
@@ -122,7 +116,7 @@ Battle.net API 只給已穿裝備，背包、銀行與信箱要靠插件存檔�
 - 提供物品提示框拍賣價格、完整掃描、篩選搜尋與歷史、購物清單、上架防低價及壓價掃描／取消；製造介面可顯示材料成本與利潤，搜尋所需材料。共用專案頁含 Retail 等分支功能，實際選項依 Forever 套件判斷；作者特別標明的 Retail 自動掃描行為不能直接當成 Forever 的預設。
 - 在拍賣場的 Auctionator 分頁按 **完整掃描（Full Scan）** 更新資料，再到購物清單搜尋材料；確認數量與單價後購買。掃描價是該市場的歷史觀測，不代表當下仍有同價存貨，也不會自動完成採買。`/atr` 或 `/auctionator` 顯示指令說明，`/atr version` 查版本；設定由遊戲設定中的 Auctionator 開啟。
 - 345 的 `.toc` 列 `Version: 345`、Interface 含 `16001`，只有 LibAHTab 為 OptionalDeps；`Locales/Manifest.xml` 確實載入 `Locales/zhTW.lua`，含完整掃描、購物清單等繁中詞條。基本買賣／掃描不依賴 DungeonsForever。此版 [發佈說明](https://www.curseforge.com/wow/addons/auctionator/files/9548985) 修正 Forever 製造利潤及壓價百分比；回報利潤異常時先核對版本，再查價格來源。
-- 繁中介面叫「拍賣小幫手」，拍賣場下方多出「購買／銷售／取消／拍賣小幫手」分頁，購物清單在「購買」分頁。購物清單的匯入格式、讀完整掃描存檔（`/reload` 或登出後才寫入）與價格資料庫不分陣營拍賣場的限制，見 [market-recipe-value.md](market-recipe-value.md#拍賣小幫手auctionator完整掃描)；以上依 347 版原始碼與 2026-11-18 實測。
+- 繁中介面叫「拍賣小幫手」，拍賣場下方多出「購買／銷售／取消／拍賣小幫手」分頁，購物清單在「購買」分頁。購物清單的匯入格式、讀完整掃描存檔（`/reload` 或登出後才寫入）與價格資料庫不分陣營拍賣場的限制，見 [market-recipe-value.md](auction-market.md#拍賣小幫手auctionator完整掃描)；以上依 347 版原始碼與 2026-11-18 實測。
 - 與 DungeonsForever 的分工是「Auctionator 蒐集行情並管理採買；專業模組計算衝等步驟與缺口」。Baganator／Syndicator、BagSync 的庫存查詢不能直接當成拍賣行情來源；分解估價也需另查材料價格與產出假設。
 
 ## 13. CraftProfit Forever：專業視窗內的配方利潤排序
