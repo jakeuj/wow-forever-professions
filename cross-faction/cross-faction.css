@@ -1,0 +1,20 @@
+/* Cross-faction spread table: rank, small sub-lines and the profit filter. */
+.cf-controls { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; margin: 0 0 16px; font-size: 12px; color: var(--muted); }
+.cf-controls[hidden] { display: none; }
+.cf-controls label { display: inline-flex; gap: 8px; align-items: center; color: var(--text); cursor: pointer; }
+.cf-controls input { accent-color: var(--gold); }
+.cf-rank { display: inline-block; min-width: 2.4em; font-family: var(--sans); font-size: 11px; font-weight: 400; color: var(--gold-dim); }
+.cf-table td small { display: block; font-size: 11px; line-height: 1.6; color: var(--muted); }
+.cf-table td a { color: var(--gold-bright); text-decoration: none; border-bottom: 1px solid #edcf9455; white-space: nowrap; }
+.cf-table td a:hover, .cf-table td a:focus-visible { border-bottom-color: currentColor; }
+.cf-table td.cf-spread { color: var(--gold-bright); white-space: nowrap; }
+.cf-table td.cf-spread > span { font-weight: 600; }
+.cf-table td.cf-spread small { font-weight: 400; }
+.cf-table td.cf-gain { color: #9fc78d; white-space: nowrap; }
+.cf-table td.cf-none { color: #8f9a81; white-space: nowrap; }
+.cf-table tr.cf-loss th, .cf-table tr.cf-loss td, .cf-table tr.cf-loss td a { color: #8f9a81; }
+.cf-table tr[hidden] { display: none; }
+
+@media (max-width: 640px) {
+  .cf-table td.cf-spread, .cf-table td.cf-gain, .cf-table td.cf-none, .cf-table td a { white-space: normal; }
+}

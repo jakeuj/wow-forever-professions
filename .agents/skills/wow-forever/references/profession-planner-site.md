@@ -34,9 +34,9 @@
 
 ## 個人整理頁：終局採購清單
 
-`endgame/index.html`（鐵匠，`https://jakeuj.com/wow-forever-professions/endgame/`）、`alchemy/index.html`（分享給煉金同伴，`.../alchemy/`）、`speculation/index.html`（配方期貨，`.../speculation/`）、`leveling/index.html`（鍛造練等，`.../leveling/`）、`alchemy-leveling/index.html`（煉金練等，`.../alchemy-leveling/`）與 `market/index.html`（部落拍賣行情，`.../market/`）是站主的個人筆記，不屬於一般玩家的方案內容；各頁共用 `endgame/endgame.css`，頁尾互相連結。
+`endgame/index.html`（鐵匠，`https://jakeuj.com/wow-forever-professions/endgame/`）、`alchemy/index.html`（分享給煉金同伴，`.../alchemy/`）、`speculation/index.html`（配方期貨，`.../speculation/`）、`leveling/index.html`（鍛造練等，`.../leveling/`）、`alchemy-leveling/index.html`（煉金練等，`.../alchemy-leveling/`）、`cross-faction/index.html`（跨陣營價差，`.../cross-faction/`）與 `market/index.html`（部落拍賣行情，`.../market/`）是站主的個人筆記，不屬於一般玩家的方案內容；各頁共用 `endgame/endgame.css`，頁尾互相連結。
 
-- 官網首頁提供部落行情入口。五個採購與練等筆記在專業頁尾，與行情皆維持 `noindex`，從公開網址可直接開啟。
+- 官網首頁提供部落行情入口。六個採購、練等與價差筆記在專業頁尾，與行情皆維持 `noindex`，從公開網址可直接開啟。新增個人頁時，各頁的頁尾導覽都加上它。
 - 配方期貨頁的篩選條件與價格更新步驟以 [配方期貨與價格更新](market-recipe-value.md#配方期貨囤配方等漲價)為準。更新時同步頁首的「部落價」標籤、清單說明、資料依據區的時間，以及 scope-note 寫的資料來源與時間。
 - 可在拍賣場買的物品名稱包成 `<span data-ah="遊戲內完整名稱">顯示文字</span>`，由 `endgame/ah-copy.js` 轉成複製按鈕。`data-ah` 填要買的那件東西：設計圖、配方要含「設計圖：」「配方：」等前綴，成品與材料用物品名；一組套裝可用共同前綴（例：「設計圖：祝福鎧甲」），並加 `data-ah-prefix`。新增或改名後，以阿莫比的拍賣物品清單與 `/professions/{代號}` 的配方名稱逐一比對，確保完全一致。NPC、商人青睞、聲望取得的項目不加。
 - 頁面文字寫了「Ng 以下再收」這類觸發價時，在同一個 `data-ah` 上加 `data-ah-buy-below="N"`（金，可有小數），同頁同名的每個 span 都加；`scripts/auction_brief.py` 依它判斷「現在處理」。頁面顯示不變，改觸發價或改價格建議時文字和屬性一起改。目前標在鍛造清單、煉金清單、配方期貨三頁。
@@ -57,6 +57,7 @@
   - 公開 repo 60 天沒有活動時，GitHub 會停用排程，到 Actions 分頁重新啟用。`workflow_dispatch` 的工作流程要先進 `main` 才能手動執行。執行紀錄是公開的，腳本不印 token。
   - 拍賣場可能換編號（例如伺服器合併，或行情頁突然大量出現「官方已沒貨」）：請站主在部落拍賣場完整掃描並 `/reload`，重建 `market/data.json`，再手動跑 `auction-probe.yml`。它比對 repo 裡的 `market/data.json`，所以先推送；也可以下載它的 artifact，用其中的 `best_prices` 和本機的新掃描比對。同價比例最高的那間就是部落拍賣場，再改 `collect-auctions.py` 的 `--house` 預設值。
 - 練等頁：路線、次數與材料總量是 [專業練等路線](leveling-route.md)的腳本算出的快照；`leveling/leveling.js` 依物品 ID 讀 `market/data.json` 重算單價、小計、佔比長條、階段合計、總覽卡與設計圖價（行情沒有的材料沿用快照並標「沿用快照」），頁首時間跟著行情資料的完整掃描時間。賣店收回金額固定寫在 `data-lv-vendor`。價格大變、技能進度或等級門檻改變時，重跑腳本（`--json`）再用 `scripts/build-leveling-page.py <route.json>` 填頁面：它改寫 `<!-- lv:card-1/card-2/card-plans/route/mats/plans -->` 標記之間的預算卡數字、路線表、兩張材料表（含「自己做」的中間材料）與設計圖表，以及頁首掃描時間與資料依據的存檔時間；標記外的開頭介紹、時間軸、注意事項要照新路線手改。材料列有 NPC 買的件數時帶 `data-lv-fixed`／`data-lv-other`，`leveling.js` 只用行情重算拍賣場那部分。「在遊戲裡自己排路線」（`#addons`）教玩家用無限副本手冊＋拍賣小幫手在遊戲內重算；選項與按鈕名稱照 [專業衝等操作](profession-addon-workflow.md) 的繁中介面文字，插件改版、名稱變動時兩邊一起改，並更新段末的實測版本與日期；只依插件說明、原始碼或存檔推斷的內容（目前是第 3 步：「考慮拍賣行的銷售數量」在永恆多半沒有作用）在段末註明，作者修正或站主實測後再改。行情頁的「拍賣小幫手是什麼？」也連到這一段。
+- 跨陣營價差頁：整頁是快照，表格、資料條件、舊聯盟價清單與資料依據都在 `<!-- cf:NAME -->` 標記內，由 `scripts/build-cross-faction-page.py` 從技能 `faction_spread.py --json` 的結果填入（`--min-spread` 預設只列價差 1g 以上）；標記外的說明手改。更新時先跑技能腳本再跑產生器，方法與判讀見[跨陣營價差](auction-market.md#跨陣營價差)。名稱是複製按鈕但不加 `data-ah-list`，不會進購物清單與快訊；聯盟價連到阿莫比物品頁。`cross-faction.js` 只負責「只看轉賣有賺的」篩選（藏 `.cf-loss` 列），沒有 JavaScript 時照常顯示全表。
 - 煉金練等頁：路線照 wowf.io 的「煉金快速升級」配方順序，次數用阿莫比的變色點數重算，價格依 `market/data.json`；沒有像鍛造頁那樣的產生器，是手寫快照，以 `leveling/leveling.js` 重算材料費（瓶子是 `data-lv-qty="0"` 加 `data-lv-fixed` 的商人價列）。訓練師等級門檻（技工 50／10 級、專家 125／20 級、工匠 200／35 級）與石鱗魚油一次產出 2 個，取自 DungeonsForeverProf 的 `Core/Data/Data_ProfTrainers.lua` 與 `zhTW/Data_ProfRecipes.lua`（阿莫比寫 1 個）。價格大變或路線要改時，重算各段次數、兩階段材料與賣店收回，再改頁面與預算卡。
 - 驗證：桌機與 360px 手機無橫向溢出、手機版表格改為卡片、專業頁尾連結可進入各筆記，頁首品牌通往公會首頁，回專業連結通往 `../professions/`。行情頁另確認頁首的掃描日期、件數與官方 API 時間，搜尋與類型篩選、排序、「只看現在有貨」與「只看收藏」、收藏後重新整理仍在、分享連結在清空收藏的瀏覽器打開與加入收藏、網址雜湊還原條件、「顯示更多」、點名稱複製、圖示與走勢線，以及官方資料讀不到時改用掃描價格。瀏覽器窗格隱藏時 `innerWidth`、`clientWidth` 都是 0，量到的溢出沒有意義，先用 `resize_window` 指定 360 與桌機寬度再量。手機溢出用 `document.documentElement.scrollWidth` 對 `clientWidth` 判斷：模擬手機時頁面被撐寬，`innerWidth` 會跟著變大（曾因資料依據區不換行的時間字串變成 462px）。自動化腳本點「複製分享連結」寫不進剪貼簿，會改顯示手動複製欄位，這是預期的備援；實際點擊才會複製。
 

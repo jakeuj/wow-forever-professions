@@ -24,7 +24,7 @@ description: 查證《魔獸世界：永恆》（WoW Forever／wowf）台服玩�
 | 傳承點數、雙採集、雙製造小號或跨角色分工 | [專業與傳承](references/professions-and-legacy.md)。個人規劃依當前角色職業、種族和專業，公開網站方案可作範例。 |
 | 依技能門檻與庫存算練等路線、材料或成本 | [專業練等試算](references/leveling-route.md) |
 | 遊戲內自動選路、完整掃描與缺料清單 | [DungeonsForever＋Auctionator 專業衝等](references/profession-addon-workflow.md) |
-| 現價、期間漲跌、時段分析、購物清單或掃描截圖 | 選讀 [拍賣行情](references/auction-market.md)的對應章節。問現在該買或賣什麼時，直接讀[行情快訊](references/auction-market.md#行情快訊現在該買賣什麼)。 |
+| 現價、期間漲跌、跨陣營價差、時段分析、購物清單或掃描截圖 | 選讀 [拍賣行情](references/auction-market.md)的對應章節。問現在該買或賣什麼時，直接讀[行情快訊](references/auction-market.md#行情快訊現在該買賣什麼)。 |
 | 配方毛利、NPC／任務來源、囤配方或回本 | [配方毛利與採買](references/market-recipe-value.md)。找遊戲內排序工具時讀 [配方利潤插件](references/addon-selection.md#配方利潤排序候選)。 |
 | 60 級製造、團本消耗品與配方取得優先序 | [後期製造需求](references/endgame-crafting.md) |
 | Battle.net 端點、OAuth、namespace、HTTP 429 或核對配方材料與產量 | [官方 API](references/battlenet-api.md) |
