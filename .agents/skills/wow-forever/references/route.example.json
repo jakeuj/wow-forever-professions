@@ -1,0 +1,19 @@
+{
+  "_說明": "複製到 ~/.config/wow-forever/route.json（每台電腦一份，不提交），scripts/auction_brief.py 會多一段練等路線。名稱用遊戲內完整名稱，價格單位是銅（1g = 10000）。持有數量改了就改 hold 和 updated。",
+  "name": "鍛造路線（200→225）",
+  "updated": "2026-11-20",
+  "source": "路線筆記的位置（選填）",
+  "buy": [
+    {"item": "魔紋布", "qty": 78, "planned": 400},
+    {"item": "煤塊", "qty": 163, "vendor": 500, "planned": 500}
+  ],
+  "make": [
+    {"product": "鋼錠", "qty": 163, "inputs": {"鐵礦石": 1, "煤塊": 1}, "vendor": {"煤塊": 500}},
+    {"product": "堅固的砂輪", "qty": 10, "inputs": {"堅固的石頭": 4}}
+  ],
+  "hold": [
+    {"item": "秘銀錠", "count": 143, "use": 130},
+    {"item": "沉重的石頭", "count": 181}
+  ],
+  "ore": [["秘銀礦石", "秘銀錠"], ["真銀礦石", "真銀錠"]]
+}

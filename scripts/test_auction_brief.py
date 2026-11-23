@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".agents/skills/wow-forever/scripts"))
-from auction_brief import classify, off_page, page_items, reference  # noqa: E402
+from auction_brief import buy_cost, classify, off_page, page_items, reference, route_checks, route_lines  # noqa: E402
 
 PAGE = """<!doctype html><html><body>
 <table data-ah-list="期貨-C觀望"><tbody>
@@ -108,6 +108,47 @@ class OffPageTest(unittest.TestCase):
         levels = {7: [(5 * G, 1)], 8: [(5 * G, 1)], 6: [(5 * G, 1)]}
         rows = off_page({6}, levels, realm, {}, HOURS, meta, 5)
         self.assertEqual([r["name"] for r in rows], ["配方：便宜"])
+
+
+class RouteTest(unittest.TestCase):
+    LEVELS = {
+        "魔紋布": [(460, 30), (470, 2000)],
+        "煤塊": [(400, 17), (600, 60)],
+        "鋼錠": [(1059, 500)],
+        "鐵礦石": [(230, 75)],
+        "秘銀錠": [(1000, 2000)],
+        "沉重的石頭": [(400, 100)],
+        "秘銀礦石": [(2574, 100)],
+        "真銀礦石": [(1000, 10)],
+        "真銀錠": [(2395, 10)],
+    }
+    USUAL = {"秘銀錠": 2000, "沉重的石頭": 250}
+    ROUTE = {
+        "buy": [{"item": "魔紋布", "qty": 78, "planned": 400},
+                {"item": "煤塊", "qty": 163, "vendor": 500}],
+        "make": [{"product": "鋼錠", "inputs": {"鐵礦石": 1, "煤塊": 1}, "vendor": {"煤塊": 500}}],
+        "hold": [{"item": "秘銀錠", "count": 143, "use": 130}, {"item": "沉重的石頭", "count": 181}],
+        "ore": [["秘銀礦石", "秘銀錠"], ["真銀礦石", "真銀錠"]],
+    }
+
+    def rows(self):
+        levels_of = lambda name: self.LEVELS.get(name, [])
+        lowest = lambda name: levels_of(name)[0][0] if levels_of(name) else None
+        return route_checks(self.ROUTE, lowest, levels_of, self.USUAL.get)
+
+    def test_buy_cost_walks_up_the_levels(self):
+        self.assertEqual(buy_cost([(400, 10), (500, 100)], 50), (10 * 400 + 40 * 500, 50))
+        self.assertEqual(buy_cost([(400, 10)], 50), (4000, 10))
+
+    def test_route_lines(self):
+        lines = route_lines(self.rows())
+        self.assertIn("路線估 4.00s／個，照買", lines[0])
+        self.assertIn("向商人買 5.00s，共 8.15g", lines[1])  # 17 cheap listings save under 1g
+        self.assertIn("自己做每個省 3.29s", lines[2])  # 10.59s vs 2.30s ore + 5s coal
+        self.assertIn("先別賣", lines[3])  # mithril bars at half their usual price
+        self.assertIn("用不到的 181 個可以趁高賣", lines[4])
+        self.assertEqual(len(lines), 6)  # only mithril ore is dearer than its bar
+        self.assertIn("秘銀礦石 25.74s 比秘銀錠 10.00s 還貴", lines[5])
 
 
 if __name__ == "__main__":

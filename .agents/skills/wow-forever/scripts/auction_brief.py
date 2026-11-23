@@ -17,6 +17,12 @@ Later: the same with plenty of units left, page items within 30 % of their
        trigger, triggers with nothing listed, and recipes not on the pages at a
        quarter of the market reference.
 
+Route: when ~/.config/wow-forever/route.json exists (format: the skill's
+references/route.example.json), adds a section for the leveling route in progress:
+what its purchases cost now against the route's estimate, whether making an
+intermediate (steel bars, grinding stones) beats buying it, how the materials you
+hold are priced against their 7-day typical price, and ores listed above their bars.
+
 Prices are lowest buyouts (unit price for stackables), never sale prices.
 """
 
@@ -183,6 +189,123 @@ def off_page(page_ids, levels, realm_rows, record, hours, meta, top):
     return sorted(out, key=lambda r: r["price"] / r["reference"])[:top]
 
 
+def buy_cost(levels, qty):
+    """(copper, units) to buy `qty` units walking up the price levels; fewer units if the house runs out."""
+    cost = got = 0
+    for price, units in levels:
+        take = min(units, qty - got)
+        cost, got = cost + take * price, got + take
+        if got >= qty:
+            break
+    return cost, got
+
+
+def route_checks(route, lowest, levels_of, usual):
+    """Rows for the leveling route section. Pure: lowest/levels_of/usual are lookups by item name."""
+    rows = []
+    for entry in route.get("buy", []):
+        name, qty = entry["item"], entry["qty"]
+        cost, got = buy_cost(levels_of(name), qty)
+        vendor, planned = entry.get("vendor"), entry.get("planned")
+        row = {"kind": "buy", "item": name, "qty": qty, "lowest": lowest(name), "got": got,
+               "planned": planned, "vendor": vendor}
+        if vendor:
+            # Take the listings under the vendor price, buy the rest from the vendor.
+            cheap = [(p, u) for p, u in levels_of(name) if p < vendor]
+            ah_cost, ah_got = buy_cost(cheap, qty)
+            row.update(source="vendor", ah_got=ah_got, ah_cost=ah_cost,
+                       cost=ah_cost + (qty - ah_got) * vendor, unit=None)
+        else:
+            row.update(source="ah", cost=cost, unit=cost / got if got else None)
+        rows.append(row)
+    for entry in route.get("make", []):
+        vendor = entry.get("vendor", {})
+        parts, total = [], 0
+        for name, count in entry["inputs"].items():
+            ah = lowest(name)
+            unit = vendor.get(name, ah)  # bulk inputs come from the vendor; cheap listings run out
+            if unit is None:
+                total = None
+                break
+            parts.append((name, count, unit))
+            total += count * unit
+        rows.append({"kind": "make", "item": entry["product"], "qty": entry.get("qty"), "buy": lowest(entry["product"]),
+                     "make": total, "parts": parts})
+    for entry in route.get("hold", []):
+        name = entry["item"]
+        now, typ = lowest(name), usual(name)
+        rows.append({"kind": "hold", "item": name, "count": entry["count"], "use": entry.get("use"),
+                     "now": now, "usual": typ, "ratio": now / typ if now and typ else None})
+    for ore, bar in route.get("ore", []):
+        ore_price, bar_price = lowest(ore), lowest(bar)
+        if ore_price and bar_price and ore_price > bar_price:
+            rows.append({"kind": "ore", "item": ore, "bar": bar, "ore_price": ore_price, "bar_price": bar_price})
+    return rows
+
+
+def route_lines(rows):
+    out = []
+    for r in rows:
+        if r["kind"] == "buy":
+            saving = r["ah_got"] * (r["vendor"] or 0) - r["ah_cost"] if r["source"] == "vendor" else 0
+            if r["source"] == "vendor" and r["ah_got"] and saving >= 10000:
+                rest = r["qty"] - r["ah_got"]
+                line = (f"{r['item']} {r['qty']} 個：拍賣場比商人便宜的 {r['ah_got']} 個先買（{coin(r['lowest'])} 起）"
+                        + (f"，其餘 {rest} 個向商人買 {coin(r['vendor'])}" if rest else "") + f"，共 {coin(r['cost'])}")
+            elif r["source"] == "vendor":
+                if r["ah_got"]:
+                    ah = f"拍賣場有 {r['ah_got']} 個便宜一點，全買也只省 {coin(saving)}"
+                    r = {**r, "cost": r["qty"] * r["vendor"]}
+                else:
+                    ah = f"拍賣場 {coin(r['lowest'])} 比較貴" if r["lowest"] else "拍賣場沒貨"
+                line = f"{r['item']} {r['qty']} 個：向商人買 {coin(r['vendor'])}，共 {coin(r['cost'])}（{ah}）"
+            elif not r["got"]:
+                line = f"{r['item']} {r['qty']} 個：部落拍賣場沒貨"
+            else:
+                line = f"{r['item']} {r['qty']} 個：拍賣場 {coin(r['lowest'])} 起，買足共 {coin(r['cost'])}"
+                if r["got"] < r["qty"]:
+                    line += f"（部落只有 {r['got']} 個）"
+                if r["planned"]:
+                    ratio = r["unit"] / r["planned"]
+                    verdict = "照買" if ratio <= 1.2 else f"比路線估價貴 {ratio - 1:.0%}"
+                    line += f"；路線估 {coin(r['planned'])}／個，{verdict}"
+            out.append(line + "。")
+        elif r["kind"] == "make":
+            if r["make"] is None:
+                out.append(f"{r['item']}：材料缺價格，算不出自己做的成本。")
+                continue
+            how = "＋".join(f"{name}{'×' + str(n) if n != 1 else ''} {coin(u)}" for name, n, u in r["parts"])
+            if r["buy"] is None:
+                out.append(f"{r['item']}：拍賣場沒貨，自己做約 {coin(r['make'])}（{how}）。")
+            elif r["make"] < r["buy"]:
+                out.append(f"{r['item']}：拍賣場 {coin(r['buy'])}，自己做約 {coin(r['make'])}（{how}），自己做每個省 {coin(r['buy'] - r['make'])}。")
+            else:
+                out.append(f"{r['item']}：拍賣場 {coin(r['buy'])}，自己做約 {coin(r['make'])}（{how}），直接買比較省。")
+        elif r["kind"] == "hold":
+            have = f"{r['item']} 你有 {r['count']} 個" + (f"（路線用 {r['use']}）" if r.get("use") else "")
+            if r["ratio"] is None:
+                out.append(f"{have}：部落現在沒貨或沒有 7 天紀錄。")
+                continue
+            spare = r["count"] - (r.get("use") or 0)
+            if r["ratio"] <= 0.85:
+                advice = f"比 7 天常見價 {coin(r['usual'])} 低 {1 - r['ratio']:.0%}，先別賣；之後要用可以趁低補"
+            elif r["ratio"] >= 1.3:
+                advice = f"比 7 天常見價 {coin(r['usual'])} 高 {r['ratio'] - 1:.0%}" + (f"，用不到的 {spare} 個可以趁高賣" if spare > 0 else "")
+            else:
+                advice = f"和 7 天常見價 {coin(r['usual'])} 差不多"
+            out.append(f"{have}：現在 {coin(r['now'])}，{advice}。")
+        elif r["kind"] == "ore":
+            out.append(f"{r['item']} {coin(r['ore_price'])} 比{r['bar']} {coin(r['bar_price'])} 還貴：挖到的礦直接賣，要用錠就直接買錠。")
+    return out
+
+
+def load_route(path):
+    try:
+        return json.loads(Path(path).expanduser().read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return None
+
+
 def read_bags(root):
     """item id -> count over every character's bags, bank and mail; None when there is no save file."""
     import syndicator_inventory as si
@@ -215,7 +338,7 @@ def reason(r):
     return f"行情約 {coin(r['reference'])}，只要四分之一以下，有 {r['units_ok']} 件"
 
 
-def render(result, extra, modified, record_time, bags_note):
+def render(result, extra, modified, record_time, bags_note, route=None, route_rows=()):
     lines = [f"部落拍賣場快訊（官方即時快照 {taiwan_time(modified)}；網站每小時紀錄到 {record_time}）", "", "## 現在處理"]
     actions = []
     for r in result["now"]:
@@ -225,6 +348,12 @@ def render(result, extra, modified, record_time, bags_note):
         actions.append(f"賣 {r['name']} {coin(r['price'])}：平常約 {coin(r['usual'])}，你有 {r['count']} 個，"
                        f"部落共 {r['units']} 件在賣")
     lines += [f"{i}. {a}" for i, a in enumerate(actions, 1)] or ["現在沒有需要立刻處理的。"]
+    if route:
+        title = route.get("name", "練等路線")
+        lines += ["", f"## 你的{title}"]
+        if route.get("updated"):
+            lines.append(f"（持有數量依 {route['updated']} 的紀錄）")
+        lines += [f"- {line}" for line in route_lines(route_rows)]
     lines += ["", "## 可以等"]
     if result["plenty"]:
         lines.append("- 到價、貨還多：" + "、".join(
@@ -256,6 +385,8 @@ def main():
     parser.add_argument("--auctions", help="auctions.json path or URL (default: the auction-data branch)")
     parser.add_argument("--cache", type=Path, default=Path(tempfile.gettempdir()) / "wowamobi-cache")
     parser.add_argument("--max-age", type=float, default=6, help="hours wowamobi's item list stays cached")
+    parser.add_argument("--route", default="~/.config/wow-forever/route.json",
+                        help="leveling route in progress (default ~/.config/wow-forever/route.json; skipped if missing)")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
@@ -282,13 +413,26 @@ def main():
     extra = off_page(page_ids, levels, realm_rows, data["items"], data["hours"], meta, args.top)
     unknown = [n for n, v in ids.items() if not v]
 
+    route, route_rows = load_route(args.route), []
+    if route:
+        names = {e["item"] for k in ("buy", "hold") for e in route.get(k, [])}
+        names |= {e["product"] for e in route.get("make", [])} | {n for e in route.get("make", []) for n in e["inputs"]}
+        names |= {n for pair in route.get("ore", []) for n in pair}
+        route_ids = ac.resolve(sorted(names), meta, data["items"])
+        first = lambda name: (route_ids.get(name) or [None])[0]
+        levels_of = lambda name: levels.get(first(name)) or []
+        lowest = lambda name: (levels_of(name)[0][0] if levels_of(name) else None)
+        usual = lambda name: (typical(data["items"][str(first(name))][1], data["hours"], data["hours"][-1])
+                              if str(first(name)) in data["items"] else None)
+        route_rows = route_checks(route, lowest, levels_of, usual)
+
     if args.json:
         json.dump({"liveModified": modified, "recordUpdatedAt": data.get("updatedAt"), **result,
-                   "offPage": extra, "unknownNames": unknown, "bags": bags is not None},
+                   "offPage": extra, "unknownNames": unknown, "bags": bags is not None, "route": route_rows},
                   sys.stdout, ensure_ascii=False, indent=1)
         print()
         return
-    print(render(result, extra, modified, data.get("updatedAt"), bags_note))
+    print(render(result, extra, modified, data.get("updatedAt"), bags_note, route, route_rows))
 
 
 if __name__ == "__main__":
