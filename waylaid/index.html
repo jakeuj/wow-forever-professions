@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111514">
+  <meta name="robots" content="noindex">
+  <title>遭攔截的木箱｜永恆・專業議事廳</title>
+  <meta name="description" content="《魔獸世界：永恆》遭攔截的木箱哪一種最便宜：用亞服 PvP 部落拍賣場的即時價位，算出每 100 商人貢獻點的成本與湊到目標點數的購買清單。">
+  <link rel="canonical" href="https://jakeuj.com/wow-forever-professions/waylaid/">
+  <meta property="og:type" content="article">
+  <meta property="og:locale" content="zh_TW">
+  <meta property="og:site_name" content="永恆・專業議事廳">
+  <meta property="og:title" content="遭攔截的木箱｜魔獸世界：永恆">
+  <meta property="og:description" content="哪一種遭攔截的木箱換商人貢獻點最便宜，附拍賣小幫手購物清單。">
+  <meta property="og:url" content="https://jakeuj.com/wow-forever-professions/waylaid/">
+  <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
+  <link rel="stylesheet" href="../style.css?v=20261119-guild">
+  <link rel="stylesheet" href="../endgame/endgame.css?v=20261119-inline-links">
+  <link rel="stylesheet" href="../market/tools.css">
+  <link rel="stylesheet" href="waylaid.css?v=20261124-first">
+  <script type="module" src="waylaid.mjs?v=20261124-first"></script>
+</head>
+<body>
+  <a class="skip-link" href="#plan">跳至購買清單</a>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="回黎明之劍公會首頁"><img src="../assets/crest.svg" alt="" width="34" height="38"><span><span class="brand-guild">黎明之劍</span><span class="brand-divider"> / </span>專業議事廳<small>WOW FOREVER · HORDE GUILD</small></span></a>
+    <nav aria-label="本頁導覽"><a href="#plan"><span class="nav-full">購買清單</span><span class="nav-short">清單</span></a><a href="#rank"><span class="nav-full">每種木箱</span><span class="nav-short">排名</span></a><a class="nav-secondary" href="#sources">資料依據</a></nav>
+  </header>
+
+  <main id="top">
+    <section class="eg-hero section-wrap" aria-labelledby="wl-title">
+      <p class="eyebrow"><span class="tiny-diamond" aria-hidden="true"></span>WAYLAID CRATES · MERCHANT'S FAVOR</p>
+      <h1 id="wl-title">遭攔截的<span>木箱</span></h1>
+      <p class="eg-lead">在拍賣場買遭攔截的木箱和填箱材料，填滿後交給陣營的貿易代表換商人貢獻點。這頁用部落拍賣場現在的各價位件數，算出哪一種木箱每點最便宜，以及湊到目標點數要買什麼。</p>
+      <ul class="eg-chips" aria-label="資料條件">
+        <li>部落・亞服 PvP（台灣）</li>
+        <li>價位每小時更新</li>
+        <li>30 種木箱</li>
+      </ul>
+      <p class="eg-privacy"><span aria-hidden="true">✧</span>價格是掛單價，不是成交價；便宜那幾張可能已經被買走。實際下單前，到拍賣場用遭攔截木箱助手掃一次。</p>
+    </section>
+
+    <section id="plan" class="section-wrap tool-panel" aria-labelledby="plan-title">
+      <h2 id="plan-title">購買清單</h2>
+      <p id="waylaid-status" class="tool-note" role="status">讀取各價位在售量…</p>
+      <form id="waylaid-form" class="tool-form">
+        <label>目標貢獻點<input name="goal" type="number" min="5" max="5000" step="5" value="300" required></label>
+        <label>角色等級<input name="level" type="number" min="10" max="60" value="60" required></label>
+        <button class="button-compact">重新試算</button>
+      </form>
+      <p class="tool-note">只算角色等級填得了的木箱（初級、中級 10 級，高級 20 級，專家級 35 級）。數量不夠時會往下一個價位買，所以箱數多時每點會變貴。</p>
+      <div id="waylaid-plan" aria-live="polite"></div>
+    </section>
+
+    <section id="rank" class="eg-section section-wrap" aria-labelledby="rank-title">
+      <div class="section-heading"><div><p class="eyebrow">02 / EACH CRATE</p><h2 id="rank-title">每種木箱一箱的成本。</h2></div><p>每種只買一箱、用最便宜的一組材料填，扣掉繳交退回的錢後，換算每 100 點要多少。灰字是角色等級還填不了的。</p></div>
+      <div id="waylaid-rank" aria-live="polite"><p>讀取中…</p></div>
+    </section>
+
+    <section id="howto" class="eg-section section-wrap" aria-labelledby="howto-title">
+      <div class="section-heading"><div><p class="eyebrow">03 / HOW IT WORKS</p><h2 id="howto-title">怎麼算的。</h2></div><p>和遭攔截木箱助手（Waylaid Auction Helper）的算法相同。</p></div>
+      <div class="eg-groups">
+        <section class="eg-group" aria-labelledby="h1"><h3 id="h1">貢獻點</h3><ul><li>白箱（草藥、礦石、紡織品、珍品）每階 5 點：初級 5、中級 10、高級 15、專家級 20。</li><li>綠箱（布料、金屬錠、零件）加倍：10、20、30、40。</li><li>繳交另外退錢：白箱每階 2銀 50銅，綠箱加倍；專家級的錢是推估。</li></ul></section>
+        <section class="eg-group" aria-labelledby="h2"><h3 id="h2">成本</h3><ul><li>每個木箱有好幾種填法，任選一組；每多填一箱都挑當下最便宜的那組。</li><li>依各價位的件數往上買，再挑一組木箱讓總點數達標、總價最低。</li><li>淨成本＝木箱＋材料－繳交退回的錢。</li></ul></section>
+        <section class="eg-group" aria-labelledby="h3"><h3 id="h3">自己有的材料</h3><ul><li>這頁假設全部用買的。背包、銀行裡已經有的材料也值錢：拿去填箱前，先比較直接賣掉的錢夠不夠買這頁最便宜的填法。</li><li>練專業還要用的材料（例如鍛造的金屬錠）留著練等，填箱用買的通常比較省。</li></ul></section>
+        <section class="eg-group" aria-labelledby="h4"><h3 id="h4">購物清單</h3><ul><li>「複製拍賣小幫手清單」會帶數量，到拍賣小幫手（Auctionator）的「購買」分頁按「匯入」貼上。</li><li>名稱是完全比對，同名清單會被覆蓋。</li></ul></section>
+      </div>
+    </section>
+
+    <section id="sources" class="section-wrap sources-section eg-sources" aria-labelledby="sources-title">
+      <div class="section-heading"><div><p class="eyebrow">04 / SOURCES</p><h2 id="sources-title">依據與限制。</h2></div><span class="verified-date">木箱資料 / 2026.11.19</span></div>
+      <div class="source-list">
+        <a href="https://www.curseforge.com/wow/addons/waylaid-auction-helper" target="_blank" rel="noopener noreferrer"><span>CurseForge</span><strong>遭攔截木箱助手 v1.3.0：木箱、填法與貢獻點（MIT 授權）</strong><span>插件 ↗</span></a>
+        <a href="../market/"><span>部落行情</span><strong>官方拍賣 API 每小時更新的部落價格與批量採購試算</strong><span>本站 →</span></a>
+        <a href="https://www.wowhead.com/forever/tw/" target="_blank" rel="noopener noreferrer"><span>Wowhead 永恆</span><strong>木箱與填箱物品的繁中名稱和說明</strong><span>資料站 ↗</span></a>
+      </div>
+      <div class="scope-note"><span aria-hidden="true">✧</span><p>木箱種類、填法與貢獻點取自遭攔截木箱助手 v1.3.0（作者依 Wowhead 永恆的物品說明整理，2026-11-19）。價位是本站拍賣排程收的亞服 PvP 部落拍賣場官方快照，三小時內有效，讀不到時改用站主最近一次完整掃描。永恆改了貢獻點或退款時，以遊戲內繳交的結果為準。</p></div>
+    </section>
+  </main>
+
+  <footer class="site-footer section-wrap"><a class="brand footer-brand" href="../professions/"><img src="../assets/crest.svg" alt="" width="26" height="30"><span>永恆・專業議事廳</span></a><p>由 jakeuj 整理 · 個人規劃筆記，非 Blizzard 官方網站</p><nav class="footer-links" aria-label="頁尾導覽"><a href="../professions/">專業與傳承</a><a href="../endgame/">鐵匠清單</a><a href="../alchemy/">煉金清單</a><a href="../speculation/">配方期貨</a><a href="../market/">部落行情</a><a href="../cross-faction/">跨陣營價差</a><a href="../leveling/">鍛造練等</a><a href="../alchemy-leveling/">煉金練等</a><a href="#sources">資料依據</a><a href="https://github.com/jakeuj/wow-forever-professions" target="_blank" rel="noopener noreferrer">原始碼 ↗</a></nav></footer>
+</body>
+</html>

@@ -15,7 +15,7 @@
 | 軍械庫與練等匯入 | `guild/worker/armory.mjs` 讀角色資料，`players/players.mjs` 提供匯入操作，`crafting-leveling/state.mjs` 管理練等計畫。端點規則見 [Battle.net API（永恆）](.agents/skills/wow-forever/references/battlenet-api.md#角色與公會)。 |
 | 專業與傳承 | `professions/` 內的 `data.mjs` 定義方案、配對及點數規則，`planner.mjs` 控制切換與分享，`milestones.mjs` 讀寫進度。 |
 | 六項製造升級 | `crafting-leveling/planner.mjs` 控制網頁試算，`auto-search.mjs` 搜尋自動路線。Python 建置入口為 `scripts/build-crafting-leveling.py`，各模組和產物見[練等來源與產物](#練等來源與產物)。 |
-| 行情與採購 | `market/model.mjs` 合併官方與掃描快照、計算漲跌及排序，`market/market.js` 處理載入與頁面互動。購物清單由 `endgame/ah-copy.js` 匯整。跨陣營價差頁由 `scripts/build-cross-faction-page.py` 填入。行情規則可用 `node --test scripts/market.test.mjs` 驗證。 |
+| 行情與採購 | `market/model.mjs` 合併官方與掃描快照、計算漲跌及排序，`market/market.js` 處理載入與頁面互動。購物清單由 `endgame/ah-copy.js` 匯整。跨陣營價差頁由 `scripts/build-cross-faction-page.py` 填入。木箱貢獻頁的木箱與填法在 `waylaid/data.mjs`，`waylaid/optimizer.mjs` 依價位算最便宜的組合，用 `node --test scripts/waylaid.test.mjs` 驗證。行情規則可用 `node --test scripts/market.test.mjs` 驗證。 |
 
 新增工具時沿用目錄下的 `index.html` 和站內相對連結。分享網址、錨點與瀏覽器儲存鍵都屬於既有介面，變更時先驗證舊資料與連結。
 
@@ -73,9 +73,10 @@ Publisher 另有 cron trigger 啟動拍賣收集（見 `guild/worker/dispatch.mj
 - [`leveling/`](https://jakeuj.com/wow-forever-professions/leveling/)：鍛造 200→300 的最省路線，列出每段配方與次數，以及每種材料的數量、單價、小計與佔比長條。
 - [`alchemy-leveling/`](https://jakeuj.com/wow-forever-professions/alchemy-leveling/)：煉金 1→300 路線，照 wowf.io 的配方順序、用部落掃描價重算，列出每段次數、配方來源（拍賣場或 NPC）與每種材料的數量、單價、小計與佔比；材料費同樣由 `leveling/leveling.js` 讀 `market/data.json` 重算
 - [`cross-faction/`](https://jakeuj.com/wow-forever-professions/cross-faction/)：部落比聯盟便宜的物品，依價差由高到低排，附中立拍賣場轉賣淨利（經典版抽成 15% 估算）。部落價取官方 API 即時掛單，聯盟與中立價取阿莫比的掃描；技能的 `faction_spread.py --json` 產生資料，`python3 scripts/build-cross-faction-page.py <JSON>` 填頁面標記內的表格。
+- [`waylaid/`](https://jakeuj.com/wow-forever-professions/waylaid/)：遭攔截的木箱換商人貢獻點，哪一種每點最便宜，以及湊到目標點數（網址參數 `?goal=300&level=34`）要買的木箱與材料，可複製拍賣小幫手清單。開頁時讀 `market-depth.json` 的部落各價位件數重算，三小時內的資料都讀不到就不顯示價格。木箱、填法與貢獻點取自 [遭攔截木箱助手](https://www.curseforge.com/wow/addons/waylaid-auction-helper) v1.3.0 的 `Data.lua` 與 `Favor.lua`（MIT），插件改版時重新產生 `waylaid/data.mjs`，名稱用阿莫比物品清單的繁中名。
 - [`market/`](https://jakeuj.com/wow-forever-professions/market/)：部落拍賣行情，可依名稱、類型、品質查詢與排序。裝備、配方、材料、藥水都用官方拍賣 API 的每小時最低一口價（能堆疊的是單價），附 24 小時漲跌與 7 天走勢；官方資料裡沒有、或官方資料比掃描舊時，用站主拍賣小幫手完整掃描的價格。點名稱旁的 ☆ 可以收藏（存在瀏覽器的 localStorage），再複製 `#fav=物品ID.物品ID…` 的連結分享。
 
-- 部落行情從公會首頁進入。六個個人採購、練等與價差頁位於專業頁尾，並可互相切換。這七頁保留 `noindex`，皆可用公開網址開啟。
+- 部落行情從公會首頁進入。七個個人採購、練等、價差與木箱頁位於專業頁尾，並可互相切換。這八頁保留 `noindex`，皆可用公開網址開啟。
 - 純靜態 HTML，沿用 `style.css`，各頁共用 `endgame/endgame.css`；所有連結為相對路徑。
 - 物品名稱以 `<span data-ah="遊戲內完整名稱">` 標記，`endgame/ah-copy.js` 會把它們變成點一下就複製的按鈕，方便貼到拍賣場搜尋；剪貼簿被拒時改為選取文字。沒有 JavaScript 時仍是一般文字。
 - 頁面寫了觸發價的物品另加 `data-ah-buy-below="金額"`。技能的 `scripts/auction_brief.py` 據此比對部落即時掛單，先列出現在該買或該賣的幾項，見[行情快訊](.agents/skills/wow-forever/references/auction-market.md#行情快訊現在該買賣什麼)。

@@ -1,0 +1,6 @@
+/* Waylaid Crates: plan summary, strong figures and crates above the character's level. */
+.wl-summary { font-size: 15px; color: var(--text); }
+.wl-strong { color: var(--gold-bright); font-weight: 600; }
+.wl-muted, .wl-muted.wl-strong { color: #8f9a81; font-weight: 400; }
+#waylaid-plan h3 { margin-top: 1.4rem; }
+.tool-table td { vertical-align: top; }
