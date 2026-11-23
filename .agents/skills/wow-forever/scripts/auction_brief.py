@@ -335,6 +335,21 @@ def route_lines(rows):
     return out
 
 
+def search_term(name, qty=None):
+    """Auctionator search string: exact name, plus the quantity as the 14th ';' field when given."""
+    fields = [f'"{name}"', "", "", "", "", "", "", "", "", "", "", "#", "", str(qty)] if qty else [f'"{name}"']
+    return ";".join(fields)
+
+
+def route_import(route, rows):
+    """One Auctionator import line for what the route still needs from the auction house, or None."""
+    terms = [search_term(r["item"], r["qty"]) for r in rows
+             if r["kind"] == "buy" and r["source"] == "ah" and r["qty"] and r["got"]]
+    if not terms:
+        return None
+    return "^".join([route.get("list") or "我的路線"] + terms)
+
+
 def load_route(path):
     try:
         return json.loads(Path(path).expanduser().read_text(encoding="utf-8"))
@@ -406,6 +421,9 @@ def render(result, extra, modified, record_time, bags_note, route=None, route_ro
         elif route.get("updated"):
             lines.append(f"（持有數量依 {route['updated']} 的紀錄）")
         lines += [f"- {line}" for line in route_lines(route_rows)]
+        importing = route_import(route, route_rows)
+        if importing:
+            lines.append(f"- 拍賣小幫手匯入（含數量）：{importing}")
     lines += ["", "## 可以等"]
     if result["plenty"]:
         lines.append("- 到價、貨還多：" + "、".join(
@@ -495,7 +513,8 @@ def main():
 
     if args.json:
         json.dump({"liveModified": modified, "recordUpdatedAt": data.get("updatedAt"), **result,
-                   "offPage": extra, "unknownNames": unknown, "bags": bags is not None, "route": route_rows},
+                   "offPage": extra, "unknownNames": unknown, "bags": bags is not None, "route": route_rows,
+                   "routeImport": route_import(route, route_rows) if route else None},
                   sys.stdout, ensure_ascii=False, indent=1)
         print()
         return

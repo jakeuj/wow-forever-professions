@@ -1,6 +1,7 @@
 {
-  "_說明": "複製到 ~/.config/wow-forever/route.json（每台電腦一份，不提交），scripts/auction_brief.py 會多一段練等路線。名稱用遊戲內完整名稱，價格單位是銅（1g = 10000）。buy 的 qty 是路線總需求；有 Syndicator 存檔時腳本會扣掉已有的，hold 的數量也改用存檔，沒有存檔的電腦才手動改 hold 和 updated。",
+  "_說明": "複製到 ~/.config/wow-forever/route.json（每台電腦一份，不提交），scripts/auction_brief.py 會多一段練等路線。名稱用遊戲內完整名稱，價格單位是銅（1g = 10000）。buy 的 qty 是路線總需求；有 Syndicator 存檔時腳本會扣掉已有的，hold 的數量也改用存檔，沒有存檔的電腦才手動改 hold 和 updated。list 是快訊產生的拍賣小幫手匯入行用的清單名稱，只包含要在拍賣場買的 buy 項目與數量。",
   "name": "鍛造路線（200→225）",
+  "list": "我的路線-鍛造225",
   "updated": "2026-11-20",
   "source": "路線筆記的位置（選填）",
   "buy": [

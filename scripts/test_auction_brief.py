@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".agents/skills/wow-forever/scripts"))
-from auction_brief import buy_cost, classify, off_page, page_items, reference, route_checks, route_lines  # noqa: E402
+from auction_brief import buy_cost, classify, off_page, page_items, reference, route_checks, route_import, route_lines, search_term  # noqa: E402
 
 PAGE = """<!doctype html><html><body>
 <table data-ah-list="期貨-C觀望"><tbody>
@@ -167,6 +167,12 @@ class RouteTest(unittest.TestCase):
         lines = route_lines(route_checks(route, lowest, levels_of, self.USUAL.get))
         self.assertTrue(lines[0].startswith("魔紋布 還要 77 個（已有 1）"))
         self.assertEqual(lines[1], "煤塊：已有 200 個，夠用了。")
+
+    def test_import_line_carries_quantities(self):
+        self.assertEqual(search_term("堅固的石頭", 167), '"堅固的石頭";;;;;;;;;;;#;;167')
+        self.assertEqual(search_term("堅固的石頭"), '"堅固的石頭"')
+        rows = self.rows()  # 魔紋布 78 from the auction house; 煤塊 goes to the vendor
+        self.assertEqual(route_import({"list": "我的路線-測試"}, rows), '我的路線-測試^"魔紋布";;;;;;;;;;;#;;78')
 
     def test_buy_cost_walks_up_the_levels(self):
         self.assertEqual(buy_cost([(400, 10), (500, 100)], 50), (10 * 400 + 40 * 500, 50))
