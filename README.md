@@ -142,6 +142,6 @@ python -m unittest discover -s scripts
 
 GitHub Pages 使用 `main` 分支根目錄發布。所有站內資源使用相對路徑，支援 `/wow-forever-professions/` 專案路徑。
 
-多台電腦或其他 agent session 都可能直接推送 `main`，所以推送前先 `git fetch`，遠端有新 commit 時先 rebase 再推。
+多台電腦或其他 agent session 都可能直接推送 `main`，所以推送前先 `git fetch`，遠端有新 commit 時先 rebase 再推。同一個資料夾也可能同時有別的 session 在工作：提交時只 `git add` 自己改的檔案；推送前用 `git log origin/main..HEAD` 看有沒有別人還沒推的 commit，有的話先問站主要不要一起推，因為推送 `main` 會連它們一起上線。
 
 這是非官方社群規劃工具，與 Blizzard Entertainment 無隸屬關係。
