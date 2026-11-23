@@ -19,6 +19,20 @@ day's lowest price, and days older than --keep-days are dropped. A snapshot that
 already recorded, or one that looks broken (far fewer listings than the last one),
 is skipped without touching the file, and so is an hour whose /commodities request
 failed or comes from another hour, so stackables are not marked gone by mistake.
+
+With --hourly-dir, each newly recorded hour also appends one line to
+<dir>/<Taiwan date YYYY-MM-DD>.jsonl, for time-of-day and day-of-week studies
+(.agents/skills/wow-forever/scripts/auction_hours.py). The market page never reads
+these files. A line is one snapshot of the stackable items (/commodities):
+
+    {"hour": 498719, "at": "2026-11-23T07:26+08:00",
+     "items": {"2772": [low, units, firstN], ...}}
+
+hour is the same hour index as above, at the snapshot's Last-Modified in Taiwan time;
+low is the lowest unit price in copper, units the units listed, and firstN the average
+unit price of the cheapest --first-units units (all of them when fewer are listed),
+roughly what a buyer of that many pays. An item missing from a line was not listed.
+Day files older than --hourly-keep-days are deleted; git history keeps them.
 """
 
 import argparse
@@ -88,6 +102,46 @@ def prune(items, hours, latest, hourly_days, keep_days):
     return hourly_from
 
 
+def commodity_hour(stackable_rows, first):
+    """item id -> [lowest unit price, units listed, average unit price of the cheapest `first` units]."""
+    out = {}
+    for item, ladder in auction_depth([], stackable_rows).items():
+        if not ladder:
+            continue
+        units = sum(quantity for _, quantity in ladder)
+        need = left = min(first, units)
+        cost = 0
+        for price, quantity in ladder:
+            take = min(quantity, left)
+            cost += take * price
+            left -= take
+            if not left:
+                break
+        out[item] = [ladder[0][0], units, round(cost / need)]
+    return out
+
+
+def append_hourly(directory, hour, at, values, keep_days):
+    """Append one snapshot to <directory>/<Taiwan date>.jsonl unless that hour is there; prune old days."""
+    day = datetime.datetime.fromtimestamp(hour * 3600, TW).date()
+    path = directory / f"{day.isoformat()}.jsonl"
+    lines = path.read_text(encoding="utf-8").splitlines() if path.is_file() else []
+    if lines and json.loads(lines[-1])["hour"] >= hour:
+        return None
+    directory.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps({"hour": hour, "at": at, "items": values}, separators=(",", ":")) + "\n")
+    oldest = day - datetime.timedelta(days=keep_days - 1)
+    for old in directory.glob("*.jsonl"):
+        try:
+            stale = datetime.date.fromisoformat(old.stem) < oldest
+        except ValueError:
+            continue
+        if stale:
+            old.unlink()
+    return path
+
+
 def summarize(message):
     print(message)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -108,6 +162,9 @@ def main():
     parser.add_argument("--min-share", type=float, default=0.4,
                         help="skip a snapshot listing fewer items than this share of the last one")
     parser.add_argument("--publish-depth", action="store_true", help="publish the latest TW Horde ladder to Workers KV")
+    parser.add_argument("--hourly-dir", type=Path, help="also append stackables' price and units to <dir>/<date>.jsonl")
+    parser.add_argument("--hourly-keep-days", type=int, default=56, help="Taiwan days of --hourly-dir files kept")
+    parser.add_argument("--first-units", type=int, default=20, help="units averaged for the third --hourly-dir value")
     args = parser.parse_args()
 
     token = get_token()
@@ -200,6 +257,12 @@ def main():
     summarize(f"Snapshot {iso_tw(modified)}: {len(prices):,} items listed ({new:,} new, "
               f"{changed - new:,} new lowest price, {gone:,} gone); {len(hours)} snapshots kept; "
               f"{args.out.stat().st_size / 1024:.0f} KB.")
+    if args.hourly_dir:
+        stackables = commodity_hour(stackable_rows, args.first_units)
+        path = append_hourly(args.hourly_dir, hour, iso_tw(modified), stackables, args.hourly_keep_days)
+        if path:
+            summarize(f"Hourly units: {len(stackables):,} stackable items added to {path.name} "
+                      f"({path.stat().st_size / 1024:.0f} KB).")
 
 
 if __name__ == "__main__":

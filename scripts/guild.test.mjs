@@ -4,6 +4,7 @@ import { timingSafeEqual } from 'node:crypto';
 import reader from '../guild/worker/index.mjs';
 import publisher from '../guild/worker/publish.mjs';
 import { SNAPSHOT_LIFETIME } from '../guild/worker/snapshots.mjs';
+import { AUCTION_DISPATCH_URL, dispatchAuctionCollect } from '../guild/worker/dispatch.mjs';
 import { buildRecipeIndex, searchRecipes } from '../professions/artisans/search.mjs';
 
 const sample = {
@@ -65,4 +66,20 @@ test('發布需授權，依原始到期時間寫入 KV', async () => {
     if (previous) crypto.subtle.timingSafeEqual = previous;
     else delete crypto.subtle.timingSafeEqual;
   }
+});
+
+test('排程觸發拍賣收集：帶 token 呼叫 workflow_dispatch，失敗時丟錯', async () => {
+  const calls = [];
+  const ok = async (url, init) => { calls.push([url, init]); return new Response(null, { status: 204 }); };
+  await dispatchAuctionCollect({ GITHUB_DISPATCH_TOKEN: 'synthetic' }, ok);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0][0], AUCTION_DISPATCH_URL);
+  assert.equal(calls[0][1].method, 'POST');
+  assert.equal(calls[0][1].headers.Authorization, 'Bearer synthetic');
+  assert.deepEqual(JSON.parse(calls[0][1].body), { ref: 'main' });
+  await assert.rejects(dispatchAuctionCollect({}, ok), /GITHUB_DISPATCH_TOKEN/u);
+  assert.equal(calls.length, 1);
+  const denied = async () => new Response('Bad credentials', { status: 401 });
+  await assert.rejects(dispatchAuctionCollect({ GITHUB_DISPATCH_TOKEN: 'expired' }, denied), /HTTP 401 Bad credentials/u);
+  assert.equal(typeof publisher.scheduled, 'function');
 });

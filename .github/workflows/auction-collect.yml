@@ -1,8 +1,12 @@
 # Hourly: add the latest Horde auction snapshot from the Battle.net API to
-# auctions.json on the `auction-data` branch, which the market page reads.
-# The API refreshes at about :06 each hour; scheduled runs often start late.
+# auctions.json on the `auction-data` branch, which the market page reads, and the
+# stackables' price and units to hourly/<Taiwan date>.jsonl for time-of-day studies.
+# The Publisher Worker's cron trigger (guild/worker/dispatch.mjs) starts it at :10
+# and :40 through workflow_dispatch; GitHub's own schedule below fired only 3-4
+# times a day and stays as a fallback. The API refreshes once an hour (minute drifts).
 # Credentials come from repo Secrets. GitHub turns off schedules in public repos
-# after 60 days without activity; re-enable this workflow in the Actions tab then.
+# after 60 days without activity; re-enable this workflow in the Actions tab then
+# (a disabled workflow also refuses the Worker's dispatch).
 name: Collect Horde auction prices
 
 on:
@@ -34,7 +38,9 @@ jobs:
           BLIZZARD_CLIENT_SECRET: ${{ secrets.BLIZZARD_CLIENT_SECRET }}
           DAWNBLADE_PUBLISH_URL: ${{ vars.DAWNBLADE_PUBLISH_URL }}
           DAWNBLADE_PUBLISH_TOKEN: ${{ secrets.DAWNBLADE_PUBLISH_TOKEN }}
-        run: python3 scripts/collect-auctions.py --out auction-data/auctions.json --publish-depth
+        run: >-
+          python3 scripts/collect-auctions.py --out auction-data/auctions.json
+          --hourly-dir auction-data/hourly --publish-depth
       - name: Commit to the data branch
         working-directory: auction-data
         run: |
@@ -44,6 +50,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add auctions.json
+          git add -A .
           git commit -q -m "Horde auction snapshot $(python3 -c 'import json; print(json.load(open("auctions.json"))["updatedAt"])')"
           git push -q origin HEAD:auction-data

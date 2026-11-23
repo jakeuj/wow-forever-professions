@@ -1,4 +1,5 @@
 import { SNAPSHOT_KEYS, marketExpiry, readSnapshot, snapshotExpiry } from './snapshots.mjs';
+import { dispatchAuctionCollect } from './dispatch.mjs';
 
 const headers = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' };
 const encoder = new TextEncoder();
@@ -11,6 +12,10 @@ function authenticated(request, token) {
 }
 
 export default {
+  async scheduled(controller, env) {
+    await dispatchAuctionCollect(env);
+  },
+
   async fetch(request, env) {
     if (!authenticated(request, env.PUBLISH_TOKEN)) return new Response(null, { status: 401, headers });
     const path = new URL(request.url).pathname;
