@@ -4,9 +4,11 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".agents/skills/wow-forever/scripts"))
-from leveling_route import (DE_MATERIALS, HELD_WEIGHT, SHORT_PENALTY, apply_holdings, cash_cost,  # noqa: E402
-                            disenchant_value, disenchant_yield, local_slug, price_floor, prune_route, route_cash,
-                            route_file, smelt_producers)
+from leveling_pricing import (DE_MATERIALS, HELD_WEIGHT, SHORT_PENALTY, disenchant_value,  # noqa: E402
+                              disenchant_yield, price_floor, smelt_producers)
+from leveling_report import apply_holdings, route_file  # noqa: E402
+from leveling_route import local_slug  # noqa: E402
+from leveling_search import cash_cost, chance, prune_route, route_cash, value_route  # noqa: E402
 
 
 class SmeltTest(unittest.TestCase):
@@ -138,6 +140,37 @@ class CashRouteTest(unittest.TestCase):
         self.assertIsNone(prune_route([b], walk, cost))  # nothing covers points 0-1
 
 
+class ValueRouteTest(unittest.TestCase):
+    def test_chance_falls_from_yellow_to_grey(self):
+        r = {"orange": 200, "yellow": 210, "grey": 230}
+        self.assertEqual(chance(r, 199), 0)  # not learnable yet
+        self.assertEqual(chance(r, 205), 1)
+        self.assertEqual(chance(r, 220), 0.5)
+        self.assertEqual(chance(r, 230), 0)
+        self.assertEqual(chance(dict(r, orange=None), 205), 0)  # learn skill unknown
+
+    def test_plans_that_do_not_pay_for_themselves_are_dropped(self):
+        # Two skill points. Trainer recipe T scores 10 a point; plan P scores 1 at both but costs 50
+        # and saves only 13; plan Q only covers point 1, scores 5 and costs 2, saving 5.
+        t = {"name": "T", "acquire": 0, "scores": (10, 10)}
+        p = {"name": "P", "acquire": 50, "scores": (1, 1)}
+        q = {"name": "Q", "acquire": 2, "scores": (None, 5)}
+
+        def run(candidates):
+            steps = []
+            for s in range(2):
+                options = [(r["scores"][s], r) for r in candidates if r["scores"][s] is not None]
+                if not options:
+                    return None
+                score, r = min(options, key=lambda o: o[0])
+                steps.append({"skill": s, "score": score, "recipe": r})
+            return steps
+
+        steps = value_route([t, p, q], run)
+        self.assertEqual([st["recipe"]["name"] for st in steps], ["T", "Q"])
+        self.assertIsNone(value_route([q], run))  # nothing covers point 0
+
+
 class RouteFileTest(unittest.TestCase):
     def result(self):
         mat = lambda name, qty, unit, frm, **kw: {"name": name, "qty": qty, "ah_unit": unit if frm[0] == "部落拍賣場" else None,
@@ -183,6 +216,22 @@ class OptionsTest(unittest.TestCase):
         with mock.patch.object(sys, "argv", argv), redirect_stderr(StringIO()) as err, self.assertRaises(SystemExit):
             leveling_route.main()
         self.assertIn("--goal cash needs --bags", err.getvalue())
+
+    def test_me_plans_to_300_and_a_character_to_its_cap(self):
+        import leveling_route
+        from unittest import mock
+        state = {"level": 34, "skills": {164: (200, 225), 186: (201, 300)}, "learned": set(), "fees": {},
+                 "modified": None}
+        with mock.patch.object(leveling_route, "character_state", return_value=state):
+            with tempfile.TemporaryDirectory() as tmp:
+                local = Path(tmp) / "local.md"
+                local.write_text("- API 角色 slug：`名字-姓氏`\n", encoding="utf-8")
+                me = ["--me", "--local", str(local), "--route", str(Path(tmp) / "route.json")]
+                args, _ = leveling_route.resolve_options(me)
+                self.assertEqual((args.start, args.end, args.mining), (200, 300, 201))
+                self.assertEqual(leveling_route.resolve_options(me + ["--to", "225"])[0].end, 225)
+                args, _ = leveling_route.resolve_options(["--character", "名字-姓氏"])
+                self.assertEqual((args.start, args.end), (200, 225))
 
 
 if __name__ == "__main__":
