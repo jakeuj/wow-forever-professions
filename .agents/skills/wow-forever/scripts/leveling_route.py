@@ -47,6 +47,7 @@ import auctionator_prices as ap  # noqa: E402
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
 SHORT_PENALTY = 3  # price factor for units beyond the listed count when choosing recipes
+HELD_WEIGHT = 0.1  # --goal cash: share of market price a held unit weighs when choosing (it costs no gold)
 P90 = 1.2816  # z for the 90th percentile of the craft count
 SELL = re.compile(r'class="wl w sell">售價：(.*?)</div>', re.S)
 REPO = SKILL_DIR.parents[2]
@@ -67,6 +68,64 @@ SMELTS = [
 ]
 
 
+# Disenchanting, warcraft.wiki.gg "Disenchanting tables" (pre-BfA, matches Classic; Forever not
+# verified). Green items: (ilvl from, to, dust (id, min, max), essence (id, min, max), shard id,
+# armor chances (dust, essence, shard), weapon chances). Quantities split evenly over the range.
+DE_GREEN = [
+    (5, 15, (10940, 1, 2), (10938, 1, 2), None, (.80, .20, 0), (.20, .80, 0)),
+    (16, 20, (10940, 2, 3), (10939, 1, 2), 10978, (.75, .20, .05), (.20, .75, .05)),
+    (21, 25, (10940, 4, 6), (10998, 1, 2), 10978, (.75, .15, .10), (.15, .75, .10)),
+    (26, 30, (11083, 1, 2), (11082, 1, 2), 11084, (.75, .20, .05), (.20, .75, .05)),
+    (31, 35, (11083, 2, 5), (11134, 1, 2), 11138, (.75, .20, .05), (.20, .75, .05)),
+    (36, 40, (11137, 1, 2), (11135, 1, 2), 11139, (.75, .20, .05), (.20, .75, .05)),
+    (41, 45, (11137, 2, 5), (11174, 1, 2), 11177, (.75, .20, .05), (.20, .75, .05)),
+    (46, 50, (11176, 1, 2), (11175, 1, 2), 11178, (.75, .20, .05), (.20, .75, .05)),
+    (51, 55, (11176, 2, 5), (16202, 1, 2), 14343, (.75, .20, .05), (.22, .75, .03)),
+    (56, 60, (16204, 1, 2), (16203, 1, 2), 14344, (.75, .20, .05), (.22, .75, .03)),
+    (61, 65, (16204, 2, 5), (16203, 2, 3), 14344, (.75, .20, .05), (.22, .75, .03)),
+]
+DE_BLUE = [(1, 25, 10978), (26, 30, 11084), (31, 35, 11138), (36, 40, 11139), (41, 45, 11177),
+           (46, 50, 11178), (51, 55, 14343), (56, 65, 14344)]
+PRODUCT_MODES = ("vendor", "disenchant", "keep")
+DE_MATERIALS = ({m[0] for row in DE_GREEN for m in (row[2], row[3])} | {row[4] for row in DE_GREEN if row[4]}
+                | {s for _, _, s in DE_BLUE})
+
+
+def price_floor(today, usual):
+    """{item id: price} lowered to the typical price wherever today's listing is above it."""
+    return {i: min(p, usual[i]) for i, p in today.items() if usual.get(i) and usual[i] < p}
+
+
+def disenchant_yield(quality, item_class, item_level):
+    """[(material id, expected units)] for one item, or None when it cannot be disenchanted."""
+    if item_class not in (2, 4) or quality not in (2, 3) or not item_level:
+        return None
+    if quality == 3:
+        shard = next((s for lo, hi, s in DE_BLUE if lo <= item_level <= hi), None)
+        return [(shard, 1)] if shard else None
+    row = next((r for r in DE_GREEN if r[0] <= item_level <= r[1]), None)
+    if row is None:
+        return None
+    _, _, dust, essence, shard, armor, weapon = row
+    chances = weapon if item_class == 2 else armor
+    out = [(dust[0], chances[0] * (dust[1] + dust[2]) / 2), (essence[0], chances[1] * (essence[1] + essence[2]) / 2)]
+    if shard and chances[2]:
+        out.append((shard, chances[2]))
+    return out
+
+
+def disenchant_value(meta_row, prices):
+    """Expected copper from disenchanting one item at these prices; None if it cannot be disenchanted.
+
+    meta_row is wowamobi's item meta [name, quality, class, type, required level, item level, ...]."""
+    if not meta_row or len(meta_row) < 6:
+        return None
+    parts = disenchant_yield(meta_row[1], meta_row[2], meta_row[5])
+    if parts is None:
+        return None
+    return sum(units * prices.get(item_id, 0) for item_id, units in parts)
+
+
 def smelt_producers(mining_skill):
     """Smelting recipes usable at this mining skill, shaped like trainer producers."""
     return [{"name": s["name"], "item_id": s["item_id"], "qty": 1, "mats": s["mats"], "orange": 0,
@@ -83,13 +142,19 @@ def local_slug(path):
     return m.group(1) if m else None
 
 
-def learned_names(known_ids, profession):
-    """Battle.net recipe ids -> the zhTW recipe names the site's recipe library uses."""
+def recipe_book(known_ids, profession):
+    """(learned zhTW recipe names, trainer fee in copper by name) from the site's recipe library."""
     path = REPO / "crafting-leveling" / "auto-recipes.json"
     if not path.is_file():
-        return set()
+        return set(), {}
     recipes = json.loads(path.read_text(encoding="utf-8"))["professions"].get(profession, {}).get("recipes", {})
-    return {r["name"] for r in recipes.values() if r.get("battle_net_recipe_id") in known_ids}
+    learned = {r["name"] for r in recipes.values() if r.get("battle_net_recipe_id") in known_ids}
+    fees = {}
+    for r in recipes.values():
+        fee = r.get("fee") or next((o.get("fee") for o in r.get("offers") or [] if o.get("fee")), None)
+        if fee:
+            fees.setdefault(r["name"], fee)
+    return learned, fees
 
 
 def character_state(slug, profession):
@@ -106,8 +171,9 @@ def character_state(slug, profession):
         for tier in p.get("tiers") or []:
             skills[p["profession"]["id"]] = (tier["skill_points"], tier["max_skill_points"])
             known |= {r["id"] for r in tier.get("known_recipes") or []}
+    learned, fees = recipe_book(known, profession)
     return {"level": (profile["payload"] or {}).get("level"), "skills": skills,
-            "learned": learned_names(known, profession), "modified": prof["last_modified"]}
+            "learned": learned, "fees": fees, "modified": prof["last_modified"]}
 
 
 def apply_holdings(phases, holdings, made_inputs=None):
@@ -230,7 +296,19 @@ def main():
     parser.add_argument("--faction", default="部落", choices=["部落", "聯盟"])
     parser.add_argument("--neutral", action="store_true", help="also buy from neutral AH listings Amobi saw in the last two days")
     parser.add_argument("--exclude-formula", type=int, action="append", default=[], help="skip a formula by item ID")
-    parser.add_argument("--no-vendor-sale", action="store_true", help="do not subtract the vendor sell price of crafted items")
+    parser.add_argument("--use", action="append", default=[], metavar="NAMES",
+                        help="only these recipes (zhTW names, comma-separated or repeated), e.g. 鋼質頭盔,秘銀馬刺")
+    parser.add_argument("--avoid", action="append", default=[], metavar="NAMES",
+                        help="never these recipes (zhTW names, comma-separated or repeated)")
+    parser.add_argument("--goal", choices=("value", "cash"), default="value",
+                        help="value (default): held materials count at market price, since they could be sold; "
+                             "cash: with --bags, held materials are used first for free, minimising gold spent")
+    parser.add_argument("--no-vendor-sale", action="store_true", help="same as --products keep")
+    parser.add_argument("--products", choices=PRODUCT_MODES,
+                        help="what happens to crafted items: vendor (default), disenchant (expected enchanting "
+                             "materials at Horde prices; items that cannot be disenchanted are vendored), keep")
+    parser.add_argument("--route", default="~/.config/wow-forever/route.json",
+                        help="route in progress; --me takes its \"products\" setting")
     parser.add_argument("--market-json", help="read prices from the market page's data.json instead of the Auctionator save")
     parser.add_argument("--root", default="/Applications/World of Warcraft")
     parser.add_argument("--file", type=Path, help="a specific Auctionator.lua")
@@ -243,6 +321,18 @@ def main():
         if not args.character:
             parser.error(f"no 'API 角色 slug' in {args.local}; pass --character")
         args.live = args.bags = True
+        if args.products is None:
+            try:
+                args.products = json.loads(Path(args.route).expanduser().read_text(encoding="utf-8")).get("products")
+            except (FileNotFoundError, ValueError):
+                pass
+    if args.no_vendor_sale:
+        args.products = "keep"
+    args.products = args.products or "vendor"
+    args.use = {n.strip() for v in args.use for n in v.split(",") if n.strip()}
+    args.avoid = {n.strip() for v in args.avoid for n in v.split(",") if n.strip()}
+    if args.goal == "cash" and not args.bags:
+        parser.error("--goal cash needs --bags (or --me) to know what you hold")
     state = character_state(args.character, args.profession) if args.character else None
     if state:
         skill, cap = state["skills"].get(PROFESSION_IDS.get(args.profession), (None, None))
@@ -275,6 +365,9 @@ def main():
         r["orange"] = r["need"] if r["need"] is not None else w.get("skill")
         r["blocked"] = w.get("faction") == other or r["recipe_id"] in args.exclude_formula
     scan, scan_label = load_scan(args)
+    unknown = sorted((args.use | args.avoid) - {r["name"] for r in recipes})
+    if unknown:
+        sys.exit("unknown recipe names (use the zhTW names wowamobi shows): " + "、".join(unknown))
 
     today = datetime.date.today()
     recent_days = {(today - datetime.timedelta(days=d)).strftime("%m/%d") for d in (0, 1)}
@@ -323,6 +416,11 @@ def main():
         Units the listings cannot cover cost SHORT_PENALTY times the lowest price, so
         the route only keeps a short material when nothing else comes close."""
         options = []
+        held = stock.get(("held", item_id), 0)
+        if held > 1e-9:
+            # --goal cash: what the bags hold costs no gold. It still weighs a tenth of its market price
+            # so equal-cash routes prefer the one that burns fewer materials and crafts.
+            options.append((HELD_WEIGHT * scan.get(item_id, (0, 0))[0], held, "已有", "held", None))
         for unit, limit, label, kind in sources(item_id):
             left = max(0, stock.get(item_id, limit)) if kind == "ah" and limit is not None else None
             options.append((unit, left, label, kind, None))
@@ -345,7 +443,7 @@ def main():
                 cost, parts = cost + made[0], parts + made[1] + [(item_id, label, "made", take, 0, 0)]
             else:
                 cost += unit * take
-                parts.append((item_id, label, kind, take, unit, 0))
+                parts.append((item_id, label, kind, take, 0 if kind == "held" else unit, 0))
             need -= take
         if need > 1e-9:
             listed = next((o for o in options if o[3] == "ah"), None)
@@ -370,18 +468,57 @@ def main():
         return 1 if s < r["yellow"] else (r["grey"] - s) / (r["grey"] - r["yellow"])
 
     full_stock = {i: c for i, (_, c) in scan.items() if c is not None}
+    if args.goal == "cash":
+        full_stock.update({("held", i): e["count"] for i, e in (holdings or {}).items()})
+    meta = json.loads(get(f"{av.BASE}/api/market/items", "market-items.json")).get("meta", {}) \
+        if args.products == "disenchant" else {}
+    lowest = {i: p for i, (p, _) in scan.items()}
+    de_note = ""
+    if args.products == "disenchant":
+        # Enchanting materials jump around (greater nether essence 0.88g -> 2.77g within a day on
+        # 2026-11-23); value them at the lower of today's price and the 7-day typical one.
+        try:
+            import auction_brief
+            import auction_changes
+            record = auction_changes.load_record()
+            hours = record["hours"]
+            usual = {}
+            for item_id in DE_MATERIALS:
+                series = record["items"].get(str(item_id))
+                usual[item_id] = auction_brief.typical(series[1], hours, hours[-1]) if series else None
+            lowest.update(price_floor(lowest, usual))
+            de_note = "分解材料取今天與 7 天常見價的較低者"
+        except Exception as error:  # the record is a nice-to-have; keep today's prices
+            de_note = f"讀不到 7 天紀錄（{error.__class__.__name__}），分解材料用今天價格"
+
+    def product_value(r):
+        """(copper back per craft, how): vendor price, expected disenchant value, or nothing."""
+        if args.products == "keep" or not r["item_id"]:
+            return 0, "保留"
+        vendor = page(r["item_id"])["sell"] * r["qty"]
+        if args.products == "disenchant":
+            de = disenchant_value(meta.get(str(r["item_id"])), lowest)
+            if de is not None:
+                return round(de * r["qty"]), "分解"
+        return vendor, "賣店"
     pool, missing_plans = [], []
     for r in recipes:
         if r["blocked"] or r["grey"] <= args.start or (r["orange"] or 999) >= args.end:
+            continue
+        if (args.use and r["name"] not in args.use) or r["name"] in args.avoid:
             continue
         priced = quote_recipe(r, 1, max(args.start, r["orange"] or args.start), full_stock)
         if priced is None:
             continue
         r["cost"] = sum(take * unit for _, _, _, take, unit, _ in priced[1])
-        r["sell"] = 0 if args.no_vendor_sale or not r["item_id"] else page(r["item_id"])["sell"] * r["qty"]
+        r["sell"], r["recover"] = product_value(r)
         r["net"] = r["cost"] - r["sell"]
         owned = (holdings or {}).get(r["recipe_id"]) if r["recipe_id"] else None
-        if r["learn"] in ("trainer", "auto"):
+        if r["learn"] == "trainer" and state and r["name"] not in state["learned"]:
+            fee = state["fees"].get(r["name"], 0)
+            r["acquire"] = fee
+            r["acquire_from"] = "訓練師（未學" + (f"，學費 {fee / 10000:.2f}g" if fee else "") + "）"
+        elif r["learn"] in ("trainer", "auto"):
             r["acquire"], r["acquire_from"] = 0, "訓練師"
         elif state and r["name"] in state["learned"]:
             r["acquire"], r["acquire_from"] = 0, "已學"
@@ -415,6 +552,8 @@ def main():
             if best is None:
                 return None
             for item_id, _, kind, take, _, short in best[3]:
+                if kind == "held":
+                    stock[("held", item_id)] = max(0, stock[("held", item_id)] - take)
                 if kind == "ah" and item_id in stock:
                     stock[item_id] = max(0, stock[item_id] - (take - short))
             steps.append({"skill": s, "score": best[0], "recipe": best[1], "chance": best[2], "parts": best[3]})
@@ -424,7 +563,8 @@ def main():
     while True:
         steps = route(active)
         if steps is None:
-            sys.exit("no obtainable recipe covers every skill point; try --neutral")
+            sys.exit("no obtainable recipe covers every skill point; "
+                     + ("loosen --use/--avoid" if args.use or args.avoid else "try --neutral"))
         used = {st["recipe"]["name"] for st in steps}
         total = sum(st["score"] for st in steps)
         worst = None
@@ -478,8 +618,10 @@ def main():
         r = seg.pop("r")
         seg["spare"] = math.ceil(P90 * math.sqrt(seg.pop("var")))
         seg.update(crafts=round(seg["crafts"], 1), cost=round(seg.pop("spend") / seg["crafts"]), sell=r["sell"],
+                   recover=r["recover"], fee=r["acquire"] if r["learn"] == "trainer" else 0,
                    mats=[[n, q] for _, n, q in r["mats"]], item_id=r["item_id"], learn=r["acquire_from"],
-                   plan=r["recipe"] if r["acquire"] else None, plan_id=r["recipe_id"] if r["acquire"] else None,
+                   plan=r["recipe"] if r["acquire"] and r["learn"] != "trainer" else None,
+                   plan_id=r["recipe_id"] if r["acquire"] and r["learn"] != "trainer" else None,
                    plan_price=r["acquire"], yellow=r["yellow"], grey=r["grey"], orange=r["orange"])
     for ph in phases.values():
         mats = []
@@ -510,9 +652,14 @@ def main():
                                    "to": max(points) + 1, "net": r["net"], "last_seen": seen})
 
     result = {"profession": args.profession, "from": args.start, "to": args.end, "gate": args.gate,
+              "products": args.products, "goal": args.goal, "use": sorted(args.use), "avoid": sorted(args.avoid),
               "prices": scan_label, "segments": segments, "phases": [phases[k] for k in sorted(phases)],
               "missing_plans": better_missing}
-    if holdings is not None:
+    if holdings is not None and args.goal == "cash":
+        for ph in result["phases"]:
+            ph["cash"] = ph["gross"]  # held materials already went in at no cost
+        result["bags_saved"] = bags_saved
+    elif holdings is not None:
         made_inputs = {}
         for ph in result["phases"]:
             for m in ph["made"]:
@@ -535,7 +682,14 @@ def main():
         print(json.dumps(result, ensure_ascii=False, indent=1))
         return
     g = lambda c: f"{c / 10000:.2f}g"
-    print(f"{args.profession} {args.start}→{args.end}・價格：{scan_label}・掛單價，非成交價")
+    mode = {"vendor": "成品賣給商人", "disenchant": f"成品分解（{de_note}）", "keep": "成品保留"}[args.products]
+    if args.goal == "cash":
+        mode += "・最省現金（已有的材料先用、不算錢）"
+    if args.use:
+        mode += "・只用 " + "、".join(sorted(args.use))
+    if args.avoid:
+        mode += "・不用 " + "、".join(sorted(args.avoid))
+    print(f"{args.profession} {args.start}→{args.end}・價格：{scan_label}・掛單價，非成交價・{mode}")
     if state:
         import auction_brief
         c = result["character"]
@@ -545,13 +699,16 @@ def main():
         print(f"注意：{note}")
     for seg in segments:
         print(f"{seg['from']}→{seg['to']} {seg['recipe']} 約 {seg['crafts']:.0f} 次（多備 {seg['spare']} 次）｜"
-              f"每次材料 {g(seg['cost'])}、賣店 {g(seg['sell'])}｜"
+              f"每次材料 {g(seg['cost'])}、{seg['recover']} {g(seg['sell'])}｜"
               f"{seg['plan'] + ' ' + g(seg['plan_price']) + '（' + seg['learn'] + '）' if seg['plan'] else seg['learn']}｜"
               + "、".join(f"{n}×{q}" for n, q in seg["mats"]))
     for ph in result["phases"]:
         label = f"到 {args.gate}" if ph["phase"] == 1 else f"{args.gate} 以後（要先學下一階）"
         cash = f"、扣掉已有要花 {g(ph['cash'])}" if "cash" in ph else ""
-        print(f"\n階段 {ph['phase']}（{label}）：材料 {g(ph['gross'])}、賣店收回 {g(ph['vendor'])}、淨 {g(ph['net'])}{cash}")
+        back = {"vendor": "賣店收回", "disenchant": "成品回收（能分解的算分解）", "keep": "成品回收"}[args.products]
+        fees = sum(s["fee"] for s in segments if s["phase"] == ph["phase"])
+        fee_text = f"、學費 {g(fees)}" if fees else ""
+        print(f"\n階段 {ph['phase']}（{label}）：材料 {g(ph['gross'])}、{back} {g(ph['vendor'])}、淨 {g(ph['net'])}{fee_text}{cash}")
         for m in ph["materials"]:
             listed = f"，掛單 {m['listed']} 件" if m["listed"] is not None else ""
             short = f"，缺 {m['short']} 件" if m["short"] else ""

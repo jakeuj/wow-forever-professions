@@ -4,7 +4,8 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".agents/skills/wow-forever/scripts"))
-from leveling_route import apply_holdings, local_slug, smelt_producers  # noqa: E402
+from leveling_route import (DE_MATERIALS, apply_holdings, disenchant_value, disenchant_yield, local_slug,  # noqa: E402
+                            price_floor, smelt_producers)
 
 
 class SmeltTest(unittest.TestCase):
@@ -16,6 +17,33 @@ class SmeltTest(unittest.TestCase):
         self.assertEqual(smelt_producers(None), [])
         steel = next(r for r in smelt_producers(201) if r["name"] == "熔煉鋼")
         self.assertEqual([i for i, _, _ in steel["mats"]], [3575, 3857])  # iron bar + coal, not ore
+
+
+class DisenchantTest(unittest.TestCase):
+    def test_armor_gives_mostly_dust_and_weapons_mostly_essence(self):
+        armor = dict(disenchant_yield(2, 4, 46))   # green mail helm, ilvl 46
+        weapon = dict(disenchant_yield(2, 2, 48))  # green sword, ilvl 48
+        self.assertAlmostEqual(armor[11176], 0.75 * 1.5)   # dream dust 1-2 at 75%
+        self.assertAlmostEqual(armor[11175], 0.20 * 1.5)   # greater nether essence
+        self.assertAlmostEqual(weapon[11175], 0.75 * 1.5)
+        self.assertAlmostEqual(weapon[11178], 0.05)        # large radiant shard
+
+    def test_what_cannot_be_disenchanted(self):
+        self.assertIsNone(disenchant_yield(2, 0, 43))   # spurs: not armor or weapon
+        self.assertIsNone(disenchant_yield(1, 4, 40))   # white item
+        self.assertEqual(disenchant_yield(3, 2, 42), [(11177, 1)])  # blue: one shard
+
+    def test_spikes_fall_back_to_the_typical_price(self):
+        today = {11175: 27700, 11176: 2300}
+        self.assertEqual(price_floor(today, {11175: 8800, 11176: 2500}), {11175: 8800})  # only the spike moves
+        self.assertEqual(price_floor(today, {}), {})
+        self.assertIn(11175, DE_MATERIALS)
+
+    def test_value_at_prices(self):
+        meta = ["秘銀罩帽", 2, 4, "鎖甲・頭部", 41, 46]
+        prices = {11176: 2300, 11175: 27700, 11178: 18000}
+        self.assertEqual(round(disenchant_value(meta, prices)), round(1.125 * 2300 + 0.3 * 27700 + 0.05 * 18000))
+        self.assertIsNone(disenchant_value(["秘銀馬刺", 2, 0, "永久", 0, 43], prices))
 
 
 class LocalSlugTest(unittest.TestCase):
@@ -58,6 +86,18 @@ class HoldingsTest(unittest.TestCase):
         apply_holdings([first, second], {2772: {"count": 150, "where": []}}, self.MADE)
         self.assertEqual(first["materials"][0]["have"], 100)
         self.assertEqual(second["materials"][0]["have"], 50)
+
+
+class OptionsTest(unittest.TestCase):
+    def test_cash_goal_needs_the_bags(self):
+        import leveling_route
+        from contextlib import redirect_stderr
+        from io import StringIO
+        from unittest import mock
+        argv = ["leveling_route.py", "--from", "200", "--to", "225", "--goal", "cash"]
+        with mock.patch.object(sys, "argv", argv), redirect_stderr(StringIO()) as err, self.assertRaises(SystemExit):
+            leveling_route.main()
+        self.assertIn("--goal cash needs --bags", err.getvalue())
 
 
 if __name__ == "__main__":
