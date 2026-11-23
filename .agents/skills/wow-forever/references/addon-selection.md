@@ -9,7 +9,7 @@
 | [【閒聊】永恆插件整理 11/4](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681058) | `article#cf5505749`；43 個候選。 |
 | [【密技】永恆開服前推薦幾個必備插件分享給拓荒的你（更新中）](https://forum.gamer.com.tw/C.php?bsn=5219&snA=681023) | 目標 `section#post_5505533`，正文為 `article#cf5505533`；作者 niagura，顯示編輯時間 2026-10-28 17:33:28；15 個工具／服務，其中 4 個與前表相同。 |
 
-下方「社群候選」各表依專案去重後共 54 個：53 個 CurseForge 專案與一個 GitHub 分支。GearInsight 網站是同工具的補充入口，沒有另外計數；額外光環套件網站也不作獨立插件計數。另列的「作者來源補充候選」不納入這兩篇主文的統計。
+下方「社群候選」各表依專案去重後共 54 個：53 個 CurseForge 專案與一個 GitHub 分支。GearInsight 網站是同工具的補充入口，沒有另外計數；額外光環套件網站也不作獨立插件計數。另列的「作者來源補充候選」與「配方利潤排序候選」不納入這兩篇主文的統計。
 
 另有插件功能調查；作者來源、Forever 發佈、相依插件、指令與繁中證據集中於 [插件功能指南](addon-feature-guide.md)。功能指南獨立於下方兩篇主文的 54 個候選統計。
 
@@ -30,6 +30,7 @@
 | 裝備與地城 | 分開看 BiS 推薦、物品權重評分、掉落資料、地城任務前置、首領戰鬥警告。地城指南與 DBM 計時屬於不同能力。 |
 | 團隊與治療 | 整合 UI 團隊框架、VuhDo 與 Decursive 依顯示、點擊施法、驅散需求取捨，先查看目前職業與操作習慣。 |
 | 背包與交易 | 背包外觀、跨角色庫存、拍賣行情、商店售價與批次收信分別判斷。Baganator＋Syndicator 同時涉及背包與庫存查詢，先比較 BagSync／Account Overview 的實際用途；售價顯示候選先比較已有提示框功能。 |
+| 配方利潤排序 | Auctionator 只標單筆成本與利潤。要把已學配方整份按利潤排序，從 [配方利潤排序候選](#配方利潤排序候選) 依「排在內建專業視窗或獨立視窗」選一款主要使用。 |
 | 分身與物品用途 | Account Overview 與 BagSync 的庫存查詢有交集，但前者還涵蓋其他角色資料；ItemTree 的用途關聯也不等同 BiS 或背包外觀。 |
 | 採集與釣魚 | 節點資訊、導航、閃光提示與釣魚操作分開選。多套閃光／互動鍵模組同時控制設定時，確認由哪套負責。 |
 | 光環與警告 | 整合 UI 內建冷卻／提醒與 ForeverAuras 套件有部分重疊。先核對實際需要的光環，再加入套件及其依賴。 |
@@ -86,6 +87,24 @@ NodeSight 的 `Locales/zhTW.lua` 提供繁中線索；查證過的 `NodeSight/Sp
 | 插件 | 評估用途 |
 | --- | --- |
 | [DungeonsForever 無限副本手冊](https://www.curseforge.com/wow/addons/dungeonsforever) | 地城掉落、任務前置與入口，另有專業、探索及角色規劃模組。`/df` 開啟；依需要選子模組，專業行情功能另搭 Auctionator。與 ForeverDungeons、DungeonJournal 分別辨識；繁中證據以發佈包為準。 |
+
+## 配方利潤排序候選
+
+2026-11-23 依 CurseForge 作者專案頁整理，五款都列 Forever、遊戲版本 1.60.1。只讀了專案頁，還沒下載 ZIP 核對 `.toc`、語系與實作；版本與下載數是當日快照。使用者說「影片介紹的利潤排序插件」卻沒給名稱或畫面時，先問排序出現在哪裡來縮小範圍：
+
+| 插件／作者 | 專案 ID | 排序出現在哪 | 價格來源與必要插件 | 2026-11-23 快照 |
+| --- | --- | --- | --- | --- |
+| [CraftProfit Forever](https://www.curseforge.com/wow/addons/craftprofit-forever)／vystery | `1739431` | 內建專業視窗：每列配方標利潤，「篩選」選單或 `/cf sort` 切換利潤排序。明細列成本、預期售價、預估日銷量與扣抽成淨利；訓練師處也標利潤與回本次數。 | 自有掃描、Auctionator 或 TSM，預設自動選；不需其他插件。 | 0.5.14，約 22 萬下載；專門算利潤的插件中最多人用。 |
+| [SkillUp Forever](https://www.curseforge.com/wow/addons/skillup-forever)／cjber | `1705762` | 內建專業視窗：以練等輔助為主，配方清單可按製造利潤排序。 | Auctionator、TSM AuctionDB 等多種掃描來源，加 NPC 價；頁面沒列必要插件。 | v1.14.22-forever，約 304 萬下載；頁面寫有機器翻譯的中文，沒說是繁中或簡中。 |
+| [ForeverRecipes](https://www.curseforge.com/wow/addons/forever-recipes)／Akotar | `1756274` | 內建專業視窗「篩選 > Forever Recipes」：按拍賣、分解或 NPC 利潤排序。 | 依序取 Auctionator、AuctionMaster、TSM，都沒裝時用內建掃描；Questie 等為選用。 | 檔案 2.1.1（說明文字仍寫 1.15.0），約 12 萬下載。 |
+| [ForeverProfit](https://www.curseforge.com/wow/addons/foreverprofit)／KonDerZiller | `1738793` | 獨立利潤清單視窗，`/fp show` 開啟，`/fp auto` 設成隨專業視窗開。 | 必要 Auctionator，另可用 NPC 價與 `/fp price` 自訂價。 | 1.8.0-forever，約 2 千下載；只有英文、德文。 |
+| [Crafting and Farming Forever](https://www.curseforge.com/wow/addons/craftingandfarmingforever)／TheSnic | `1791788` | 獨立視窗 `/cff`：每項專業一個利潤分頁，可按利潤或售出機率排序，另有製造佇列與補貨。 | 必要 Auctionator＋Syndicator；TSM 尚未支援。 | 1.28.0，約 7 千下載。 |
+
+Wago 的 [ForeverArtisan](https://addons.wago.io/addons/foreverartisan) 依搜尋摘要也有成本與利潤排序，但頁面由 JavaScript 載入，內容沒讀到；推薦前用瀏覽器重查。
+
+- 已裝 Auctionator 時，上表每款都能沿用它的完整掃描當價格來源。
+- 這些插件排的是當前角色已學的配方，用本機掃描價計算。要跨專業比較、看自家陣營買得到的價格，或評估還沒學的配方值不值得買，改用 [market-recipe-value.md](market-recipe-value.md) 的腳本。
+- 除 SkillUp Forever 的機翻聲明外，專案頁都沒提中文；推薦給台服玩家前，依本檔開頭的原則核對 `zhTW`。
 
 ## 社群候選：升級與裝備
 

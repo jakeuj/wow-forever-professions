@@ -86,6 +86,8 @@ GitHub 專用分支、CurseForge 無法提供相容檔案，或使用者明確�
 
 問哪些配方值得從拍賣場買、哪些配方可以囤著等漲價、某項製造有沒有賺、查材料與成品的拍賣行情或走勢、幾天沒上線物價變了什麼、排專業練等路線與成本，或要讀拍賣小幫手的掃描、給可匯入的購物清單、看遊戲內拍賣場截圖時，讀 [references/market-recipe-value.md](references/market-recipe-value.md)。該檔附 `scripts/amobi_recipe_value.py`（依專業算毛利）、`scripts/amobi_item_prices.py`（查指定物品的分陣營價）、`scripts/auction_changes.py`（部落官方每小時紀錄的期間漲跌與即時各價位件數）、`scripts/auctionator_prices.py`（讀拍賣小幫手存檔）與 `scripts/leveling_route.py`（練等最省路線），並涵蓋 NPC 配方、遊戲內資料對照與判讀規則；結論以當次掃描為準。
 
+找遊戲內能把已學配方按利潤排序的插件，或辨認影片介紹的利潤插件時，讀 [配方利潤排序候選](references/addon-selection.md#配方利潤排序候選)。
+
 問 60 級後期該做什麼、團本要哪些消耗品或裝備、配方該先拿哪些時，讀 [references/endgame-crafting.md](references/endgame-crafting.md)。該檔整理團本時程、軍團鋼等材料瓶頸，以及鍛造與煉金的經典版需求和永恆改動，並標註可信度。
 
 ## 公會官網與玩家工具
