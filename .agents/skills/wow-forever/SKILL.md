@@ -90,7 +90,7 @@ GitHub 專用分支、CurseForge 無法提供相容檔案，或使用者明確�
 
 ## 公會官網與玩家工具
 
-維護《黎明之劍》官網、「永恆・專業議事廳」與站主的個人頁、調整專業分配頁的預設方案、更新其 GitHub Pages 發布，或檢查每小時的拍賣資料排程時，讀 [references/profession-planner-site.md](references/profession-planner-site.md)。網站面向一般玩家，01 雙採集主號＋三隻雙製造小號為預設首選，聖騎士多路線放 04；repo 相對路徑、正式網址、方案連結與驗證重點集中於該檔。
+維護《黎明之劍》官網、「永恆・專業議事廳」與站主的個人頁、調整專業分配頁的預設方案、更新其 GitHub Pages 發布、檢查每小時的拍賣資料排程，或查網站用到的 Cloudflare（Worker、KV、DNS）時，讀 [references/profession-planner-site.md](references/profession-planner-site.md)。網站面向一般玩家，01 雙採集主號＋三隻雙製造小號為預設首選，聖騎士多路線放 04；repo 相對路徑、正式網址、方案連結與驗證重點集中於該檔。
 
 ## 公開資料與官方 API
 

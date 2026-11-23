@@ -86,6 +86,19 @@
 
 公會概況在首頁 `#overview`，工匠名冊在 `/professions/artisans/`。資料排程、Cloudflare 快照與撤下角色的操作見 README 的「公會概況與工匠名冊」。
 
+### Cloudflare 對照
+
+網站用到 Cloudflare 的只有下列幾處（2026-11-23 依 `main` 盤點）；Worker 的部署與撤下角色步驟以 README 為準。
+
+- **DNS**：`jakeuj.com` 的 DNS 在 Cloudflare，記錄不經代理，直接指向 GitHub Pages（185.199.108～111.153），回應標頭是 `server: GitHub.com`，所以網頁本身沒有 Cloudflare 快取或防護。舊 `blog.jakeuj.com` 的 301 由 Cloudflare 處理。
+- **兩支 Worker 共用一個 KV**（`guild/worker/`，綁定 `SNAPSHOTS`）：
+  - Reader `dawnblade-guild-data`，網址在 `guild/data-source.mjs` 的 `guildDataOrigin`。公開，CORS 只允許 `https://jakeuj.com`，只接受 GET（`curl -I` 會得到 405）。快照有 `/overview.json`、`/artisans.json`、`/recipes.json`、`/market-depth.json`；`/characters/{slug}.json`、`/items/{id}.json` 在伺服器端即時查 Battle.net，`PROFILE_RATE` 限每個 IP 每分鐘 20 次。
+  - Publisher `dawnblade-guild-publish`：帶 `PUBLISH_TOKEN` 才能寫入。
+- **寫入 KV 的排程**：`guild-collect.yml`（每天）寫概況、名冊、配方快照（7 天到期）與撤下名單；`auction-collect.yml` 加 `--publish-depth`（每小時）寫價階（3 小時內有效）與 `battle-net-token`（3 小時到期）。`auction-probe.yml`、`api-probe.yml` 與 `auction-data` 分支的價格歷史都不經過 Cloudflare。
+- **讀 Reader 的頁面**：首頁概況、工匠名冊、配方目錄、玩家頁（含即時查詢）、製造練等、行情頁批量估價與團本採買；價階讀不到時改用 `market/scan-depth.json`。`crafting-leveling/auto-worker.mjs` 是瀏覽器的 Web Worker，與 Cloudflare 無關。
+- **排程不準的影響**：GitHub 排程常延後或漏跑（2026-11-22～23 每小時的拍賣排程 24 小時內只跑 4 次；每天 07:20 的公會排程實際約 11:00～12:00 才跑）。價階與 token 都只撐 3 小時；間隔超過時頁面改用備援價階，Reader 若沒有自己的 `BLIZZARD_CLIENT_ID`、`BLIZZARD_CLIENT_SECRET`，角色與物品即時查詢會失敗。是否已設定要登入 Cloudflare 查：`wrangler secret list --config guild/worker/wrangler.toml`。
+- **檢查**：`curl -s -H "Origin: https://jakeuj.com" https://dawnblade-guild-data.jakeuj.workers.dev/overview.json`，看 `fetchedAt`、`expiresAt`；價階看 `updatedAt`。
+
 ## 公會首頁與舊入口
 
 公會介紹、招募與連結在根目錄 `index.html`。公開資訊來源與圖片維護見 [dawnblade-guild.md](dawnblade-guild.md)。
