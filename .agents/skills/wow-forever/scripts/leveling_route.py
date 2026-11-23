@@ -29,6 +29,11 @@ Horde API snapshot instead of a scan. --bags reads the Syndicator save: plans an
 character holds cost nothing, and the material list shows what you already have
 and what is left to buy. Holdings do not change which recipe is picked: owned
 materials still count at market price, since they could be sold instead.
+
+--goal cash picks the route that spends the least gold instead: held materials go
+first at no cost. The walk is tried with held units at several weights, with and
+without the product value, and recipes are dropped while that saves gold (prune_route),
+because one point-by-point walk can spend held bars early and buy them back later.
 """
 
 import argparse
@@ -47,7 +52,8 @@ import auctionator_prices as ap  # noqa: E402
 
 SKILL_DIR = Path(__file__).resolve().parent.parent
 SHORT_PENALTY = 3  # price factor for units beyond the listed count when choosing recipes
-HELD_WEIGHT = 0.1  # --goal cash: share of market price a held unit weighs when choosing (it costs no gold)
+HELD_WEIGHT = 0.1  # --goal cash: share of its buy price a held unit costs when comparing routes (it costs no gold)
+CASH_WEIGHTS = (HELD_WEIGHT, 0.5, 1.0)  # --goal cash: held-unit weights the skill-by-skill walk is tried with
 P90 = 1.2816  # z for the 90th percentile of the craft count
 SELL = re.compile(r'class="wl w sell">售價：(.*?)</div>', re.S)
 REPO = SKILL_DIR.parents[2]
@@ -215,6 +221,73 @@ def apply_holdings(phases, holdings, made_inputs=None):
             m["cash"] = round(m["subtotal"] * m["buy"] / m["qty"]) if m["qty"] else 0
             cash += m["cash"]
         ph["cash"] = cash
+
+
+def route_cash(steps, held_price):
+    """Gold and materials a walked route uses, for --goal cash.
+
+    steps carry "recipe" (with "acquire", "sell", "recover"), "chance" and "parts"
+    (item id, label, kind, quantity, copper per unit, quantity beyond the listings).
+    held_price(item id) is what one held unit would cost to buy now. Returns spent
+    (materials bought), fees (plans and trainer fees of the recipes used), short_extra
+    (what units beyond the listings add at SHORT_PENALTY), held (buy value of the held
+    materials used), back (product value) and gold_back (the part that comes back as
+    gold: products sold to a vendor)."""
+    out = dict(spent=0, fees=0, short_extra=0, held=0, back=0, gold_back=0)
+    used = {}
+    for st in steps:
+        r = st["recipe"]
+        used[r["name"]] = r
+        out["back"] += r["sell"] / st["chance"]
+        if r["recover"] == "賣店":
+            out["gold_back"] += r["sell"] / st["chance"]
+        for item_id, _, kind, take, unit, short in st["parts"]:
+            if kind == "held":
+                out["held"] += take * held_price(item_id)
+            elif kind != "made":
+                out["spent"] += take * unit
+                out["short_extra"] += short * unit * (SHORT_PENALTY - 1)
+    out["fees"] = sum(r["acquire"] for r in used.values())
+    return out
+
+
+def cash_cost(tally):
+    """What --goal cash minimises: gold out of pocket, with held materials at HELD_WEIGHT
+    of their price so a route does not burn a pile of them to save a few copper."""
+    return (tally["spent"] + tally["fees"] + tally["short_extra"] - tally["gold_back"]
+            + HELD_WEIGHT * tally["held"])
+
+
+def prune_route(pool, run, cost, rounds=10):
+    """Drop recipes while that lowers cost(run(recipes)); returns (cost, steps, dropped) or None.
+
+    The skill-by-skill walk is greedy: it can spend a scarce held material on an early
+    recipe that a later stretch needed, then buy it back. Each round tries the route
+    without each recipe it used and keeps the best drop that lowers the cost by more
+    than a copper."""
+    active = list(pool)
+    steps = run(active)
+    if steps is None:
+        return None
+    best, dropped = cost(steps), []
+    for _ in range(rounds):
+        used = {st["recipe"]["name"] for st in steps}
+        trial = None
+        for r in active:
+            if r["name"] not in used:
+                continue
+            alt = run([x for x in active if x is not r])
+            if alt is None:
+                continue
+            c = cost(alt)
+            if c < best - 1 and (trial is None or c < trial[0]):
+                trial = (c, r, alt)
+        if trial is None:
+            break
+        best, steps = trial[0], trial[2]
+        active.remove(trial[1])
+        dropped.append(trial[1]["name"])
+    return best, steps, dropped
 
 
 def parse_profession(page):
@@ -408,6 +481,13 @@ def main():
     for r in smelt_producers(args.mining):
         producers.setdefault(r["item_id"], []).append(r)
 
+    def buy_price(item_id):
+        """Copper to buy one now: the cheapest listing or NPC, 0 if nowhere sells it."""
+        options = sources(item_id)
+        return options[0][0] if options else 0
+
+    held_weight = [HELD_WEIGHT]  # --goal cash: set per walk by route()
+
     def quote(item_id, qty, skill, stock, depth=0):
         """Cheapest way to get qty units at this skill with the auction stock left.
 
@@ -418,9 +498,9 @@ def main():
         options = []
         held = stock.get(("held", item_id), 0)
         if held > 1e-9:
-            # --goal cash: what the bags hold costs no gold. It still weighs a tenth of its market price
-            # so equal-cash routes prefer the one that burns fewer materials and crafts.
-            options.append((HELD_WEIGHT * scan.get(item_id, (0, 0))[0], held, "已有", "held", None))
+            # --goal cash: what the bags hold costs no gold. While walking it weighs a share of its buy
+            # price (route() tries several), so held units go first but are not burnt for nothing.
+            options.append((held_weight[0] * buy_price(item_id), held, "已有", "held", None))
         for unit, limit, label, kind in sources(item_id):
             left = max(0, stock.get(item_id, limit)) if kind == "ah" and limit is not None else None
             options.append((unit, left, label, kind, None))
@@ -532,9 +612,11 @@ def main():
             r["acquire"], r["acquire_from"] = plan[0], plan[2]
         pool.append(r)
 
-    def route(candidates):
+    def route(candidates, weight=HELD_WEIGHT, recover=True):
         """Walk the skill points in order; each takes the recipe with the lowest expected net
-        cost at the stock still listed, then uses that stock up."""
+        cost at the stock still listed, then uses that stock up. weight is what a held unit
+        weighs against its buy price (--goal cash); recover=False ignores the product value."""
+        held_weight[0] = weight
         stock = dict(full_stock)
         steps = []
         for s in range(args.start, args.end):
@@ -546,7 +628,7 @@ def main():
                 got = quote_recipe(r, 1 / p, s, stock)
                 if got is None:
                     continue
-                score = got[0] - r["sell"] / p
+                score = got[0] - (r["sell"] / p if recover else 0)
                 if best is None or score < best[0]:
                     best = (score, r, p, got[1])
             if best is None:
@@ -559,12 +641,43 @@ def main():
             steps.append({"skill": s, "score": best[0], "recipe": best[1], "chance": best[2], "parts": best[3]})
         return steps
 
+    no_route = ("no obtainable recipe covers every skill point; "
+                + ("loosen --use/--avoid" if args.use or args.avoid else "try --neutral"))
+    compared = []
+    if args.goal == "cash":
+        # One greedy walk can burn held materials early and buy them back later. Walk with held
+        # units at several weights, with and without the product value, drop recipes while that
+        # saves gold, and keep the route that costs least out of pocket.
+        found = {}
+        for weight in CASH_WEIGHTS:
+            for recover in (True, False):
+                got = prune_route(pool, lambda c: route(c, weight, recover),
+                                  lambda st: cash_cost(route_cash(st, buy_price)))
+                if got is None:
+                    continue
+                key = tuple(st["recipe"]["name"] for st in got[1])
+                if key not in found or got[0] < found[key][0]:
+                    found[key] = got
+        if not found:
+            sys.exit(no_route)
+        ranked = sorted(found.values(), key=lambda g: g[0])
+        steps = ranked[0][1]
+        for cost, walk, dropped in ranked:
+            t = route_cash(walk, buy_price)
+            order = []
+            for st in walk:
+                if not order or order[-1][0] != st["recipe"]["name"]:
+                    order.append([st["recipe"]["name"], st["skill"], st["skill"] + 1])
+                order[-1][2] = st["skill"] + 1
+            compared.append({"route": order, "cash": round(t["spent"] + t["fees"]), "gold_back": round(t["gold_back"]),
+                             "held": round(t["held"]),
+                             "net": round(t["spent"] + t["fees"] + t["held"] - t["back"]),
+                             "cost": round(cost), "dropped": dropped})
     active = list(pool)
-    while True:
+    while args.goal != "cash":
         steps = route(active)
         if steps is None:
-            sys.exit("no obtainable recipe covers every skill point; "
-                     + ("loosen --use/--avoid" if args.use or args.avoid else "try --neutral"))
+            sys.exit(no_route)
         used = {st["recipe"]["name"] for st in steps}
         total = sum(st["score"] for st in steps)
         worst = None
@@ -655,6 +768,8 @@ def main():
               "products": args.products, "goal": args.goal, "use": sorted(args.use), "avoid": sorted(args.avoid),
               "prices": scan_label, "segments": segments, "phases": [phases[k] for k in sorted(phases)],
               "missing_plans": better_missing}
+    if compared:
+        result["compared"] = compared
     if holdings is not None and args.goal == "cash":
         for ph in result["phases"]:
             ph["cash"] = ph["gross"]  # held materials already went in at no cost
@@ -721,6 +836,12 @@ def main():
         for m in ph["made"]:
             held = f"，已有 {m['have']} 個可少做" if m.get("have") else ""
             print(f"  （{m['name']} ×{m['qty']} {m['how']}，材料已算在上面{held}）")
+    if len(compared) > 1:
+        print("\n比較過的走法（要花＝材料＋設計圖與學費；已有＝用掉的已有材料照買價；淨＝照市值、扣掉成品回收）：")
+        for i, c in enumerate(compared[:4]):
+            way = "、".join(f"{n} {a}→{b}" for n, a, b in c["route"])
+            back = f"・賣店收回 {g(c['gold_back'])}" if c["gold_back"] else ""
+            print(f"  {'選用' if i == 0 else '　　'} 要花 {g(c['cash'])}{back}・已有 {g(c['held'])}・淨 {g(c['net'])}｜{way}")
     if better_missing:
         print("\n目前買不到、但比路線便宜的配方：")
         for m in better_missing:

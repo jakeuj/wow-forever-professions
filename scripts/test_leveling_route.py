@@ -4,8 +4,9 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".agents/skills/wow-forever/scripts"))
-from leveling_route import (DE_MATERIALS, apply_holdings, disenchant_value, disenchant_yield, local_slug,  # noqa: E402
-                            price_floor, smelt_producers)
+from leveling_route import (DE_MATERIALS, HELD_WEIGHT, SHORT_PENALTY, apply_holdings, cash_cost,  # noqa: E402
+                            disenchant_value, disenchant_yield, local_slug, price_floor, prune_route, route_cash,
+                            smelt_producers)
 
 
 class SmeltTest(unittest.TestCase):
@@ -86,6 +87,55 @@ class HoldingsTest(unittest.TestCase):
         apply_holdings([first, second], {2772: {"count": 150, "where": []}}, self.MADE)
         self.assertEqual(first["materials"][0]["have"], 100)
         self.assertEqual(second["materials"][0]["have"], 50)
+
+
+class CashRouteTest(unittest.TestCase):
+    def test_tally_counts_gold_held_materials_and_fees_once(self):
+        x = {"name": "X", "acquire": 5000, "sell": 600, "recover": "分解"}
+        y = {"name": "Y", "acquire": 0, "sell": 300, "recover": "賣店"}
+        x_parts = [(1, "已有", "held", 3, 0, 0), (2, "部落拍賣場", "ah", 4, 100, 1), (3, "自製", "made", 2, 0, 0)]
+        steps = [{"recipe": x, "chance": 0.5, "parts": x_parts}, {"recipe": x, "chance": 0.5, "parts": x_parts},
+                 {"recipe": y, "chance": 1, "parts": [(4, "NPC", "npc", 2, 50, 0)]}]
+        t = route_cash(steps, {1: 200}.get)
+        self.assertEqual(t["held"], 2 * 3 * 200)
+        self.assertEqual(t["spent"], 2 * 4 * 100 + 2 * 50)
+        self.assertEqual(t["short_extra"], 2 * 1 * 100 * (SHORT_PENALTY - 1))
+        self.assertEqual(t["fees"], 5000)  # the plan is bought once, however many steps use it
+        self.assertEqual(t["back"], 2 * 600 / 0.5 + 300)
+        self.assertEqual(t["gold_back"], 300)  # disenchanted products are not gold
+        self.assertAlmostEqual(cash_cost(t), 900 + 5000 + 400 - 300 + HELD_WEIGHT * 1200)
+
+    def test_dropping_a_recipe_that_burns_held_bars_early(self):
+        # 2 held bars (weighing 1 each; buying one costs 10). A works at every point with a bar,
+        # B only at points 2-3 with a bar, C at points 0-1 for 3 gold and no bar. Walking point by
+        # point spends both bars on A, then buys bars for 2-3.
+        a = {"name": "A", "points": range(4), "bars": 1, "gold": 0}
+        b = {"name": "B", "points": (2, 3), "bars": 1, "gold": 0}
+        c = {"name": "C", "points": (0, 1), "bars": 0, "gold": 3}
+
+        def walk(candidates):
+            held, steps = 2, []
+            for s in range(4):
+                best = None
+                for r in candidates:
+                    if s in r["points"]:
+                        use = min(held, r["bars"])
+                        score = r["gold"] + use + (r["bars"] - use) * 10
+                        if best is None or score < best[0]:
+                            best = (score, r, use)
+                if best is None:
+                    return None
+                held -= best[2]
+                steps.append({"recipe": best[1], "spent": best[1]["gold"] + (best[1]["bars"] - best[2]) * 10,
+                              "held": best[2]})
+            return steps
+
+        cost = lambda steps: sum(st["spent"] + st["held"] for st in steps)
+        self.assertEqual(cost(walk([a, b, c])), 22)
+        best, steps, dropped = prune_route([a, b, c], walk, cost)
+        self.assertEqual((best, dropped), (8, ["A"]))
+        self.assertEqual([st["recipe"]["name"] for st in steps], ["C", "C", "B", "B"])
+        self.assertIsNone(prune_route([b], walk, cost))  # nothing covers points 0-1
 
 
 class OptionsTest(unittest.TestCase):
