@@ -11,11 +11,13 @@ wowamobi's median today, its median the day before and the Horde 7-day typical
 price, so a single absurd listing cannot make something look like a bargain.
 
 Now:   a page item at or under its trigger (items without one: a quarter of the
-       market reference or less) with at most 3 units left at that price; something
-       in your bags listed at 1.5x its 7-day typical price or more (sell).
+       market reference or less) with at most 3 units left at that price, unless your
+       bags already hold it; something in your bags listed at 1.5x its 7-day typical
+       price or more, worth 5g or more and not above 3x the market reference (sell).
 Later: the same with plenty of units left, page items within 30 % of their
-       trigger, triggers with nothing listed, and recipes not on the pages at a
-       quarter of the market reference.
+       trigger, triggers with nothing listed, smaller or doubtful sales, what was
+       skipped because you hold it, and recipes not on the pages at a quarter of the
+       market reference. With the bags, the route section uses their counts.
 
 Route: when ~/.config/wow-forever/route.json exists (format: the skill's
 references/route.example.json), adds a section for the leveling route in progress:
@@ -27,6 +29,7 @@ Prices are lowest buyouts (unit price for stackables), never sale prices.
 """
 
 import argparse
+import datetime
 import email.utils
 from html.parser import HTMLParser
 import json
@@ -48,6 +51,8 @@ FAR_BELOW = 0.25   # listed at a quarter of the market reference or less
 NEAR = 1.3         # within 30 % of the trigger
 SPIKE = 1.5        # bags: listed at 1.5x the 7-day typical price or more
 SCARCE = 3         # units at the good price; more than this can wait
+SELL_NOW = 50000   # bag items worth less than 5g in all are not urgent to sell
+OUTLIER = 3        # a lowest listing above 3x the market reference is unlikely to sell
 WEEK = 168
 
 
@@ -121,14 +126,26 @@ def reference(item_id, realm_rows, record, hours):
     return min(values) if values else None
 
 
+def held(bags, item_id):
+    """(count, where) for an item in the bag record; accepts plain counts too."""
+    entry = (bags or {}).get(item_id)
+    if entry is None:
+        return 0, []
+    return (entry, []) if isinstance(entry, int) else (entry["count"], entry["where"])
+
+
 def classify(items, ids, levels, record, hours, realm_rows, meta, bags=None, max_now=5):
     """Sort page items (and bag items) into now / later lists. Pure: all inputs passed in.
 
     now:    at or under the trigger (items without a trigger: a quarter of the market
             reference or less) with only a few units left at that price
     plenty: the same, but enough units that it can wait
+    owned:  would have been suggested, but the bags already hold it
+    sell:   bag items listed at SPIKE x their 7-day typical price, worth SELL_NOW or more,
+            and not above OUTLIER x the market reference; smaller lots and big lots
+            listed above OUTLIER go to try_sell, small lots above OUTLIER are dropped
     """
-    now_rows, plenty, near, empty, sell = [], [], [], [], []
+    now_rows, plenty, near, empty, owned, sell, try_sell = [], [], [], [], [], [], []
     for name, info in items.items():
         if info["skip"]:
             continue
@@ -136,10 +153,12 @@ def classify(items, ids, levels, record, hours, realm_rows, meta, bags=None, max
             level = levels.get(item_id) or []
             lowest = level[0][0] if level else None
             ref = reference(item_id, realm_rows, record, hours)
+            count, where = held(bags, item_id)
             base = {"name": name, "id": item_id, "pages": info["pages"], "owners": info.get("owners", []), "price": lowest,
-                    "units": sum(q for _, q in level), "below": info["below"], "reference": ref}
+                    "units": sum(q for _, q in level), "below": info["below"], "reference": ref,
+                    "have": count, "where": where}
             if lowest is None:
-                if info["below"] is not None:
+                if info["below"] is not None and not count:
                     empty.append(base)
                 continue
             if info["below"] is not None:
@@ -150,29 +169,42 @@ def classify(items, ids, levels, record, hours, realm_rows, meta, bags=None, max
                 limit = why = None
             if limit is None:
                 if info["below"] is not None and lowest <= NEAR * info["below"]:
-                    near.append(base)
+                    (owned if count else near).append(base)
                 continue
             row = {**base, "why": why, "units_ok": units_at_or_below(level, limit),
                    "value": info["below"] if why == "trigger" else ref}
-            (now_rows if row["units_ok"] <= SCARCE else plenty).append(row)
-    for item_id, count in (bags or {}).items():
+            if count:
+                owned.append(row)
+            else:
+                (now_rows if row["units_ok"] <= SCARCE else plenty).append(row)
+    for item_id in (bags or {}):
+        count, where = held(bags, item_id)
         level = levels.get(item_id) or []
         record_row = record.get(str(item_id))
         if not level or not record_row:
             continue
         usual = typical(record_row[1], hours, hours[-1])
         lowest = level[0][0]
-        if usual and lowest >= SPIKE * usual and lowest * count >= 10000:
-            info = meta.get(str(item_id)) or [f"物品 {item_id}"]
-            sell.append({"name": info[0], "id": item_id, "price": lowest, "usual": usual, "count": count,
-                         "units": sum(q for _, q in level)})
+        if not usual or lowest < SPIKE * usual or lowest * count < 10000:
+            continue
+        info = meta.get(str(item_id)) or [f"物品 {item_id}"]
+        ref = reference(item_id, realm_rows, record, hours)
+        row = {"name": info[0], "id": item_id, "price": lowest, "usual": usual, "count": count, "where": where,
+               "units": sum(q for _, q in level), "reference": ref,
+               "outlier": bool(ref and lowest > OUTLIER * ref)}
+        worth = lowest * count >= SELL_NOW
+        if row["outlier"] and not worth:
+            continue  # a small lot listed far above the market: not worth mentioning
+        (sell if worth and not row["outlier"] else try_sell).append(row)
     now_rows.sort(key=lambda r: -r["value"])
     plenty += now_rows[max_now:]
     del now_rows[max_now:]
     plenty.sort(key=lambda r: -r["value"])
     near.sort(key=lambda r: r["price"] / r["below"])
     sell.sort(key=lambda r: -r["price"] * r["count"])
-    return {"now": now_rows, "sell": sell, "plenty": plenty, "near": near, "empty": empty}
+    try_sell.sort(key=lambda r: -r["price"] * r["count"])
+    return {"now": now_rows, "sell": sell, "plenty": plenty, "near": near, "empty": empty,
+            "owned": owned, "try_sell": try_sell}
 
 
 def off_page(page_ids, levels, realm_rows, record, hours, meta, top):
@@ -204,10 +236,11 @@ def route_checks(route, lowest, levels_of, usual):
     """Rows for the leveling route section. Pure: lowest/levels_of/usual are lookups by item name."""
     rows = []
     for entry in route.get("buy", []):
-        name, qty = entry["item"], entry["qty"]
+        name, have = entry["item"], entry.get("have", 0)
+        qty = max(entry["qty"] - have, 0)  # qty is the route's total need; `have` comes from the bags
         cost, got = buy_cost(levels_of(name), qty)
         vendor, planned = entry.get("vendor"), entry.get("planned")
-        row = {"kind": "buy", "item": name, "qty": qty, "lowest": lowest(name), "got": got,
+        row = {"kind": "buy", "item": name, "qty": qty, "have": have, "lowest": lowest(name), "got": got,
                "planned": planned, "vendor": vendor}
         if vendor:
             # Take the listings under the vendor price, buy the rest from the vendor.
@@ -246,11 +279,14 @@ def route_checks(route, lowest, levels_of, usual):
 def route_lines(rows):
     out = []
     for r in rows:
-        if r["kind"] == "buy":
+        if r["kind"] == "buy" and not r["qty"]:
+            out.append(f"{r['item']}：已有 {r['have']} 個，夠用了。")
+        elif r["kind"] == "buy":
+            label = f"{r['item']} 還要 {r['qty']} 個（已有 {r['have']}）" if r["have"] else f"{r['item']} {r['qty']} 個"
             saving = r["ah_got"] * (r["vendor"] or 0) - r["ah_cost"] if r["source"] == "vendor" else 0
             if r["source"] == "vendor" and r["ah_got"] and saving >= 10000:
                 rest = r["qty"] - r["ah_got"]
-                line = (f"{r['item']} {r['qty']} 個：拍賣場比商人便宜的 {r['ah_got']} 個先買（{coin(r['lowest'])} 起）"
+                line = (f"{label}：拍賣場比商人便宜的 {r['ah_got']} 個先買（{coin(r['lowest'])} 起）"
                         + (f"，其餘 {rest} 個向商人買 {coin(r['vendor'])}" if rest else "") + f"，共 {coin(r['cost'])}")
             elif r["source"] == "vendor":
                 if r["ah_got"]:
@@ -258,11 +294,11 @@ def route_lines(rows):
                     r = {**r, "cost": r["qty"] * r["vendor"]}
                 else:
                     ah = f"拍賣場 {coin(r['lowest'])} 比較貴" if r["lowest"] else "拍賣場沒貨"
-                line = f"{r['item']} {r['qty']} 個：向商人買 {coin(r['vendor'])}，共 {coin(r['cost'])}（{ah}）"
+                line = f"{label}：向商人買 {coin(r['vendor'])}，共 {coin(r['cost'])}（{ah}）"
             elif not r["got"]:
-                line = f"{r['item']} {r['qty']} 個：部落拍賣場沒貨"
+                line = f"{label}：部落拍賣場沒貨"
             else:
-                line = f"{r['item']} {r['qty']} 個：拍賣場 {coin(r['lowest'])} 起，買足共 {coin(r['cost'])}"
+                line = f"{label}：拍賣場 {coin(r['lowest'])} 起，買足共 {coin(r['cost'])}"
                 if r["got"] < r["qty"]:
                     line += f"（部落只有 {r['got']} 個）"
                 if r["planned"]:
@@ -306,18 +342,25 @@ def load_route(path):
         return None
 
 
+PART_NAMES = {"bags": "背包", "bankTabs": "銀行", "bank": "銀行", "mail": "信箱"}
+
+
 def read_bags(root):
-    """item id -> count over every character's bags, bank and mail; None when there is no save file."""
+    """(item id -> {count, where: ["角色 位置", ...]}, save time) over every character; (None, None) without a save."""
     import syndicator_inventory as si
     files = si.find_saved_files(root)
     if not files:
-        return None
-    counts = {}
-    for _, character in si.ordered_items(si.load_data(files[0]).get("Characters", {})):
-        for part in si.summarise(character).values():
-            for item in part["items"]:
-                counts[item["id"]] = counts.get(item["id"], 0) + item["count"]
-    return counts
+        return None, None
+    holdings = {}
+    for key, character in si.ordered_items(si.load_data(files[0]).get("Characters", {})):
+        who = si.utf8(key).split("-")[0]
+        for part, info in si.summarise(character).items():
+            for item in info["items"]:
+                entry = holdings.setdefault(item["id"], {"count": 0, "where": []})
+                entry["count"] += item["count"]
+                entry["where"].append(f"{who} {PART_NAMES.get(part, part)}")
+    saved = datetime.datetime.fromtimestamp(files[0].stat().st_mtime, ac.TAIPEI).strftime("%m/%d %H:%M")
+    return holdings, saved
 
 
 def coin(copper):
@@ -332,26 +375,35 @@ def taiwan_time(http_date):
     return when.strftime("%m/%d %H:%M")
 
 
+def where_text(where, limit=2):
+    shown = "、".join(where[:limit])
+    return shown + (f" 等 {len(where)} 處" if len(where) > limit else "") if where else "位置不明"
+
+
 def reason(r):
     if r["why"] == "trigger":
         return f"觸發價 {coin(r['below'])}，這價位以下 {r['units_ok']} 件"
     return f"行情約 {coin(r['reference'])}，只要四分之一以下，有 {r['units_ok']} 件"
 
 
-def render(result, extra, modified, record_time, bags_note, route=None, route_rows=()):
-    lines = [f"部落拍賣場快訊（官方即時快照 {taiwan_time(modified)}；網站每小時紀錄到 {record_time}）", "", "## 現在處理"]
+def render(result, extra, modified, record_time, bags_note, route=None, route_rows=(), bags_saved=None):
+    head = f"部落拍賣場快訊（官方即時快照 {taiwan_time(modified)}；網站每小時紀錄到 {record_time}"
+    head += f"；背包存檔 {bags_saved}）" if bags_saved else "）"
+    lines = [head, "", "## 現在處理"]
     actions = []
     for r in result["now"]:
         where = "、".join(r["owners"] or r["pages"])
         actions.append(f"買 {r['name']} {coin(r['price'])}：{reason(r)}（{where}）")
     for r in result["sell"]:
-        actions.append(f"賣 {r['name']} {coin(r['price'])}：平常約 {coin(r['usual'])}，你有 {r['count']} 個，"
-                       f"部落共 {r['units']} 件在賣")
+        actions.append(f"賣 {r['name']} {coin(r['price'])}：平常約 {coin(r['usual'])}，你有 {r['count']} 個"
+                       f"（{where_text(r['where'])}），部落共 {r['units']} 件在賣")
     lines += [f"{i}. {a}" for i, a in enumerate(actions, 1)] or ["現在沒有需要立刻處理的。"]
     if route:
         title = route.get("name", "練等路線")
         lines += ["", f"## 你的{title}"]
-        if route.get("updated"):
+        if bags_saved:
+            lines.append(f"（持有數量依 {bags_saved} 的背包存檔）")
+        elif route.get("updated"):
             lines.append(f"（持有數量依 {route['updated']} 的紀錄）")
         lines += [f"- {line}" for line in route_lines(route_rows)]
     lines += ["", "## 可以等"]
@@ -364,10 +416,18 @@ def render(result, extra, modified, record_time, bags_note, route=None, route_ro
     if result["empty"]:
         lines.append("- 有觸發價、現在沒貨：" + "、".join(
             f"{r['name']}（{coin(r['below'])}）" for r in result["empty"]))
+    if result["try_sell"]:
+        lines.append("- 可以試賣：" + "、".join(
+            f"{r['name']} {coin(r['price'])}（平常約 {coin(r['usual'])}，"
+            + (f"掛價偏高、行情約 {coin(r['reference'])}，不一定賣得掉" if r["outlier"] else f"{r['count']} 個共約 {coin(r['price'] * r['count'])}")
+            + f"；{where_text(r['where'])}）" for r in result["try_sell"][:4]))
+    if result["owned"]:
+        lines.append("- 到價但你已經有，這次不推薦買：" + "、".join(
+            f"{r['name']} {coin(r['price'])}（已有 {r['have']}）" for r in result["owned"]))
     if extra:
         lines.append("- 頁面外、遠低於全服行情的配方：" + "、".join(
             f"{r['name']} {coin(r['price'])}（行情約 {coin(r['reference'])}）" for r in extra))
-    if not (result["plenty"] or result["near"] or result["empty"] or extra):
+    if not (result["plenty"] or result["near"] or result["empty"] or result["try_sell"] or result["owned"] or extra):
         lines.append("- 沒有。")
     if bags_note:
         lines += ["", bags_note]
@@ -403,11 +463,11 @@ def main():
     ids = ac.resolve(list(items), meta, data["items"])
     levels, modified = ac.live_levels()
 
-    bags, bags_note = None, None
+    bags, bags_note, bags_saved = None, None, None
     if not args.no_bags:
-        bags = read_bags(args.root)
+        bags, bags_saved = read_bags(args.root)
         if bags is None:
-            bags_note = "背包：這台電腦找不到 Syndicator 存檔，沒有列賣出建議。"
+            bags_note = "背包：這台電腦找不到 Syndicator 存檔，沒有列賣出建議，也沒扣掉已有的東西。"
     result = classify(items, ids, levels, data["items"], data["hours"], realm_rows, meta, bags, args.max_now)
     page_ids = {i for v in ids.values() for i in v}
     extra = off_page(page_ids, levels, realm_rows, data["items"], data["hours"], meta, args.top)
@@ -424,6 +484,13 @@ def main():
         lowest = lambda name: (levels_of(name)[0][0] if levels_of(name) else None)
         usual = lambda name: (typical(data["items"][str(first(name))][1], data["hours"], data["hours"][-1])
                               if str(first(name)) in data["items"] else None)
+        if bags is not None:
+            # The bags are newer than the counts typed into route.json.
+            route = json.loads(json.dumps(route))
+            for entry in route.get("hold", []):
+                entry["count"] = held(bags, first(entry["item"]))[0]
+            for entry in route.get("buy", []):
+                entry["have"] = held(bags, first(entry["item"]))[0]
         route_rows = route_checks(route, lowest, levels_of, usual)
 
     if args.json:
@@ -432,7 +499,7 @@ def main():
                   sys.stdout, ensure_ascii=False, indent=1)
         print()
         return
-    print(render(result, extra, modified, data.get("updatedAt"), bags_note, route, route_rows))
+    print(render(result, extra, modified, data.get("updatedAt"), bags_note, route, route_rows, bags_saved))
 
 
 if __name__ == "__main__":

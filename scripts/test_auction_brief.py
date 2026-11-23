@@ -100,6 +100,29 @@ class ClassifyTest(unittest.TestCase):
         self.assertEqual(quiet["sell"], [])
 
 
+class HoldingsTest(unittest.TestCase):
+    META = {"9": ["材料甲", 1, 7, "金屬與石頭"], "8": ["配方：天價", 2, 9, "鍊金術"], "7": ["小東西", 1, 7, "其他"]}
+
+    def test_owned_page_items_are_not_suggested(self):
+        bags = {1: {"count": 5, "where": ["法師 銀行"]}}
+        result = classify({"配方：已有": item(5 * G)}, {"配方：已有": [1]}, {1: [(4 * G, 1)]}, {}, HOURS, {}, self.META, bags)
+        self.assertEqual(result["now"], [])
+        self.assertEqual([(r["name"], r["have"]) for r in result["owned"]], [("配方：已有", 5)])
+
+    def test_sales_split_by_size_and_plausibility(self):
+        record = {"9": [50, [[1000, 2000]]], "8": [1, [[1000, 3 * G]]], "7": [9, [[1000, 100]]]}
+        bags = {9: {"count": 100, "where": ["聖騎 銀行"]}, 8: {"count": 1, "where": ["法師 銀行"]},
+                7: {"count": 50, "where": ["獵人 背包"]}}
+        levels = {9: [(4000, 50)], 8: [(50 * G, 1)], 7: [(1000, 9)]}
+        result = classify({}, {}, levels, record, HOURS, {}, self.META, bags)
+        self.assertEqual([(r["name"], r["where"]) for r in result["sell"]], [("材料甲", ["聖騎 銀行"])])
+        # 50g against a 3g market, and 50 x 10s against a 1s market: worth mentioning, flagged as unlikely to sell
+        self.assertEqual([(r["name"], r["outlier"]) for r in result["try_sell"]], [("配方：天價", True), ("小東西", True)])
+        bags[7]["count"] = 5  # a 0.5g lot listed far above the market is dropped
+        result = classify({}, {}, levels, record, HOURS, {}, self.META, bags)
+        self.assertNotIn("小東西", [r["name"] for r in result["sell"] + result["try_sell"]])
+
+
 class OffPageTest(unittest.TestCase):
     def test_lists_cheap_recipes_not_on_pages(self):
         meta = {"7": ["配方：便宜", 2, 9, "鍊金術"], "8": ["材料", 1, 7, "其他"], "6": ["配方：在頁面", 2, 9, "鍊金術"]}
@@ -135,6 +158,15 @@ class RouteTest(unittest.TestCase):
         levels_of = lambda name: self.LEVELS.get(name, [])
         lowest = lambda name: levels_of(name)[0][0] if levels_of(name) else None
         return route_checks(self.ROUTE, lowest, levels_of, self.USUAL.get)
+
+    def test_bags_reduce_what_is_left_to_buy(self):
+        levels_of = lambda name: self.LEVELS.get(name, [])
+        lowest = lambda name: levels_of(name)[0][0] if levels_of(name) else None
+        route = {"buy": [{"item": "魔紋布", "qty": 78, "have": 1, "planned": 400},
+                         {"item": "煤塊", "qty": 163, "have": 200, "vendor": 500}]}
+        lines = route_lines(route_checks(route, lowest, levels_of, self.USUAL.get))
+        self.assertTrue(lines[0].startswith("魔紋布 還要 77 個（已有 1）"))
+        self.assertEqual(lines[1], "煤塊：已有 200 個，夠用了。")
 
     def test_buy_cost_walks_up_the_levels(self):
         self.assertEqual(buy_cost([(400, 10), (500, 100)], 50), (10 * 400 + 40 * 500, 50))
