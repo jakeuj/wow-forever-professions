@@ -59,6 +59,8 @@ SELL = re.compile(r'class="wl w sell">售價：(.*?)</div>', re.S)
 REPO = SKILL_DIR.parents[2]
 PROFESSION_IDS = {"alchemy": 171, "blacksmithing": 164, "enchanting": 333, "engineering": 202,
                   "leatherworking": 165, "tailoring": 197, "cooking": 185, "first-aid": 129}
+PROFESSION_ZH = {"alchemy": "煉金", "blacksmithing": "鍛造", "enchanting": "附魔", "engineering": "工程學",
+                 "leatherworking": "製皮", "tailoring": "裁縫", "cooking": "烹飪", "first-aid": "急救"}
 MINING = 186
 HOME_TOWNS = {"部落": ("奧格瑪", "幽暗城", "雷霆崖"), "聯盟": ("暴風城", "鐵爐堡", "達納蘇斯")}
 GATE_LEVEL = {75: 10, 150: 20, 225: 35}  # passing this skill cap needs the next trainer rank, learnable at this level
@@ -290,6 +292,54 @@ def prune_route(pool, run, cost, rounds=10):
     return best, steps, dropped
 
 
+def route_file(result, updated, bags_saved=None):
+    """route.json for auction_brief.py (references/route.example.json) from a leveling result.
+
+    buy: every material at the route's total need, less what held intermediates already
+    cover (the brief only takes off what the bags hold of that same item), with the
+    route's auction price as "planned" or the NPC price as "vendor"; plus the plans to buy.
+    make: intermediates still to craft. hold: intermediates the bags already cover.
+    ore: smelting pairs the route uses, so the brief can say when the bar is cheaper."""
+    zh = PROFESSION_ZH.get(result["profession"], result["profession"])
+    order = []
+    for seg in result["segments"]:
+        if seg["recipe"] not in order:
+            order.append(seg["recipe"])
+    buy, make, hold = {}, {}, {}
+    for ph in result["phases"]:
+        for m in ph["materials"]:
+            row = buy.setdefault(m["name"], {"item": m["name"], "qty": 0})
+            row["qty"] += m["qty"] - (m.get("covered") or 0)
+            if m["from"] and all(f.startswith("NPC") for f in m["from"]):
+                row["vendor"] = m["unit"]
+            elif m["ah_unit"]:
+                row["planned"] = m["ah_unit"]
+        for m in ph["made"]:
+            have = m.get("have") or 0
+            if m["qty"] > have:
+                row = make.setdefault(m["name"], {"product": m["name"], "qty": 0,
+                                                  "inputs": {n: round(per, 3) for _, n, per in m["inputs"]}})
+                row["qty"] += m["qty"] - have
+            if have:
+                row = hold.setdefault(m["name"], {"item": m["name"], "count": 0, "use": 0})
+                row["count"] += have
+                row["use"] += have
+    for seg in result["segments"]:
+        if seg["plan"] and seg["plan"] not in buy:
+            buy[seg["plan"]] = {"item": seg["plan"], "qty": 1,
+                                ("vendor" if seg["learn"].startswith("NPC") else "planned"): round(seg["plan_price"])}
+    used = set(buy) | set(make) | set(hold)
+    ore = [[s["mats"][0][1], s["name"].replace("熔煉", "") + "錠"] for s in SMELTS
+           if len(s["mats"]) == 1 and s["mats"][0][1] in used and s["name"].replace("熔煉", "") + "錠" in used]
+    source = f"leveling_route.py（{result['prices']}" + (f"、背包 {bags_saved}" if bags_saved else "") + "）"
+    if result.get("notes"):
+        source += "。" + "；".join(result["notes"])
+    return {"name": f"{zh}路線（{result['from']}→{result['to']}：{'→'.join(order)}）",
+            "list": f"我的路線-{zh}{result['to']}", "updated": updated, "products": result["products"],
+            "source": source, "buy": [r for r in buy.values() if r["qty"] > 0], "make": list(make.values()),
+            "hold": list(hold.values()), "ore": ore}
+
+
 def parse_profession(page):
     """Every recipe on /professions/<slug>, trainer ones included."""
     recipes = []
@@ -382,6 +432,8 @@ def main():
                              "materials at Horde prices; items that cannot be disenchanted are vendored), keep")
     parser.add_argument("--route", default="~/.config/wow-forever/route.json",
                         help="route in progress; --me takes its \"products\" setting")
+    parser.add_argument("--save-route", action="store_true",
+                        help="write this route to --route for auction_brief.py (the old file is kept as route-<time>.json)")
     parser.add_argument("--market-json", help="read prices from the market page's data.json instead of the Auctionator save")
     parser.add_argument("--root", default="/Applications/World of Warcraft")
     parser.add_argument("--file", type=Path, help="a specific Auctionator.lua")
@@ -749,8 +801,12 @@ def main():
             if m["qty"]:
                 mats.append(m)
         ph["materials"] = sorted(mats, key=lambda m: -m["subtotal"])
-        ph["made"] = [{"id": m["id"], "name": names.get(m["id"], str(m["id"])), "qty": math.ceil(m["qty"] - 1e-9),
-                       "how": m["how"]} for m in ph["made"].values()]
+        made_list = []
+        for m in ph["made"].values():
+            r = next((r for r in producers.get(m["id"], []) if r["name"] in m["how"]), None)
+            made_list.append({"id": m["id"], "name": names.get(m["id"], str(m["id"])), "qty": math.ceil(m["qty"] - 1e-9),
+                              "how": m["how"], "inputs": [[i, n, q / r["qty"]] for i, n, q in r["mats"]] if r else []})
+        ph["made"] = made_list
         ph["gross"] = sum(m["subtotal"] for m in mats)  # what the rounded shopping list costs
         ph["vendor"] = round(ph["vendor"])
         ph["net"] = ph["gross"] - ph["vendor"]
@@ -775,12 +831,7 @@ def main():
             ph["cash"] = ph["gross"]  # held materials already went in at no cost
         result["bags_saved"] = bags_saved
     elif holdings is not None:
-        made_inputs = {}
-        for ph in result["phases"]:
-            for m in ph["made"]:
-                r = next((r for r in producers.get(m["id"], []) if r["name"] in m["how"]), None)
-                if r:
-                    made_inputs[m["id"]] = [(i, q / r["qty"]) for i, _, q in r["mats"]]
+        made_inputs = {m["id"]: [(i, per) for i, _, per in m["inputs"]] for ph in result["phases"] for m in ph["made"]}
         apply_holdings(result["phases"], holdings, made_inputs)
         result["bags_saved"] = bags_saved
     notes = []
@@ -788,11 +839,22 @@ def main():
         result["character"] = {"level": state["level"], "skill": state["skills"].get(PROFESSION_IDS.get(args.profession)),
                                "mining": args.mining, "api_modified": state["modified"]}
         for cap, level in GATE_LEVEL.items():
-            if args.start < cap < args.end and (state["level"] or 0) < level:
+            # Starting right at the cap (225 → 300) needs the next rank before the first craft.
+            if args.start <= cap < args.end and (state["level"] or 0) < level:
                 notes.append(f"過 {cap} 要先學下一階，需要角色 {level} 級（目前 {state['level']} 級）")
     if args.bags and holdings is None:
         notes.append("找不到 Syndicator 存檔，沒有扣掉已有的材料與設計圖")
     result["notes"] = notes
+    if args.save_route:
+        path = Path(args.route).expanduser()
+        backup = None
+        if path.exists():
+            backup = path.with_name(f"{path.stem}-{datetime.datetime.now():%Y%m%d-%H%M%S}.json")
+            backup.write_bytes(path.read_bytes())
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(route_file(result, today.isoformat(), bags_saved), ensure_ascii=False, indent=2) + "\n",
+                        encoding="utf-8")
+        print(f"路線存到 {path}" + (f"，舊檔備份為 {backup.name}" if backup else ""), file=sys.stderr)
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=1))
         return

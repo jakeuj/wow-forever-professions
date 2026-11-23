@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".agents/skills/wow-forever/scripts"))
 from leveling_route import (DE_MATERIALS, HELD_WEIGHT, SHORT_PENALTY, apply_holdings, cash_cost,  # noqa: E402
                             disenchant_value, disenchant_yield, local_slug, price_floor, prune_route, route_cash,
-                            smelt_producers)
+                            route_file, smelt_producers)
 
 
 class SmeltTest(unittest.TestCase):
@@ -136,6 +136,41 @@ class CashRouteTest(unittest.TestCase):
         self.assertEqual((best, dropped), (8, ["A"]))
         self.assertEqual([st["recipe"]["name"] for st in steps], ["C", "C", "B", "B"])
         self.assertIsNone(prune_route([b], walk, cost))  # nothing covers points 0-1
+
+
+class RouteFileTest(unittest.TestCase):
+    def result(self):
+        mat = lambda name, qty, unit, frm, **kw: {"name": name, "qty": qty, "ah_unit": unit if frm[0] == "部落拍賣場" else None,
+                                                  "unit": unit, "from": frm, **kw}
+        return {"profession": "blacksmithing", "from": 225, "to": 300, "products": "disenchant",
+                "prices": "部落官方即時快照（11/23 16:26）", "notes": ["過 225 要先學下一階，需要角色 35 級（目前 34 級）"],
+                "segments": [
+                    {"recipe": "巨型黑色錘", "plan": None, "plan_price": 0, "learn": "訓練師（未學）"},
+                    {"recipe": "秘銀符文戰錘", "plan": "設計圖：秘銀符文戰錘", "plan_price": 23800, "learn": "部落拍賣場"},
+                    {"recipe": "巨型黑色錘", "plan": None, "plan_price": 0, "learn": "訓練師（未學）"}],
+                "phases": [{"materials": [
+                    mat("秘銀礦石", 618, 1025, ["部落拍賣場"], covered=83, have=0),
+                    mat("暗影石", 40, 255, ["部落拍賣場"], covered=0, have=13),
+                    mat("煤塊", 20, 500, ["NPC 蘇瑞（奧格瑪）"])],
+                    "made": [
+                        {"name": "秘銀錠", "qty": 619, "have": 83, "inputs": [[3858, "秘銀礦石", 1.0]]},
+                        {"name": "緻密砂輪", "qty": 45, "have": 0, "inputs": [[12365, "厚重的石頭", 4.0]]}]}]}
+
+    def test_route_file_for_the_brief(self):
+        route = route_file(self.result(), "2026-11-23", "11/23 16:55")
+        self.assertEqual(route["name"], "鍛造路線（225→300：巨型黑色錘→秘銀符文戰錘）")
+        self.assertEqual(route["list"], "我的路線-鍛造300")
+        buy = {r["item"]: r for r in route["buy"]}
+        self.assertEqual(buy["秘銀礦石"], {"item": "秘銀礦石", "qty": 535, "planned": 1025})  # held bars cover 83 ore
+        self.assertEqual(buy["暗影石"]["qty"], 40)  # the brief takes off the 13 in the bags itself
+        self.assertEqual(buy["煤塊"], {"item": "煤塊", "qty": 20, "vendor": 500})
+        self.assertEqual(buy["設計圖：秘銀符文戰錘"], {"item": "設計圖：秘銀符文戰錘", "qty": 1, "planned": 23800})
+        self.assertEqual(route["make"], [{"product": "秘銀錠", "qty": 536, "inputs": {"秘銀礦石": 1.0}},
+                                         {"product": "緻密砂輪", "qty": 45, "inputs": {"厚重的石頭": 4.0}}])
+        self.assertEqual(route["hold"], [{"item": "秘銀錠", "count": 83, "use": 83}])
+        self.assertEqual(route["ore"], [["秘銀礦石", "秘銀錠"]])
+        self.assertIn("背包 11/23 16:55", route["source"])
+        self.assertIn("35 級", route["source"])
 
 
 class OptionsTest(unittest.TestCase):

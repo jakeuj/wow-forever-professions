@@ -1,5 +1,5 @@
 {
-  "_說明": "複製到 ~/.config/wow-forever/route.json（每台電腦一份，不提交），scripts/auction_brief.py 會多一段練等路線。名稱用遊戲內完整名稱，價格單位是銅（1g = 10000）。buy 的 qty 是路線總需求；有 Syndicator 存檔時腳本會扣掉已有的，hold 的數量也改用存檔，沒有存檔的電腦才手動改 hold 和 updated。products 是成品去處：disenchant（給附魔角色分解）、vendor（賣商人）或 keep（保留），leveling_route.py --me 依它估成品回收。list 是快訊產生的拍賣小幫手匯入行用的清單名稱，只包含要在拍賣場買的 buy 項目與數量。",
+  "_說明": "複製到 ~/.config/wow-forever/route.json（每台電腦一份，不提交），scripts/auction_brief.py 會多一段練等路線。名稱用遊戲內完整名稱，價格單位是銅（1g = 10000）。buy 的 qty 是路線總需求；有 Syndicator 存檔時腳本會扣掉已有的，hold 的數量也改用存檔，沒有存檔的電腦才手動改 hold 和 updated。products 是成品去處：disenchant（給附魔角色分解）、vendor（賣商人）或 keep（保留），leveling_route.py --me 依它估成品回收。list 是快訊產生的拍賣小幫手匯入行用的清單名稱，只包含要在拍賣場買的 buy 項目與數量。換路線或練完一段時用 leveling_route.py --me --to <下一個上限> --save-route 產生，不必手打；舊檔會留成 route-<時間>.json。",
   "name": "鍛造路線（200→225）",
   "list": "我的路線-鍛造225",
   "updated": "2026-11-20",
