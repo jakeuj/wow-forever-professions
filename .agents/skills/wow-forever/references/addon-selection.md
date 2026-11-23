@@ -171,7 +171,7 @@ Wago 的 [ForeverArtisan](https://addons.wago.io/addons/foreverartisan) 依搜�
 | 插件 | 評估用途 |
 | --- | --- |
 | [Polestar Guides](https://www.curseforge.com/wow/addons/polestar-guides) | 任務路線指南；確認是否要啟用自動接交任務。 |
-| [Waylaid Auction Helper](https://www.curseforge.com/wow/addons/waylaid-auction-helper) | 箱子相關交易成本。 |
+| [Waylaid Auction Helper](https://www.curseforge.com/wow/addons/waylaid-auction-helper) | 遭攔截的木箱每點貢獻成本與購物清單；離線試算見[遭攔截的木箱](waylaid-crates.md)。 |
 | [Questie](https://www.curseforge.com/wow/addons/questie) | 任務資料與標示。 |
 | [OneForAll - Forever](https://www.curseforge.com/wow/addons/oneforall-forever) | 多用途指南；先與 GearInsight／地城指南比對。 |
 | [Layer](https://www.curseforge.com/wow/addons/layer) | 分層資訊工具；先比對現有 Layer 模組。 |
