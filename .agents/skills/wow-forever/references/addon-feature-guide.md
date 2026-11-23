@@ -127,13 +127,21 @@ Battle.net API 只給已穿裝備，背包、銀行與信箱要靠插件存檔�
 
 ## 13. CraftProfit Forever：專業視窗內的配方利潤排序
 
-2026-11-23 核對 [作者專案](https://www.curseforge.com/wow/addons/craftprofit-forever)、[發佈檔 9764132](https://www.curseforge.com/wow/addons/craftprofit-forever/files/9764132) 與 [作者原始碼](https://github.com/Vystery/CraftProfit)：`CraftProfit.toc` 列 `Interface: 16001`、`Version: 0.5.14`，Auctionator、TradeSkillMaster 只是 OptionalDeps，資料夾為 `CraftProfit`。發佈 ZIP 沒有下載比對，也還沒在遊戲內驗證。
+2026-11-23 核對 [作者專案](https://www.curseforge.com/wow/addons/craftprofit-forever)、[發佈檔 9764132](https://www.curseforge.com/wow/addons/craftprofit-forever/files/9764132) 與 [作者原始碼](https://github.com/Vystery/CraftProfit)：`CraftProfit.toc` 列 `Interface: 16001`、`Version: 0.5.14`，Auctionator、TradeSkillMaster 只是 OptionalDeps，資料夾為 `CraftProfit`。2026-11-23 站主的 Mac 已安裝，本機 `.toc` 同為 0.5.14，下列算法與存檔格式讀自本機原始碼；遊戲內功能還沒驗證。
 
 - 不開新視窗：內建專業視窗的配方列加上利潤標籤，配方明細多一塊利潤面板，訓練師處標出值得學的配方。`/cf sort` 或專業視窗的「篩選」選單切換按利潤排序（各分類內由高到低），`/cf profit` 只列有賺的配方，`/cf net vendor` 改看賣給商人的淨利，`/cf cut` 設定拍賣手續費。面板的 Shop 可把材料加進它自己的拍賣場購物清單。
 - 價格來源用 `/cf source auto|craftprofit|auctionator|tsm` 切換，`/cf scan` 在拍賣場開著時執行內建掃描。作者 README 註明：拍賣小幫手與 TSM 的價格、訓練師標籤都還沒在遊戲內實測，數字可疑時先改回 `/cf source craftprofit`。
 - 繁中：原始碼沒有語系檔，`.toc` 也沒有載入任何語系，介面是英文；配方與物品名稱照遊戲客戶端顯示。
 - 會對外傳訊：`sendReports` 預設開啟。遊戲擋下動作並點名 CraftProfit 時，紀錄（時間、函式、版本、當時畫面、呼叫堆疊）會密語給作者角色，也會經公會、隊伍裡其他裝了 CraftProfit 的玩家轉送；`/cf report` 會把製作、攜帶與轉送全部關閉。0.5.14 另會從公會與隊伍成員得知有新版，每次登入提示一次，可在選項關閉。
 - 和 Auctionator 製造介面的差別：後者也顯示單一配方的成本與利潤，CraftProfit 多了整個專業依利潤排序、訓練師標籤與回本次數。2026-11-22 YouTube 頻道「老吳魔獸」的永恆賺錢專業影片即以 CraftProfit Forever 搭配 Auctionator 示範。
+- **算法（`Scanner.lua`、`Calculator.lua`）**，本 repo 腳本可以借用：
+  - **深度價**：取最便宜的 20% 在售件數（至少 5、最多 1000 件）照件數加權平均，一張誘餌低價幾乎不影響，整排高價掛單也不會算進去。它的售價預設用最低一口價，`/cf basis market` 才改用深度價。
+  - **正常價**：每天記一次深度價、留 14 天，取前 7 天（不含今天）的中位數，要有 3 天資料；今天比正常價低 10% 以上標便宜、高 10% 以上標偏貴。
+  - **每日賣出量**：同一物品相隔至少 1 小時的兩次掃描間，件數減少的部分換算成一天；到期與下架也算進去，所以是上限。
+  - **淨利**：售價 × 每次產量 − 拍賣抽成（預設 5%）− 製作成本；賣店淨利＝商人收購價 × 產量 − 成本。另算每項材料的「最高能接受價」（超過就不賺）與訓練師配方幾次回本。能自己做的中間材料（礦→錠→零件）在比買便宜時用自製成本，要先開過那個專業視窗。
+- **它沒做的**：不排練等路線（不看配方顏色與升級機率），也不算分解價值，所以不能取代 `scripts/leveling_route.py` 或無限副本手冊；本 repo 的路線與快訊目前用最低一口價，可改用上面的深度價。
+- **存檔（給 agent 讀）**：帳號層 `SavedVariables/CraftProfit.lua` 的 `CraftProfitDB`（另有角色層 `CraftProfitCharDB`）。`vendor` 是去過的商人賣價（物品 ID → 銅）；`recipeCache` 是客戶端給的配方材料與產量範圍，可拿來核對永恆的實際材料；`learned` 是各角色已學配方；`realms["PvP-Horde"]` 下有 `prices`、`history`（各次掃描的件數，算賣出量用）、`ladders`（價位階梯）、`mv`（深度價）、`daily`（每日深度價）、`purchases`。登出時寫成壓縮格式（`packed = 2`：數字用 36 進位、每串約 150 筆，只留這次或上次用到的物品），解法見 `Core.lua` 的 Compact on-disk format，目前還沒有讀取腳本。2026-11-23 剛裝時檔案是空的，要在拍賣場 `/cf scan`、各專業視窗開過一次才有資料。
+- **角色鍵只用名字**：`learned` 與信箱紀錄以「名字-伺服器鍵」區分，不含姓氏；永恆名字相同、姓氏不同的角色會共用一份。站主就有兩隻同名的小號，讀已學配方時不能分出是哪一隻。Mac 上看到的伺服器鍵是 `Unknown`。
 - 其他按利潤排序的插件與挑選方式見 [配方利潤排序候選](addon-selection.md#配方利潤排序候選)。
 
 ## DungeonsForever 與 Auctionator 專業衝等操作
