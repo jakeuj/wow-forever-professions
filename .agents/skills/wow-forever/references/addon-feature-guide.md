@@ -24,6 +24,7 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 | [DungeonJournal](https://www.curseforge.com/wow/addons/dungeonjournal)／ExehnTV | `1707971` | [ForeverDungeonJournal 2.0.1，9547760](https://www.curseforge.com/wow/addons/dungeonjournal/files/9547760) | 2026-11-10 |
 | [DungeonsForever 無限副本手冊](https://www.curseforge.com/wow/addons/dungeonsforever)／yuanyuande（圓圓） | `1709577` | [DungeonsForever2.1.87.zip，9550141](https://www.curseforge.com/wow/addons/dungeonsforever/files/9550141) | 2026-11-10 |
 | [Auctionator](https://www.curseforge.com/wow/addons/auctionator)／plusmouse | `6124` | [345，9548985](https://www.curseforge.com/wow/addons/auctionator/files/9548985) | 2026-11-10 |
+| [CraftProfit Forever](https://www.curseforge.com/wow/addons/craftprofit-forever)／vystery | `1739431` | [CraftProfit 0.5.14，9764132](https://www.curseforge.com/wow/addons/craftprofit-forever/files/9764132) | 2026-11-23 |
 
 `.toc` 細節：Shortest Path 的版本字串為 `v1.30.2`，發佈檔另有 `-forever` 後綴；Leatrix 兩款同理，`.toc` 版本沒有分支後綴。Waypoint UI 的 `WaypointUI.toc` 列 Retail Interface，包內 **`WaypointUI_Camelot.toc` 才列 `16001`**，因此只讀預設 `.toc` 會誤判。以上其餘目標 `.toc` 均列有 `16001`。
 
@@ -122,6 +123,17 @@ Battle.net API 只給已穿裝備，背包、銀行與信箱要靠插件存檔�
 - 繁中介面叫「拍賣小幫手」，拍賣場下方多出「購買／銷售／取消／拍賣小幫手」分頁，購物清單在「購買」分頁。購物清單的匯入格式、讀完整掃描存檔（`/reload` 或登出後才寫入）與價格資料庫不分陣營拍賣場的限制，見 [market-recipe-value.md](market-recipe-value.md#拍賣小幫手auctionator完整掃描)；以上依 347 版原始碼與 2026-11-18 實測。
 - 與 DungeonsForever 的分工是「Auctionator 蒐集行情並管理採買；專業模組計算衝等步驟與缺口」。Baganator／Syndicator、BagSync 的庫存查詢不能直接當成拍賣行情來源；分解估價也需另查材料價格與產出假設。
 
+## 13. CraftProfit Forever：專業視窗內的配方利潤排序
+
+2026-11-23 核對 [作者專案](https://www.curseforge.com/wow/addons/craftprofit-forever)、[發佈檔 9764132](https://www.curseforge.com/wow/addons/craftprofit-forever/files/9764132) 與 [作者原始碼](https://github.com/Vystery/CraftProfit)：`CraftProfit.toc` 列 `Interface: 16001`、`Version: 0.5.14`，Auctionator、TradeSkillMaster 只是 OptionalDeps，資料夾為 `CraftProfit`。發佈 ZIP 沒有下載比對，也還沒在遊戲內驗證。
+
+- 不開新視窗：內建專業視窗的配方列加上利潤標籤，配方明細多一塊利潤面板，訓練師處標出值得學的配方。`/cf sort` 或專業視窗的「篩選」選單切換按利潤排序（各分類內由高到低），`/cf profit` 只列有賺的配方，`/cf net vendor` 改看賣給商人的淨利，`/cf cut` 設定拍賣手續費。面板的 Shop 可把材料加進它自己的拍賣場購物清單。
+- 價格來源用 `/cf source auto|craftprofit|auctionator|tsm` 切換，`/cf scan` 在拍賣場開著時執行內建掃描。作者 README 註明：拍賣小幫手與 TSM 的價格、訓練師標籤都還沒在遊戲內實測，數字可疑時先改回 `/cf source craftprofit`。
+- 繁中：原始碼沒有語系檔，`.toc` 也沒有載入任何語系，介面是英文；配方與物品名稱照遊戲客戶端顯示。
+- 會對外傳訊：`sendReports` 預設開啟。遊戲擋下動作並點名 CraftProfit 時，紀錄（時間、函式、版本、當時畫面、呼叫堆疊）會密語給作者角色，也會經公會、隊伍裡其他裝了 CraftProfit 的玩家轉送；`/cf report` 會把製作、攜帶與轉送全部關閉。0.5.14 另會從公會與隊伍成員得知有新版，每次登入提示一次，可在選項關閉。
+- 和 Auctionator 製造介面的差別：後者也顯示單一配方的成本與利潤，CraftProfit 多了整個專業依利潤排序、訓練師標籤與回本次數。2026-11-22 YouTube 頻道「老吳魔獸」的永恆賺錢專業影片即以 CraftProfit Forever 搭配 Auctionator 示範。
+- 其他按利潤排序的插件與挑選方式見 [配方利潤排序候選](addon-selection.md#配方利潤排序候選)。
+
 ## DungeonsForever 與 Auctionator 專業衝等操作
 
 遊戲內的完整掃描、自動選路、缺料處理及匯入步驟見 [專業衝等操作](profession-addon-workflow.md)。
@@ -145,3 +157,4 @@ Battle.net API 只給已穿裝備，背包、銀行與信箱要靠插件存檔�
 | 書籍、睡袋任務與收藏查詢 | DungeonsForever＋探索模組；與 HandyNotes 的書籍／地圖標記逐項比較，先核對目前角色的進度。 |
 | 專業衝等步驟、材料缺口與成本 | DungeonsForever＋專業模組＋Auctionator；先取得完整行情，再核對目標技能、配方與庫存。 |
 | 拍賣行情與材料採買 | Auctionator；背包／跨角色庫存插件另負責已有物資。 |
+| 找出哪些配方有賺、按利潤排序 | CraftProfit Forever；其他候選見 [配方利潤排序候選](addon-selection.md#配方利潤排序候選)。行情來源仍以 Auctionator 完整掃描為主。 |

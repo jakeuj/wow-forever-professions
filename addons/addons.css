@@ -167,6 +167,12 @@
   color: #c0e1c6;
 }
 
+.addon-state[data-addon-state="planned"] {
+  background: #3a3222;
+  border-color: var(--gold-dim);
+  color: var(--gold-bright);
+}
+
 .addon-card details {
   border-top: 1px solid var(--line);
   padding-top: 0.55rem;

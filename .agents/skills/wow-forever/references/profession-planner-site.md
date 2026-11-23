@@ -81,6 +81,14 @@
 - 煉金練等頁：路線照 wowf.io 的「煉金快速升級」配方順序，次數用阿莫比的變色點數重算，價格依 `market/data.json`；沒有像鍛造頁那樣的產生器，是手寫快照，以 `leveling/leveling.js` 重算材料費（瓶子是 `data-lv-qty="0"` 加 `data-lv-fixed` 的商人價列）。訓練師等級門檻（技工 50／10 級、專家 125／20 級、工匠 200／35 級）與石鱗魚油一次產出 2 個，取自 DungeonsForeverProf 的 `Core/Data/Data_ProfTrainers.lua` 與 `zhTW/Data_ProfRecipes.lua`（阿莫比寫 1 個）。價格大變或路線要改時，重算各段次數、兩階段材料與賣店收回，再改頁面與預算卡。
 - 驗證：桌機與 360px 手機無橫向溢出、手機版表格改為卡片、專業頁尾連結可進入各筆記，頁首品牌通往公會首頁，回專業連結通往 `../professions/`。行情頁另確認頁首的掃描日期、件數與官方 API 時間，搜尋與類型篩選、排序、「只看現在有貨」與「只看收藏」、收藏後重新整理仍在、分享連結在清空收藏的瀏覽器打開與加入收藏、網址雜湊還原條件、「顯示更多」、點名稱複製、圖示與走勢線，以及官方資料讀不到時改用掃描價格。瀏覽器窗格隱藏時 `innerWidth`、`clientWidth` 都是 0，量到的溢出沒有意義，先用 `resize_window` 指定 360 與桌機寬度再量。手機溢出用 `document.documentElement.scrollWidth` 對 `clientWidth` 判斷：模擬手機時頁面被撐寬，`innerWidth` 會跟著變大（曾因資料依據區不換行的時間字串變成 462px）。自動化腳本點「複製分享連結」寫不進剪貼簿，會改顯示手動複製欄位，這是預期的備援；實際點擊才會複製。
 
+## 個人整理頁：插件清單
+
+`addons/index.html`（`https://jakeuj.com/wow-forever-professions/addons/`，`noindex`）是站主插件的手寫盤點，從首頁玩家工具進入；`addons/addons.js` 依用途、啟用狀態與關鍵字篩選卡片。
+
+- 頁首的插件數、資料夾數、客戶端版本與盤點日期都取自同一次本機盤點；改動時連同「資料依據」的存檔時間一起更新。
+- 卡片的 `data-addon-state` 有 `enabled`（已啟用）、`disabled`（已停用）、`planned`（準備安裝）。還沒裝的插件標 `planned`，版本寫 CurseForge 最新發佈，「安裝前須知」列預計資料夾、語系與需要注意的設定，且不計入盤點數字。實際裝好並重新盤點後，改回安裝目錄格式與 `enabled`，再更新頁首數字。
+- 改 `addons.css` 或 `addons.js` 時同步更新 `index.html` 引用的 `?v=` 查詢字串。
+
 ## 外部資料整合
 
 加入物品提示框、材料行情、配方清單或公會工匠名冊時，先讀 [public-data-sources.md](public-data-sources.md) 的增強方向與靜態網站整合模式。需要 API 憑證的資料由排程預先產生；發布方式若從 `main` 根目錄改為 Actions 部署，同步更新本檔與 README。
