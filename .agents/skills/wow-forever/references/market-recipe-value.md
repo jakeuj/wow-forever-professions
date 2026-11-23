@@ -32,6 +32,7 @@
 - **裝備類成品**：先到成品物品頁看綁定。拾取後綁定（例：黑鐵鎧甲）只有工匠本人能穿，配方價值看工匠的職業與用途。成品寫「需要鍛造（N）」的盾刺、武器鏈等永久附加物品，買家可能也得是鐵匠，轉賣行情要保守估。高階裝備的材料動輒數百金、又沒有成品掛單時，配方的價值在自用或公會開團，不在轉賣。
 - **沒有成品掛單**：毛利空白代表沒有價格訊號，不代表不賺。永恆新增的藥劑多屬此類，依效果與團本需求判斷；配方便宜就先買起來卡位。
 - **轉化**：有冷卻，毛利指每次冷卻的收益；冷卻長度以遊戲內配方說明為準。
+- **礦石與錠**：熔煉一般是一礦一錠，礦石價卻可能高過錠（2026-11-23 部落秘銀礦石 25.74s、秘銀錠 19.99s；真銀礦石 53.99s、真銀錠 23.95s）。這時挖到的礦直接賣，要用錠就直接買錠；自己熔前先比兩邊價格。
 - **技能**：配方可以先買，技能點夠了再學；回報時標出「需 N」。
 
 ## 配方期貨：囤配方等漲價
@@ -86,7 +87,17 @@ curl -s https://raw.githubusercontent.com/jakeuj/wow-forever-professions/auction
 - `updatedAt` 是最新快照的時間。`items[物品 ID]` 是 `[目前件數, [[時, 價], ...]]`，只記價格改變的時點：「時」是 UTC 的 Unix 時數（台灣時間加 8 小時），「價」是銅，`null` 表示從那時起沒貨，可能是賣掉也可能是到期。物品名稱與分類用 `market/data.json` 同一個 ID 對照。
 - `hourlyFrom` 之後是逐小時資料，`hours` 列出實際收到的快照；更早的每天在台灣午夜留一個點，值是當天最低價，最多保留 90 天。格式以 `scripts/collect-auctions.py` 開頭的說明為準。
 - 這是部落最新而且連續的價格，查部落裝備與配方的走勢、配方期貨買點時優先用它；對面陣營與中立拍賣場仍看阿莫比。
-- GitHub 的每小時排程常延遲或漏跑（2026-11-20 到下午只跑了 00、01、08 時），先看 `updatedAt`。要現價又不想等時，把 `auctions.json` 複製到暫存位置，用 `forever_api.py` 的 `credentials()` 取得鑰匙圈或 DPAPI 的憑證，設成 `BLIZZARD_CLIENT_ID`／`BLIZZARD_CLIENT_SECRET` 後跑 `python3 scripts/collect-auctions.py --out <暫存複本>`；不加 `--publish-depth` 就只寫那份檔，不影響網站。各價位件數（判斷「1g 的只有 1 張」）用 `scripts/blizzard_api.py` 的 `auction_depth` 對同一次回應計算。網站要跟著更新時改跑 `gh workflow run auction-collect.yml`。
+- GitHub 的每小時排程常延遲或漏跑（2026-11-20 到下午只跑了 00、01、08 時；11/21～11/23 週末三天只收到 9 次），先看 `updatedAt`。要現價和各價位件數（判斷「1g 的只有 1 張」）時，用下面的 `auction_changes.py --live` 直接向 API 取一次，不寫任何檔案。要把現價寫進自己的 `auctions.json` 複本時，用 `forever_api.py` 的 `credentials()` 取得憑證，設成 `BLIZZARD_CLIENT_ID`／`BLIZZARD_CLIENT_SECRET` 後跑 `python3 scripts/collect-auctions.py --out <暫存複本>`；不加 `--publish-depth` 就不影響網站。網站要跟著更新時改跑 `gh workflow run auction-collect.yml`。
+- **期間漲跌**：站主幾天沒上線問「物價有什麼要注意」，或更新個人頁之前，跑：
+
+  ```sh
+  python3 '<skill-dir>/scripts/auction_changes.py' --from-html endgame/index.html alchemy/index.html speculation/index.html --since '2026-11-20 17' --live
+  python3 '<skill-dir>/scripts/auction_changes.py' --movers --type 金屬 --min-price 0.05
+  python3 '<skill-dir>/scripts/auction_changes.py' 秘銀錠 魔紋布 --ids 3859
+  ```
+
+  每項列出 `--since`（台灣時間，預設最新快照前 24 小時）當時的價、現在的價、漲跌、期間最低與最高和最近幾次變動；`--live` 再加上 API 即時快照的各價位件數。`--movers` 改列全部物品的漲最多、跌最多、賣光與新上架，`--type` 依阿莫比的類型篩選（如 `金屬`、`草藥`、`藥水`、`鍊金術`）。名稱用阿莫比的物品清單對 ID，所以 `market/data.json` 沒掃到的配方與永恆新物品（如沉重瑟銀錠 251291）也查得到；同名時去掉垃圾品質（「黑蓮花」取草藥 13468，不取垃圾 6986）。
+- **期間漲跌的判讀**：紀錄只有最低價、沒有各時點的件數，基準時點若只剩一張離群掛單，漲跌幅會失真（11/20 17 時卡德加的鬍鬚、地根草都是一張 50g，週一回到 3.50s、1.40s）。回報前用 `--live` 看現在各價位件數，並以站主的路線、庫存與個人頁物品為主，不必逐一列出全場漲跌。
 - 阿莫比物品頁「各陣營拍賣場最近看到」的時間可能比官方快照新；部落價兩邊不同時，等下一次官方快照再寫進頁面。API 每小時更新一次，分鐘數會漂移（11/18 約 :06，11/20 約 :26），以回應的 `Last-Modified` 為準。
 
 ### 收藏清單截圖
