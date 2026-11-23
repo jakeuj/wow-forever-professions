@@ -105,6 +105,22 @@ def live_levels():
     return {k: sorted(v.items()) for k, v in levels.items()}, modified
 
 
+def load_record(source=None):
+    """auctions.json from a path or URL (default: the auction-data branch)."""
+    source = source or AUCTIONS_URL
+    if re.match(r"https?://", source):
+        request = urllib.request.Request(source, headers={"User-Agent": av.USER_AGENT})
+        with urllib.request.urlopen(request, timeout=60) as resp:
+            return json.loads(resp.read())
+    return json.loads(Path(source).read_text(encoding="utf-8"))
+
+
+def load_market(cache, max_age):
+    """wowamobi's /api/market/items: `meta` (id -> name, quality, class, type) and per-realm rows."""
+    cache.mkdir(parents=True, exist_ok=True)
+    return json.loads(av.fetch(f"{av.BASE}/api/market/items", cache, "market-items.json", max_age, 0))
+
+
 def resolve(names, meta, record):
     """name -> item ids; drop junk duplicates (e.g. 黑蓮花) and ids the record never saw."""
     by_name = {}
@@ -166,17 +182,11 @@ def main():
     if not (names or args.ids or args.movers):
         parser.error("give item names, --from-html, --ids or --movers")
 
-    source = args.auctions or AUCTIONS_URL
-    if re.match(r"https?://", source):
-        with urllib.request.urlopen(urllib.request.Request(source, headers={"User-Agent": av.USER_AGENT}), timeout=60) as resp:
-            data = json.loads(resp.read())
-    else:
-        data = json.loads(Path(source).read_text(encoding="utf-8"))
+    data = load_record(args.auctions)
     record, hours = data["items"], data["hours"]
     now = hours[-1]
     since = args.since if args.since is not None else now - 24
-    args.cache.mkdir(parents=True, exist_ok=True)
-    meta = json.loads(av.fetch(f"{av.BASE}/api/market/items", args.cache, "market-items.json", args.max_age, 0))["meta"]
+    meta = load_market(args.cache, args.max_age)["meta"]
     levels, modified = live_levels() if args.live else (None, None)
     name_count = {}
     for info in meta.values():
