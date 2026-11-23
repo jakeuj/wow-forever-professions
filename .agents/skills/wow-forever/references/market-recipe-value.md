@@ -120,6 +120,8 @@ python3 '<skill-dir>/scripts/auction_brief.py'
 
 站主說已經買到某項（或快訊列出「到價但你已經有」）時，這次回答先把它排除，再依 [profession-planner-site.md](profession-planner-site.md) 把頁面上那項改成已買到，並在 local.md 記一筆「已買到」，之後的建議才不會再推它。
 
+大宗材料也可以設觸發價，例如鐵匠清單的瑟銀錠 16s（2026-11-23 依部落 11/19 起的價格分布，四分之一分位約 16s；鍛造 225→300 約要 970 個）。到價時通常還有很多件，快訊會列在「可以等」的「到價、貨還多」，回答時提醒分批買，不放進「現在處理」。
+
 觸發價寫在頁面上：某項的建議改了（例如「10g 以下再看」改成 8g），`data-ah-buy-below` 要一起改，見 [profession-planner-site.md](profession-planner-site.md)。
 
 ### 收藏清單截圖
