@@ -10,6 +10,7 @@
 .lv-card-note { margin: 12px 0 0; font-size: 11px; line-height: 1.85; color: var(--muted); }
 
 .lv-route { margin-top: 34px; }
+.lv-route + .eg-table { margin-top: 34px; }
 .lv-sub { display: block; margin-top: 2px; font-size: 11px; color: var(--muted); }
 
 .lv-mats + .lv-mats { margin-top: 38px; }
@@ -45,12 +46,15 @@
 .lv-made > span { margin-right: 6px; color: var(--gold-dim); }
 
 /* Route variant switcher. Plain anchor links without JavaScript; leveling.js adds .is-tabs. */
-.lv-variants { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 8px; margin-bottom: 8px; }
+.lv-variants { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-top: 8px; margin-bottom: 8px; }
 .lv-variants a { display: grid; gap: 2px; padding: 12px 14px; border: 1px solid #74603d88; background: #cfb17a0a; color: var(--text); text-decoration: none; }
 .lv-variants a:hover { border-color: var(--gold-dim); }
 .lv-variants strong { font-family: var(--serif); font-size: 16px; font-weight: 600; color: var(--gold-bright); }
 .lv-variants small { font-size: 11px; color: var(--muted); }
 .lv-variants.is-tabs a[aria-current="true"] { border-color: var(--gold); background: #cfb17a1f; box-shadow: inset 0 -2px 0 var(--gold); }
+@media (max-width: 900px) {
+  .lv-variants { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 @media (max-width: 640px) {
   .lv-variants { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .lv-variants a { padding: 10px; }

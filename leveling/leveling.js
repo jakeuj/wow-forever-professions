@@ -39,7 +39,7 @@
   if (!phases.length) return;
 
   const trim = text => text.replace(/\.0$/, '');
-  const unit = c => (c >= 10000 ? `${(c / 10000).toFixed(2)}g` : `${trim((c / 100).toFixed(1))} 銀`);
+  const unit = c => (c >= 10000 ? `${(c / 10000).toFixed(2)}g` : c < 10 ? `${c} 銅` : `${trim((c / 100).toFixed(1))} 銀`);
   const total = c => (c >= 10000 ? `${(c / 10000).toFixed(1)}g` : unit(c));
   const setText = (root, selector, text) => root.querySelectorAll(selector).forEach(node => { node.textContent = text; });
   const shortTag = () => Object.assign(document.createElement('span'), { className: 'eg-tag skip', textContent: '不夠' });
