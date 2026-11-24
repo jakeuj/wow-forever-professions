@@ -1,5 +1,6 @@
 import { SNAPSHOT_KEYS, marketExpiry, readSnapshot } from './snapshots.mjs';
 import { armoryResponse } from './armory.mjs';
+import { mcpResponse } from './mcp.mjs';
 
 const headers = {
   'Access-Control-Allow-Origin': 'https://jakeuj.com',
@@ -10,6 +11,7 @@ const headers = {
 export default {
   async fetch(request, env) {
     const pathname = new URL(request.url).pathname;
+    if (pathname === '/mcp') return mcpResponse(request, env);
     const lookup = pathname.match(/^\/(characters|items)\/([^/]+)\.json$/u);
     if (lookup) {
       const armoryHeaders = { ...headers, 'X-Dawnblade-Armory': '1', 'Access-Control-Expose-Headers': 'X-Dawnblade-Armory' };
