@@ -160,7 +160,7 @@ def render(stamp, name, results, first_round, *, official=False):
             f'<a class="text-link" href="{reference}/ranks">訓練師與升階 ↗</a>',
         ]
         if slug == "blacksmithing":
-            links.append('<a class="text-link" href="../leveling/">既有鍛造 200→300</a>')
+            links.append('<a class="text-link" href="../leveling/">既有鍛造 225→300</a>')
         if slug == "alchemy":
             links.append('<a class="text-link" href="../alchemy-leveling/">既有鍊金路線</a>')
         route_note = f'本次採用 {escape(label)}。'

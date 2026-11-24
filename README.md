@@ -70,7 +70,7 @@ Publisher 另有 cron trigger 啟動拍賣收集（見 `guild/worker/dispatch.mj
 - [`endgame/`](https://jakeuj.com/wow-forever-professions/endgame/)：聖騎鐵匠的附加物品、依專精挑選的設計圖、聖騎職業套裝、軍團鋼瓶頸與材料。
 - [`alchemy/`](https://jakeuj.com/wow-forever-professions/alchemy/)：分享給煉金同伴的轉化、配方（AH／NPC／商人青睞／看到再收）與材料行情。
 - [`speculation/`](https://jakeuj.com/wow-forever-professions/speculation/)：配方期貨清單，依經典版經驗整理會漲的條件、可囤與不要囤的配方。
-- [`leveling/`](https://jakeuj.com/wow-forever-professions/leveling/)：鍛造 200→300 的最省路線，列出每段配方與次數，以及每種材料的數量、單價、小計與佔比長條。
+- [`leveling/`](https://jakeuj.com/wow-forever-professions/leveling/)：鍛造 225→300 的最省路線（採礦 250 自熔瑟銀）、買錠走法與聖騎自用，列出每段配方與次數，以及每種材料的數量、單價、小計與佔比長條。
 - [`alchemy-leveling/`](https://jakeuj.com/wow-forever-professions/alchemy-leveling/)：煉金 1→300 路線，照 wowf.io 的配方順序、用部落掃描價重算，列出每段次數、配方來源（拍賣場或 NPC）與每種材料的數量、單價、小計與佔比；材料費同樣由 `leveling/leveling.js` 讀 `market/data.json` 重算
 - [`cross-faction/`](https://jakeuj.com/wow-forever-professions/cross-faction/)：部落比聯盟便宜的物品，依價差由高到低排，附中立拍賣場轉賣淨利（經典版抽成 15% 估算）。部落價取官方 API 即時掛單，聯盟與中立價取阿莫比的掃描；技能的 `faction_spread.py --json` 產生資料，`python3 scripts/build-cross-faction-page.py <JSON>` 填頁面標記內的表格。
 - [`waylaid/`](https://jakeuj.com/wow-forever-professions/waylaid/)：遭攔截的木箱換商人貢獻點，哪一種每點最便宜，以及湊到目標點數（網址參數 `?goal=300&level=34`）要買的木箱與材料，可複製拍賣小幫手清單。開頁時讀 `market-depth.json` 的部落各價位件數重算，三小時內的資料都讀不到就不顯示價格。木箱、填法與貢獻點取自 [遭攔截木箱助手](https://www.curseforge.com/wow/addons/waylaid-auction-helper) v1.3.0 的 `Data.lua` 與 `Favor.lua`（MIT），插件改版時重新產生 `waylaid/data.mjs`，名稱用阿莫比物品清單的繁中名。
@@ -87,7 +87,7 @@ Publisher 另有 cron trigger 啟動拍賣收集（見 `guild/worker/dispatch.mj
   - 觸發：GitHub 自己的每小時排程實際一天只跑 3～4 次（2026-11-19～11-23），所以改由 Publisher Worker 的 Cloudflare cron（`guild/worker/wrangler.publish.toml`，每小時 :10、:40）呼叫 GitHub API 的 `workflow_dispatch`，程式在 `guild/worker/dispatch.mjs`。同一小時已記過的快照會跳過，所以一小時兩次只記一次；GitHub 排程留著當備援。Publisher 需要 Cloudflare secret `GITHUB_DISPATCH_TOKEN`：只授權本 repo、權限 Actions「Read and write」的 fine-grained token。設定與檢查見下方 [公會概況與工匠名冊](#公會概況與工匠名冊) 的 Worker 段落。
   - 每小時件數：同一個 run 另把能堆疊物品的 `[最低單價, 上架件數, 最便宜 20 件均價]` 追加到 `auction-data` 分支的 `hourly/<台灣日期>.jsonl`（一行一次快照，約 20 KB；保留 56 天，格式見 `collect-auctions.py` 開頭）。行情頁不讀這些檔。累積一兩週後用技能的 `scripts/auction_hours.py` 比較各台灣時段（`--weekday` 比星期）的價格與件數，見[時段與星期的價格](.agents/skills/wow-forever/references/auction-market.md#時段與星期的價格)。
 - 官方 API 涵蓋率：手動執行的 `.github/workflows/api-probe.yml` 跑技能的 `scripts/forever_api_coverage.py`，把官方 Retail／Classic 文件列出的每個端點換成永恆路徑呼叫一次，結果寫進 Step Summary 與 `api-probe` artifact。選填的 repo Secret `FOREVER_PROBE_CHARACTER`（`名字-姓氏`）供角色端點取樣，輸出時會遮掉。操作見 [端點實測與探測](.agents/skills/wow-forever/references/battlenet-api-coverage.md)，個別查詢與憑證設定見 [本機查詢工具](.agents/skills/wow-forever/references/battlenet-local-tools.md)。
-- 練等頁的 HTML 是路線與價格的快照；`leveling/leveling.js` 開頁時讀 `market/data.json`（依物品 ID），重算單價、小計、佔比、階段合計與設計圖價，所以重建行情資料後材料費會跟著更新。路線本身要重排時，執行技能的 `scripts/leveling_route.py --from 200 --market-json market/data.json --json > route.json`，再跑 `python3 scripts/build-leveling-page.py route.json` 填好頁面的路線、材料與設計圖表（標記外的說明文字手改）。路線會扣掉拍賣場買掉的件數，不夠就換配方或自製中間材料。
+- 練等頁的 HTML 是路線與價格的快照；`leveling/leveling.js` 開頁時讀 `market/data.json`（依物品 ID），重算單價、小計、佔比、階段合計與設計圖價，所以重建行情資料後材料費會跟著更新。路線本身要重排時，執行技能的 `scripts/leveling_route.py --from 225 --to 300 --mining 250 --products disenchant --live --json > route.json`，再跑 `python3 scripts/build-leveling-page.py route.json` 填好頁面的路線、材料與設計圖表（第二個分頁用 `--mining 230` 的結果加 `--prefix de-`；標記外的說明文字手改）。路線會扣掉拍賣場買掉的件數，不夠就換配方或自製中間材料。
 
 ## 六項製造升級總覽
 
