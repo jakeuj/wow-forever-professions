@@ -25,7 +25,7 @@ description: 查證《魔獸世界：永恆》（WoW Forever／wowf）台服玩�
 | 依技能門檻與庫存算練等路線、材料或成本 | [專業練等試算](references/leveling-route.md) |
 | 遊戲內自動選路、完整掃描與缺料清單 | [DungeonsForever＋Auctionator 專業衝等](references/profession-addon-workflow.md) |
 | 現價、期間漲跌、跨陣營價差、時段分析、購物清單或掃描截圖 | 選讀 [拍賣行情](references/auction-market.md)的對應章節。問現在該買或賣什麼時，直接讀[行情快訊](references/auction-market.md#行情快訊現在該買賣什麼)。 |
-| 配方毛利、NPC／任務來源、囤配方或回本 | [配方毛利與採買](references/market-recipe-value.md)。找遊戲內排序工具時讀 [配方利潤插件](references/addon-selection.md#配方利潤排序候選)。 |
+| 配方毛利、NPC／任務來源、囤配方、回本、做來賣店（大廚師料理）或冷卻轉化（月布、篩鹽器、奧金） | [配方毛利與採買](references/market-recipe-value.md)。找遊戲內排序工具時讀 [配方利潤插件](references/addon-selection.md#配方利潤排序候選)。 |
 | 遭攔截的木箱、商人貢獻點：哪種箱子便宜、購物清單、算進自己的箱子或遊戲內掃描 | [遭攔截的木箱](references/waylaid-crates.md) |
 | 工匠令狀、補給聲望（杜洛塔補給與物流）：哪份令狀便宜、每天衝多少、密封令狀 | [工匠令狀與補給聲望](references/craftsman-writs.md) |
 | 60 級製造、團本消耗品與配方取得優先序 | [後期製造需求](references/endgame-crafting.md) |
