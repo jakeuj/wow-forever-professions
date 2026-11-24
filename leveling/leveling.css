@@ -45,7 +45,7 @@
 .lv-made > span { margin-right: 6px; color: var(--gold-dim); }
 
 /* Route variant switcher. Plain anchor links without JavaScript; leveling.js adds .is-tabs. */
-.lv-variants { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 8px; margin-bottom: 8px; }
+.lv-variants { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 8px; margin-bottom: 8px; }
 .lv-variants a { display: grid; gap: 2px; padding: 12px 14px; border: 1px solid #74603d88; background: #cfb17a0a; color: var(--text); text-decoration: none; }
 .lv-variants a:hover { border-color: var(--gold-dim); }
 .lv-variants strong { font-family: var(--serif); font-size: 16px; font-weight: 600; color: var(--gold-bright); }
@@ -54,6 +54,7 @@
 @media (max-width: 640px) {
   .lv-variants { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .lv-variants a { padding: 10px; }
+  .lv-variants a:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .lv-variants strong { font-size: 14px; }
 }
 
