@@ -150,6 +150,44 @@ def parse_profession(page):
     return recipes
 
 
+def listed_in_scan(items, scan_started):
+    """({item id: (lowest buyout, listed count)}, items dropped) from one Auctionator database.
+
+    Auctionator keeps an item's last price after it sells out, so only items seen on or
+    after the day of the last full scan count as listed (without a recorded full scan: the
+    newest day in the database). Days are all it stores: an item that sold out between two
+    scans of one day still counts."""
+    seen = {}
+    for key, rec in items.items():
+        m = re.match(r"(?:[a-z]+:)?(\d+)", str(key))
+        if not m or not isinstance(rec, dict) or not rec.get("m"):
+            continue
+        days = {int(d) for d in list(rec.get("l") or {}) + list(rec.get("h") or {})}
+        if days:
+            seen[key] = (int(m.group(1)), max(days), rec)
+    if scan_started:
+        since = (datetime.date.fromtimestamp(scan_started) - ap.DAY0).days
+    else:
+        since = max((day for _, day, _ in seen.values()), default=0)
+    prices, dropped = {}, 0
+    for item_id, day, rec in seen.values():
+        if day < since:
+            dropped += 1
+            continue
+        avail = rec.get("a") or {}
+        if item_id not in prices or rec["m"] < prices[item_id][0]:
+            prices[item_id] = (rec["m"], avail.get(str(day), avail.get(day)))
+    return prices, dropped
+
+
+def listed_on_market_page(data):
+    """{item id: (lowest buyout, listed count)} in market/data.json; rows last seen before
+    its latest day, or with no stock, are left over from earlier scans."""
+    col = {k: data["fields"].index(k) for k in ("id", "price", "count", "day")}
+    return {r[col["id"]]: (r[col["price"]], r[col["count"]]) for r in data["items"]
+            if r[col["price"]] and r[col["count"]] != 0 and r[col["day"]] >= data["latestDay"]}
+
+
 def load_scan(args):
     """{item id: (lowest buyout, listed count)} and a label for the source."""
     if args.live:
@@ -160,27 +198,17 @@ def load_scan(args):
                 f"部落官方即時快照（{auction_brief.taiwan_time(modified)}）")
     if args.market_json:
         data = json.loads(Path(args.market_json).read_text(encoding="utf-8"))
-        col = {k: data["fields"].index(k) for k in ("id", "price", "count")}
-        prices = {r[col["id"]]: (r[col["price"]], r[col["count"]]) for r in data["items"] if r[col["price"]]}
+        prices = listed_on_market_page(data)
         return prices, f"行情頁資料（存檔 {data.get('savedAt', '?')}）"
     path = args.file or next(iter(ap.find_saved_files(args.root)), None)
     if path is None or not path.is_file():
         sys.exit("Auctionator.lua not found; /reload in game first, or pass --market-json market/data.json")
     realms = ap.load_price_db(path)
     items = realms[max(realms, key=lambda k: len(realms[k]) if isinstance(realms[k], dict) else 0)]
-    prices = {}
-    for key, rec in items.items():
-        m = re.match(r"(?:[a-z]+:)?(\d+)", str(key))
-        if not m or not isinstance(rec, dict) or not rec.get("m"):
-            continue
-        days = sorted({int(d) for d in list(rec.get("l") or {}) + list(rec.get("h") or {})})
-        avail = rec.get("a") or {}
-        count = avail.get(str(days[-1]), avail.get(days[-1])) if days else None
-        item_id = int(m.group(1))
-        if item_id not in prices or rec["m"] < prices[item_id][0]:
-            prices[item_id] = (rec["m"], count)
+    prices, dropped = listed_in_scan(items, ap.full_scan_started(path))
     saved = datetime.datetime.fromtimestamp(path.stat().st_mtime)
-    return prices, f"拍賣小幫手存檔（{saved:%Y-%m-%d %H:%M}）"
+    skipped = f"，略過 {dropped} 件較早才看到的舊價" if dropped else ""
+    return prices, f"拍賣小幫手存檔（{saved:%Y-%m-%d %H:%M}{skipped}）"
 
 
 class Pricer:

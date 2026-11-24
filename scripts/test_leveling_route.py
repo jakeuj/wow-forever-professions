@@ -1,3 +1,4 @@
+import datetime
 import sys
 import tempfile
 import unittest
@@ -5,7 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".agents/skills/wow-forever/scripts"))
 from leveling_pricing import (DE_MATERIALS, HELD_WEIGHT, SHORT_PENALTY, disenchant_value,  # noqa: E402
-                              disenchant_yield, price_floor, smelt_producers)
+                              disenchant_yield, listed_in_scan, listed_on_market_page,
+                              price_floor, smelt_producers)
 from leveling_report import apply_holdings, route_file  # noqa: E402
 from leveling_route import local_slug  # noqa: E402
 from leveling_search import cash_cost, chance, prune_route, route_cash, value_route  # noqa: E402
@@ -20,6 +22,40 @@ class SmeltTest(unittest.TestCase):
         self.assertEqual(smelt_producers(None), [])
         steel = next(r for r in smelt_producers(201) if r["name"] == "熔煉鋼")
         self.assertEqual([i for i, _, _ in steel["mats"]], [3575, 3857])  # iron bar + coal, not ore
+
+
+class ListedTest(unittest.TestCase):
+    DAY = 2519  # days since 2020-01-01: 2026-11-24
+    STARTED = datetime.datetime(2026, 11, 24, 10, 29).timestamp()
+
+    def rec(self, price, days, count=1):
+        return {"m": price, "h": {str(d): price for d in days}, "a": {str(days[-1]): count}}
+
+    def test_prices_from_before_the_full_scan_are_not_listed(self):
+        items = {"12697": self.rec(8300, [2513, self.DAY - 1]),   # sold out since yesterday
+                 "12359": self.rec(1800, [self.DAY - 1, self.DAY], 568),
+                 "7909": self.rec(1090, [self.DAY + 1], 47)}      # searched after the scan
+        self.assertEqual(listed_in_scan(items, self.STARTED),
+                         ({12359: (1800, 568), 7909: (1090, 47)}, 1))
+
+    def test_scan_stays_usable_when_single_items_were_searched_later(self):
+        items = {"12359": self.rec(1800, [self.DAY], 568), "7909": self.rec(1090, [self.DAY + 3], 47)}
+        self.assertEqual(listed_in_scan(items, self.STARTED)[1], 0)
+
+    def test_without_a_recorded_scan_the_newest_day_counts(self):
+        items = {"1": self.rec(10, [self.DAY - 1]), "2": self.rec(20, [self.DAY])}
+        self.assertEqual(listed_in_scan(items, None), ({2: (20, 1)}, 1))
+        self.assertEqual(listed_in_scan({}, None), ({}, 0))
+
+    def test_cheapest_listed_variant_wins_over_a_stale_one(self):
+        items = {"5": self.rec(50, [self.DAY - 1]), "gr:5:1": self.rec(90, [self.DAY], 2)}
+        self.assertEqual(listed_in_scan(items, self.STARTED)[0], {5: (90, 2)})
+
+    def test_market_page_rows_left_over_from_earlier_days(self):
+        data = {"fields": ["id", "price", "count", "day"], "latestDay": "2026-11-24",
+                "items": [[1, 10, 3, "2026-11-24"], [2, 20, 3, "2026-11-23"], [3, 30, 0, "2026-11-24"],
+                          [4, 40, None, "2026-11-24"]]}
+        self.assertEqual(listed_on_market_page(data), {1: (10, 3), 4: (40, None)})
 
 
 class DisenchantTest(unittest.TestCase):
