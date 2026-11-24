@@ -17,7 +17,7 @@
   <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
   <link rel="stylesheet" href="../style.css?v=20261119-guild">
   <link rel="stylesheet" href="../endgame/endgame.css?v=20261119-inline-links">
-  <link rel="stylesheet" href="./leveling.css?v=20261120-variants">
+  <link rel="stylesheet" href="./leveling.css?v=20261124-prot">
   <script src="../endgame/ah-copy.js?v=20261119-shopping" defer></script>
   <script src="./leveling.js?v=20261120-variants" defer></script>
 </head>
@@ -47,6 +47,7 @@
       <a href="#cheapest" data-lv-tab="cheapest"><strong>最省錢</strong><small>採礦 250，買礦自己熔</small></a>
       <a href="#disenchant" data-lv-tab="disenchant"><strong>買錠走法</strong><small>採礦 230，細劍拿去分解</small></a>
       <a href="#practical" data-lv-tab="practical"><strong>聖騎自用</strong><small>練完留哪幾件穿</small></a>
+      <a href="#prot" data-lv-tab="prot"><strong>防騎法傷裝</strong><small>30～50 級自己打的坦裝</small></a>
     </nav>
 
     <div id="cheapest" class="lv-variant" data-lv-variant>
@@ -226,10 +227,6 @@
 
     <div id="practical" class="lv-variant" data-lv-variant>
     <!-- variant:practical -->
-    <style>
-      .pal-gap { margin-bottom: 26px; }
-      .pal-gear td small { display: block; font-size: 11px; color: var(--muted); }
-    </style>
     <section id="pal-gear" class="eg-section section-wrap" aria-labelledby="pal-title">
       <p class="eg-note">路線照「最省錢」走，只在 225 多做 1 條瑟銀腰帶，再各留 1 件瑟銀護腕與瑟銀護腿，合計多花約 <strong>2.8g</strong>（腰帶材料 2.33g、設計圖 50 銀），另外少賣 2 件成品。秘銀板甲到 225 以後不值得拿來加技能，現成的比自己做便宜，等快到 40 級再買。</p>
       <div class="section-heading"><div><p class="eyebrow">01 / GEAR</p><h2 id="pal-title">留下來自己穿。</h2></div><p>板甲要等聖騎 40 級向職業訓練師學會才能穿。屬性取自 Wowhead 永恆資料庫與阿莫比的物品說明。</p></div>
@@ -249,7 +246,7 @@
           <tr><th scope="row">瑟銀護腿</th><td data-label="部位">腿・板甲</td><td data-label="屬性"><span>護甲 499<small>耐力 +19、全抗 +10</small></span></td><td data-label="需要等級">55</td><td data-label="怎麼拿"><span>280→300 留 1 件<small>路線本來就做</small></span></td><td data-label="之後">副本掉落再換</td></tr>
         </tbody>
       </table>
-      <p class="eg-note pal-gap">這些板甲都沒有防禦屬性。鍛造 300 以後的防護裝（魔法瑟銀套裝、要塞護手、充盈瑟銀頭盔、正義戰甲）見<a class="text-link" href="../endgame/#spec-prot">聖騎鐵匠終局清單的防護</a>。</p>
+      <p class="eg-note pal-gap">這些板甲都沒有防禦和法傷。兩種都有、也能自己打的護衛系列見<a class="text-link" href="#prot">防騎法傷裝</a>；鍛造 300 以後的防護裝（魔法瑟銀套裝、要塞護手、充盈瑟銀頭盔、正義戰甲）見<a class="text-link" href="../endgame/#spec-prot">聖騎鐵匠終局清單的防護</a>。</p>
     </section>
 
     <section id="pal-route" class="eg-section section-wrap" aria-labelledby="pal-route-title">
@@ -290,11 +287,95 @@
       <div class="eg-groups lv-notes">
         <section class="eg-group" aria-labelledby="pal-n1"><h3 id="pal-n1">買成品比較省</h3><ul><li><strong>秘銀板甲</strong>：225 以後自己做不划算，秘銀又剛漲一倍。表內成品都比材料便宜。</li><li><strong>秘銀盾刺</strong>：換盾牌就要重裝，每次都買成品。</li><li><strong>鋼質頭盔</strong>（板甲，力量、耐力各 +12，40 級）：40～41 級想先戴，部落成品 49 銀起有 10 個。42 級換重型秘銀頭盔。</li></ul></section>
         <section class="eg-group" aria-labelledby="pal-n2"><h3 id="pal-n2">看角色等級再決定</h3><ul><li><strong>鋼質胸甲</strong>（鎖甲，耐力 +12、格擋 +2%，35 級）：35～40 級穿得到的坦克胸甲；已滿 41 級就跳過。</li><li><strong>瑟銀頭盔</strong>（51 級）：耐力 +18、全抗 +10，護甲比重型秘銀頭盔少。材料之外另要設計圖 4.80g。</li><li><strong>華麗秘銀戰靴</strong>（44 級，訓練師）：閃躲 +1%，可解除定身，PvP 伺服器野外好用。和秘銀重靴二選一。</li></ul></section>
-        <section class="eg-group" aria-labelledby="pal-n3"><h3 id="pal-n3">這段不建議做</h3><ul><li><strong>君王／帝國鎧甲</strong>：帝王鎧甲 2 件防禦 +7，但設計圖拾取後綁定，部落拍賣場買不到。</li><li><strong>哨兵系列</strong>：有防禦，但設計圖拾取後綁定，還要友好或尊敬聲望。</li><li><strong>瑟銀護甲</strong>的護甲比重型秘銀胸甲低。</li><li><strong>黑鐵裝</strong>要黑鐵錠，部落一個約 7g。<strong>輻光</strong>系列是鎖甲，只有冰霜與暗影抗性。</li></ul></section>
+        <section class="eg-group" aria-labelledby="pal-n3"><h3 id="pal-n3">這段不建議做</h3><ul><li><strong>君王／帝國鎧甲</strong>：帝王鎧甲 2 件防禦 +7，但設計圖拾取後綁定，部落拍賣場買不到。</li><li><strong>哨兵系列</strong>：有防禦，但設計圖拾取後綁定，還要友好或尊敬聲望。聖騎換同一批的護衛系列，多了法傷，見<a href="#prot">防騎法傷裝</a>。</li><li><strong>瑟銀護甲</strong>的護甲比重型秘銀胸甲低。</li><li><strong>黑鐵裝</strong>要黑鐵錠，部落一個約 7g。<strong>輻光</strong>系列是鎖甲，只有冰霜與暗影抗性。</li></ul></section>
       </div>
       <p class="eg-note">價格依 11/24 21:26 官方快照（<a class="text-link" href="../market/">部落行情</a>）。行情頁換成更新的掃描後，材料表與設計圖價會自動重算，裝備時間表不會。</p>
     </section>
     <!-- /variant:practical -->
+    </div>
+
+    <div id="prot" class="lv-variant" data-lv-variant>
+    <section id="prot-why" class="eg-section section-wrap" aria-labelledby="prot-title">
+      <p class="eg-note pal-gap">防護聖騎 30～50 級的裝備，<strong>耐力和法術能量一起堆</strong>。鍛造可以做一批只有自己能穿的「護衛」「保衛者」裝備，同時有耐力、防禦和法傷；另外買一把法傷單手劍。</p>
+      <div class="section-heading"><div><p class="eyebrow">01 / WHY SPELL POWER</p><h2 id="prot-title">坦克為什麼要法傷。</h2></div><p>攻略多以 60 級計算，升級期的係數還沒有實測。</p></div>
+      <div class="eg-groups lv-notes">
+        <section class="eg-group" aria-labelledby="prot-w1"><h3 id="prot-w1">仇恨靠神聖傷害</h3><ul><li>正義之怒只放大神聖傷害，不放大物理傷害。</li><li>法傷加成：審判約 42.9%、奉獻 33.6%、神聖之盾每次格擋 8%。</li><li>憤怒聖印每下吃 10%，跟武器速度無關，所以快武器比較好；持盾時每次揮擊再給神聖傷害 50% 的吸收盾。</li></ul></section>
+        <section class="eg-group" aria-labelledby="prot-w2"><h3 id="prot-w2">各家怎麼排</h3><ul><li><strong>Wowhead</strong> 平衡配裝：耐力第一、法傷第二；偏輸出時法傷第一，偏生存時排第七。</li><li><strong>Method</strong>：法傷是傷害與仇恨的主屬性，力量墊底。</li><li><strong>無限副本手冊</strong>：耐力 1、法傷 0.44、力量 0.4。<strong>GearInsight</strong>：耐力 1、法傷 0.6、力量 0.3。</li></ul></section>
+        <section class="eg-group" aria-labelledby="prot-w3"><h3 id="prot-w3">怎麼取捨</h3><ul><li>法傷排在耐力後面，不用為了法傷改穿布甲。</li><li>武器最划算：一把單手劍就有 29～33 法傷，防具每件多半只有 3～11。</li><li>插件的推薦清單以副本掉落為主，不一定列出拾取綁定的自製裝和拍賣場的詞綴裝。</li></ul></section>
+      </div>
+    </section>
+
+    <section id="prot-craft" class="eg-section section-wrap" aria-labelledby="prot-craft-title">
+      <div class="section-heading"><div><p class="eyebrow">02 / CRAFT</p><h2 id="prot-craft-title">只能自己做的。</h2></div><p>成品和設計圖都是拾取後綁定，拍賣場買不到。苟馬克在貧瘠之地 49.8, 29.6。</p></div>
+      <table class="eg-table pal-gear">
+        <caption>護衛與保衛者系列（材料費照 11/24 23:26 部落各價位件數，粗製砂輪自己磨）</caption>
+        <thead><tr><th scope="col">成品</th><th scope="col">部位</th><th scope="col">屬性</th><th scope="col">需要等級</th><th scope="col">怎麼學</th><th scope="col">材料費</th><th scope="col">建議</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">護衛腰帶</th><td data-label="部位"><span>腰・鎖甲</span></td><td data-label="屬性"><span>護甲 132、耐力 +10<small>防禦 +7、法傷 +7</small></span></td><td data-label="需要等級">30</td><td data-label="怎麼學"><span>訓練師 42.5 銀<small>奧格瑪、幽暗城、雷霆崖的鍛造訓練師</small></span></td><td class="eg-price" data-label="材料費">0.64g</td><td data-label="建議"><span><span class="eg-tag buy">先做</span></span></td></tr>
+          <tr><th scope="row">保衛者鍍銀鍊甲護腿</th><td data-label="部位"><span>腿・鎖甲</span></td><td data-label="屬性"><span>護甲 191、耐力 +11<small>防禦 +8、法傷 +8</small></span></td><td data-label="需要等級">25</td><td data-label="怎麼學"><span>苟馬克 30 貢獻點<small>不看聲望</small></span></td><td class="eg-price" data-label="材料費">約 2.0g</td><td data-label="建議"><span><span class="eg-tag buy">先做</span></span></td></tr>
+          <tr><th scope="row">護衛護手</th><td data-label="部位"><span>手・鎖甲</span></td><td data-label="屬性"><span>護甲 159、耐力 +10<small>防禦 +7、法傷 +11</small></span></td><td data-label="需要等級">35</td><td data-label="怎麼學"><span>苟馬克 60 貢獻點<small>要友好</small></span></td><td class="eg-price" data-label="材料費">3.97g</td><td data-label="建議"><span><span class="eg-tag buy">友好就做</span></span></td></tr>
+          <tr><th scope="row">保衛者鍍銀鍊甲衫</th><td data-label="部位"><span>胸・鎖甲</span></td><td data-label="屬性"><span>護甲 208、耐力 +10<small>防禦 +7、法傷 +7</small></span></td><td data-label="需要等級">22</td><td data-label="怎麼學"><span>苟馬克 30 貢獻點<small>不看聲望</small></span></td><td class="eg-price" data-label="材料費">約 2.0g</td><td data-label="建議"><span><span class="eg-tag watch">沒買到胸甲再做</span></span></td></tr>
+          <tr><th scope="row">護衛長靴</th><td data-label="部位"><span>腳・板甲</span></td><td data-label="屬性"><span>護甲 330、耐力 +13<small>防禦 +9、法傷 +9</small></span></td><td data-label="需要等級">40</td><td data-label="怎麼學"><span>副本首領掉<small>血色修道院、剃刀高地、奧達曼，約 0.5～0.7%</small></span></td><td class="eg-price" data-label="材料費">1.52g</td><td data-label="建議"><span><span class="eg-tag watch">掉了就做</span></span></td></tr>
+          <tr><th scope="row">護衛肩鎧</th><td data-label="部位"><span>肩・板甲</span></td><td data-label="屬性"><span>護甲 375、耐力 +13<small>防禦 +10、法傷 +9</small></span></td><td data-label="需要等級">42</td><td data-label="怎麼學"><span>苟馬克 60 貢獻點<small>要友好</small></span></td><td class="eg-price" data-label="材料費">6.79g</td><td data-label="建議"><span><span class="eg-tag buy">42 級首選</span></span></td></tr>
+          <tr><th scope="row">護衛腕甲</th><td data-label="部位"><span>手腕・板甲</span></td><td data-label="屬性"><span>護甲 231、耐力 +11<small>防禦 +8、法傷 +7</small></span></td><td data-label="需要等級">45</td><td data-label="怎麼學"><span>苟馬克 90 貢獻點<small>要尊敬</small></span></td><td class="eg-price" data-label="材料費">6.12g</td><td data-label="建議"><span><span class="eg-tag watch">有聲望再做</span></span></td></tr>
+          <tr><th scope="row">護衛脛甲</th><td data-label="部位"><span>腳・板甲</span></td><td data-label="屬性"><span>護甲 376、耐力 +13<small>防禦 +9、法傷 +14</small></span></td><td data-label="需要等級">47</td><td data-label="怎麼學"><span>苟馬克 90 貢獻點<small>要尊敬</small></span></td><td class="eg-price" data-label="材料費">6.67g</td><td data-label="建議"><span><span class="eg-tag watch">有聲望再做</span></span></td></tr>
+          <tr><th scope="row">護衛護腰</th><td data-label="部位"><span>腰・板甲</span></td><td data-label="屬性"><span>護甲 324、耐力 +14<small>防禦 +10、法傷 +15</small></span></td><td data-label="需要等級">50</td><td data-label="怎麼學"><span>苟馬克 90 貢獻點<small>要尊敬</small></span></td><td class="eg-price" data-label="材料費">8.32g</td><td data-label="建議"><span><span class="eg-tag watch">有聲望再做</span></span></td></tr>
+          <tr><th scope="row">護衛手套</th><td data-label="部位"><span>手・板甲</span></td><td data-label="屬性"><span>護甲 361、耐力 +16<small>防禦 +11、法傷 +11</small></span></td><td data-label="需要等級">50</td><td data-label="怎麼學"><span>副本首領掉<small>沉沒的神廟、瑪拉頓等，約 1% 上下</small></span></td><td class="eg-price" data-label="材料費">2.40g</td><td data-label="建議"><span><span class="eg-tag watch">掉了就做</span></span></td></tr>
+        </tbody>
+      </table>
+      <p class="eg-note">想多要仇恨，同一階可改做<strong>審判官</strong>（護衛）或<strong>十字軍</strong>（保衛者）版本：防禦換成力量，法傷多半較高，例如審判官腰帶力量 +6、耐力 +7、法傷 +12。貢獻點怎麼湊最便宜見<a class="text-link" href="../waylaid/?goal=90&amp;level=35">木箱貢獻</a>：護腿加護手是 90 點。聲望從中立起算，友好 3,000、尊敬 9,000，主要靠工匠令狀。</p>
+    </section>
+
+    <section id="prot-materials" class="eg-section section-wrap" aria-labelledby="prot-materials-title">
+      <div class="section-heading"><div><p class="eyebrow">03 / MATERIALS</p><h2 id="prot-materials-title">先做三件的材料。</h2></div><p>護衛腰帶、保衛者鍍銀鍊甲護腿、護衛護手各 1 件，不含學費與貢獻點。</p></div>
+      <table class="eg-table lv-mats" data-ah-list="防騎法傷-材料" data-lv-phase="prot">
+        <caption>三件合計（11/24 23:26 部落最低價；粗糙的石頭 16 個磨成 8 個粗製砂輪，現成的粗製砂輪一個約 20 銀）</caption>
+        <thead><tr><th scope="col">材料</th><th scope="col">數量</th><th scope="col">單價</th><th scope="col">小計</th><th scope="col">部落件數</th><th scope="col">佔比</th></tr></thead>
+        <tbody>
+          <tr data-lv-id="3859" data-lv-qty="10" data-lv-price="1749"><th scope="row"><span data-ah="鋼錠">鋼錠</span></th><td data-label="數量">10</td><td class="eg-price" data-label="單價" data-lv-unit>17.5 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.7g</td><td data-label="部落件數"><span><span data-lv-listed>1,153</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 26.3%"><span data-lv-pct>26%</span></span></td></tr>
+          <tr data-lv-id="249432" data-lv-qty="4" data-lv-price="3000"><th scope="row"><span data-ah="砂紙">砂紙</span></th><td data-label="數量">4</td><td class="eg-price" data-label="單價" data-lv-unit>30 銀</td><td class="eg-price" data-label="小計" data-lv-sub>1.2g</td><td data-label="部落件數"><span><span data-lv-listed>9</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 18.1%"><span data-lv-pct>18%</span></span></td></tr>
+          <tr data-lv-id="7971" data-lv-qty="6" data-lv-price="1500"><th scope="row"><span data-ah="黑珍珠">黑珍珠</span></th><td data-label="數量">6</td><td class="eg-price" data-label="單價" data-lv-unit>15 銀</td><td class="eg-price" data-label="小計" data-lv-sub>90 銀</td><td data-label="部落件數"><span><span data-lv-listed>96</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 13.5%"><span data-lv-pct>14%</span></span></td></tr>
+          <tr data-lv-id="249427" data-lv-qty="6" data-lv-price="1300"><th scope="row"><span data-ah="完好的皮革">完好的皮革</span></th><td data-label="數量">6</td><td class="eg-price" data-label="單價" data-lv-unit>13 銀</td><td class="eg-price" data-label="小計" data-lv-sub>78 銀</td><td data-label="部落件數"><span><span data-lv-listed>582</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 11.7%"><span data-lv-pct>12%</span></span></td></tr>
+          <tr data-lv-id="2841" data-lv-qty="20" data-lv-price="326"><th scope="row"><span data-ah="青銅錠">青銅錠</span></th><td data-label="數量">20</td><td class="eg-price" data-label="單價" data-lv-unit>3.3 銀</td><td class="eg-price" data-label="小計" data-lv-sub>65.2 銀</td><td data-label="部落件數"><span><span data-lv-listed>4,444</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 9.8%"><span data-lv-pct>10%</span></span></td></tr>
+          <tr data-lv-id="3486" data-lv-qty="6" data-lv-price="550"><th scope="row"><span data-ah="重砂輪">重砂輪</span></th><td data-label="數量">6</td><td class="eg-price" data-label="單價" data-lv-unit>5.5 銀</td><td class="eg-price" data-label="小計" data-lv-sub>33 銀</td><td data-label="部落件數"><span><span data-lv-listed>99</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 5.0%"><span data-lv-pct>5%</span></span></td></tr>
+          <tr data-lv-id="2842" data-lv-qty="6" data-lv-price="500"><th scope="row"><span data-ah="銀錠">銀錠</span></th><td data-label="數量">6</td><td class="eg-price" data-label="單價" data-lv-unit>5 銀</td><td class="eg-price" data-label="小計" data-lv-sub>30 銀</td><td data-label="部落件數"><span><span data-lv-listed>1,074</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 4.5%"><span data-lv-pct>5%</span></span></td></tr>
+          <tr data-lv-id="3575" data-lv-qty="6" data-lv-price="379"><th scope="row"><span data-ah="鐵錠">鐵錠</span></th><td data-label="數量">6</td><td class="eg-price" data-label="單價" data-lv-unit>3.8 銀</td><td class="eg-price" data-label="小計" data-lv-sub>22.7 銀</td><td data-label="部落件數"><span><span data-lv-listed>2,859</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 3.4%"><span data-lv-pct>3%</span></span></td></tr>
+          <tr data-lv-id="249410" data-lv-qty="2" data-lv-price="1001"><th scope="row"><span data-ah="硫酸">硫酸</span></th><td data-label="數量">2</td><td class="eg-price" data-label="單價" data-lv-unit>10 銀</td><td class="eg-price" data-label="小計" data-lv-sub>20 銀</td><td data-label="部落件數"><span><span data-lv-listed>231</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 3.0%"><span data-lv-pct>3%</span></span></td></tr>
+          <tr data-lv-id="818" data-lv-qty="8" data-lv-price="200"><th scope="row"><span data-ah="虎眼石">虎眼石</span></th><td data-label="數量">8</td><td class="eg-price" data-label="單價" data-lv-unit>2 銀</td><td class="eg-price" data-label="小計" data-lv-sub>16 銀</td><td data-label="部落件數"><span><span data-lv-listed>215</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 2.4%"><span data-lv-pct>2%</span></span></td></tr>
+          <tr data-lv-id="2836" data-lv-qty="16" data-lv-price="90"><th scope="row"><span data-ah="粗糙的石頭">粗糙的石頭</span></th><td data-label="數量">16</td><td class="eg-price" data-label="單價" data-lv-unit>0.9 銀</td><td class="eg-price" data-label="小計" data-lv-sub>14.4 銀</td><td data-label="部落件數"><span><span data-lv-listed>1,210</span><span data-lv-short></span></span></td><td class="lv-share-cell" data-label="佔比"><span class="lv-share" style="--share: 2.2%"><span data-lv-pct>2%</span></span></td></tr>
+        </tbody>
+        <tfoot><tr><th scope="row">合計</th><td colspan="2" data-label="說明">自己穿，不算回收</td><td class="eg-price" data-label="材料合計" data-lv-total>6.6g</td><td colspan="2"></td></tr></tfoot>
+      </table>
+    </section>
+
+    <section id="prot-buy" class="eg-section section-wrap" aria-labelledby="prot-buy-title">
+      <div class="section-heading"><div><p class="eyebrow">04 / BUY</p><h2 id="prot-buy-title">拍賣場買的。</h2></div><p>詞綴裝多半只有一件，賣掉就沒了。看詞綴挑，不用執著於同一件。</p></div>
+      <table class="eg-table pal-gear" data-ah-list="防騎法傷-裝備">
+        <caption>35 級上下（部落官方快照，11/24 23:26；屬性取自 Wowhead 永恆資料庫）</caption>
+        <thead><tr><th scope="col">物品</th><th scope="col">部位</th><th scope="col">屬性</th><th scope="col">需要等級</th><th scope="col">部落價</th><th scope="col">建議</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><span data-ah="勇武長劍" data-ah-prefix>巫士之勇武長劍</span></th><td data-label="部位">主手</td><td data-label="屬性"><span>法傷 +29、耐力 +3、智力 +5<small>速度 1.5</small></span></td><td data-label="需要等級">33</td><td class="eg-price" data-label="部落價">1.20g・1 件</td><td data-label="建議"><span><span class="eg-tag buy">首選</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="貴族佩劍" data-ah-prefix>長者之貴族佩劍</span></th><td data-label="部位">主手</td><td data-label="屬性"><span>法傷 +33、智力 +5、精神 +4<small>速度 2.1</small></span></td><td data-label="需要等級">35</td><td class="eg-price" data-label="部落價">1.20g・1 件</td><td data-label="建議"><span><span class="eg-tag watch">二選一</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="主將之盾">主將之盾</span></th><td data-label="部位">盾牌</td><td data-label="屬性"><span>護甲 963、耐力 +9<small>沒有法傷，護甲最高</small></span></td><td data-label="需要等級">35</td><td class="eg-price" data-label="部落價">1.00g・4 件</td><td data-label="建議"><span><span class="eg-tag buy">買</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="秘銀盾刺">秘銀盾刺</span></th><td data-label="部位">盾牌附加</td><td data-label="屬性"><span>格擋時反傷<small>要鍛造 215</small></span></td><td data-label="需要等級">不限</td><td class="eg-price" data-label="部落價">65 銀・19 個</td><td data-label="建議"><span><span class="eg-tag buy">買</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="變節者胸甲" data-ah-prefix>防衛者之變節者胸甲</span></th><td data-label="部位">胸・鎖甲</td><td data-label="屬性"><span>護甲 223、耐力 +11<small>防禦 +4、法傷 +6</small></span></td><td data-label="需要等級">33</td><td class="eg-price" data-label="部落價">66 銀・1 件</td><td data-label="建議"><span><span class="eg-tag buy">省 30 貢獻點</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="變節者之靴" data-ah-prefix>防衛者之變節者之靴</span></th><td data-label="部位">腳・鎖甲</td><td data-label="屬性"><span>護甲 149、耐力 +8<small>防禦 +3、法傷 +4</small></span></td><td data-label="需要等級">31</td><td class="eg-price" data-label="部落價">53 銀・1 件</td><td data-label="建議"><span><span class="eg-tag buy">買</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="變節者護手" data-ah-prefix>防衛者之變節者護手</span></th><td data-label="部位">手・鎖甲</td><td data-label="屬性"><span>護甲 133、耐力 +7<small>防禦 +3、法傷 +4</small></span></td><td data-label="需要等級">30</td><td class="eg-price" data-label="部落價">1.00g・1 件</td><td data-label="建議"><span><span class="eg-tag watch">護衛護手前過渡</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="騎士護腕" data-ah-prefix>祭師之騎士護腕</span></th><td data-label="部位">手腕・鎖甲</td><td data-label="屬性"><span>護甲 95、耐力 +6<small>法傷 +2</small></span></td><td data-label="需要等級">31</td><td class="eg-price" data-label="部落價">35 銀・1 件</td><td data-label="建議"><span><span class="eg-tag buy">買</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="堅定披風" data-ah-prefix>導魔師之堅定披風</span></th><td data-label="部位">背部</td><td data-label="屬性"><span>耐力 +6、法傷 +3</span></td><td data-label="需要等級">32</td><td class="eg-price" data-label="部落價">55 銀・1 件</td><td data-label="建議"><span><span class="eg-tag buy">買</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="綠光指環" data-ah-prefix>導魔師之綠光指環</span></th><td data-label="部位">手指</td><td data-label="屬性"><span>耐力 +7、法傷 +3</span></td><td data-label="需要等級">34</td><td class="eg-price" data-label="部落價">1.20g・1 件</td><td data-label="建議"><span><span class="eg-tag buy">買</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="火殼護肩" data-ah-prefix>導魔師之火殼護肩</span></th><td data-label="部位">肩・鎖甲</td><td data-label="屬性"><span>護甲 176、耐力 +9<small>法傷 +4</small></span></td><td data-label="需要等級">36</td><td class="eg-price" data-label="部落價">81 銀・1 件</td><td data-label="建議"><span><span class="eg-tag watch">36 級</span></span></td></tr>
+          <tr><th scope="row"><span data-ah="狂戰士頭盔" data-ah-prefix>祭師之狂戰士頭盔</span></th><td data-label="部位">頭・鎖甲</td><td data-label="屬性"><span>護甲 190、耐力 +12<small>法傷 +4</small></span></td><td data-label="需要等級">36</td><td class="eg-price" data-label="部落價">99 銀・1 件</td><td data-label="建議"><span><span class="eg-tag watch">36 級</span></span></td></tr>
+        </tbody>
+      </table>
+      <p class="eg-note">點名稱複製的是不含詞綴的名稱，搜尋結果要認表上的詞綴。法傷武器的秒傷比 Wowhead 標示低：一把治療之勇武長劍，Wowhead 標 20.3，官方角色 API 是 13.7，原本的物理武器可以留著練等。腰帶、護腿、護手自己做，其餘照表買，35 級大約有 70 法傷。</p>
+      <div class="eg-groups lv-notes">
+        <section class="eg-group" aria-labelledby="prot-b1"><h3 id="prot-b1">怎麼認詞綴</h3><ul><li><strong>防衛者之</strong>：耐力、防禦、法傷，防騎首選。</li><li><strong>導魔師之</strong>：耐力、精神、法傷。</li><li><strong>祭師之、醫師之</strong>：耐力加治療，附帶少量法傷。</li><li><strong>巫士之、長者之</strong>（武器）：法傷最高，前者多一點耐力。</li><li><strong>神聖懲戒之</strong>勇武長劍只有 9 神聖傷害，不如巫士之。</li></ul></section>
+        <section class="eg-group" aria-labelledby="prot-b2"><h3 id="prot-b2">副本順路拿</h3><ul><li><strong>冥骨護符</strong>（剃刀沼澤盲眼獵手）：耐力 +4、法傷 +5。</li><li><strong>烈焰頭罩</strong>（血色修道院小怪，裝備後綁定）：護甲 185、耐力 +10、法傷 +8。</li><li><strong>執政官護胸</strong>（血色修道院，裝備後綁定）：護甲 245、力量與耐力 +12、法傷 +9。</li><li><strong>紋章節杖</strong>（黑暗深淵小怪，裝備後綁定）：法傷 +32、耐力 +6。</li><li>黑暗部落指環、巨魔之握出自暴風城監獄，部落很難打。</li></ul></section>
+        <section class="eg-group" aria-labelledby="prot-b3"><h3 id="prot-b3">可以不買</h3><ul><li><strong>光輝盾牌</strong>：護甲 680，輸給主將之盾。</li><li><strong>退火鋼刃</strong>：秒傷高，沒有法傷。</li><li><strong>綠色透鏡</strong>：法傷 +28，要工程才能戴。</li><li>40 級就能穿板甲，鎖甲夠用就好；40 級以後的純耐力板甲見<a href="#practical">聖騎自用</a>。</li></ul></section>
+      </div>
+      <div class="scope-note"><span aria-hidden="true">✧</span><p>屬性與係數：<a class="text-link" href="https://www.wowhead.com/forever/guide/classes/paladin/protection/stat-priority-pve-tank" target="_blank" rel="noopener noreferrer">Wowhead 防護聖騎屬性 ↗</a>、<a class="text-link" href="https://www.method.gg/wow-forever/class-guides/protection-paladin/bis-gear-and-stats" target="_blank" rel="noopener noreferrer">Method ↗</a>、<a class="text-link" href="https://www.warcrafttavern.com/forever/guides/protection-paladin/" target="_blank" rel="noopener noreferrer">Warcraft Tavern ↗</a>。設計圖來源：<a class="text-link" href="https://www.wowhead.com/forever/tw/item=251420" target="_blank" rel="noopener noreferrer">護衛護手 ↗</a>、<a class="text-link" href="https://www.wowhead.com/forever/tw/spell=1252307" target="_blank" rel="noopener noreferrer">護衛腰帶 ↗</a>，其餘取自 Wowhead 與無限副本手冊的專業資料，還沒有在遊戲內逐一驗證。這一頁的裝備價格不會自動更新。</p></div>
+    </section>
     </div>
 
     <section id="notes" class="eg-section section-wrap" aria-labelledby="notes-title">
