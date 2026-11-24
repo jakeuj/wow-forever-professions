@@ -13,17 +13,19 @@ adds every character's crates and materials from Syndicator: an owned crate is
 a free listing the plan may use or skip, an owned material is priced at the
 lowest listing (what selling it would fetch), so it replaces a purchase but
 never wins a fill by being free. --keep leaves items out (bars kept for a
-profession). --scan prefers the in-game Waylaid Auction Helper scan (price
-levels per item) and --auctionator the last Auctionator full scan (lowest
-price and units only) over the hourly API snapshot.
+profession). --scan adds the in-game Waylaid Auction Helper scan and
+--auctionator the last Auctionator full scan. The newest source wins: a scan
+older than the hourly API snapshot is ignored, a newer one corrects the
+cheapest levels and leaves the API's deeper ones in place.
 
-    python3 waylaid_crates.py --root 'F:\\Program Files (x86)\\World of Warcraft' --level 34
+    python3 waylaid_crates.py --root '<WoW root>' --level 34
     python3 waylaid_crates.py --root ... --level 34 --owned --keep 3860 3859 --scan --auctionator
     python3 waylaid_crates.py --root ... --goal 600 --level 40 --top 0
     python3 waylaid_crates.py --root ... --json
 """
 
 import argparse
+import email.utils
 import json
 import math
 from pathlib import Path
@@ -93,6 +95,7 @@ def take(levels, skip, n):
 
 
 AH_CUT = 0.05  # the auction house keeps 5% of a sale
+STALE_AFTER = 600  # seconds the inventory may be newer than the prices (a scan is always saved a little later)
 
 
 def with_owned(levels, owned, kinds, keep=()):
@@ -150,12 +153,12 @@ def plan(kinds, levels, goal):
     """Cheapest crates worth at least `goal` favor: {favor, cost, spend, picks=[{kind, count, cost, spend, lines}]}.
 
     A line is {item, units, cost, top, own, buy, value} for the crates and for each bundle used: own units come
-    from the bags, buy units from the house, value is what the owned units would sell for. cost is net of
-    refunds and counts owned materials at that value; result["cash"] is what buying costs. Favor below the
-    goal means the house cannot reach it."""
+    from the bags, buy units from the house, value is what the owned units would sell for. net is spend less
+    refunds, owned materials at that value; cost is the same but never below 0 per kind, as the addon picks
+    by it. result["cash"] is what buying costs. Favor below the goal means the house cannot reach it."""
     options = [(k, curve(k, levels, math.ceil(goal / k["favor"]))) for k in kinds]
     options = [(k, c) for k, c in options if c]
-    result = {"goal": goal, "favor": 0, "cost": 0, "spend": 0, "cash": 0, "value": 0, "refund": 0, "picks": []}
+    result = {"goal": goal, "favor": 0, "cost": 0, "spend": 0, "net": 0, "cash": 0, "value": 0, "refund": 0, "picks": []}
     if not options or goal <= 0:
         return result
     unit = 0
@@ -189,10 +192,11 @@ def plan(kinds, levels, goal):
                               units=bundles * qty, bundles=bundles, per=qty))
         step = steps[count - 1]
         result["picks"].append({"kind": kind, "count": count, "favor": count * kind["favor"], "cost": step["total"],
-                                "spend": step["spend"], "lines": lines})
+                                "net": step["spend"] - count * kind["refund"], "spend": step["spend"], "lines": lines})
         result["favor"] += count * kind["favor"]
         result["cost"] += step["total"]
         result["spend"] += step["spend"]
+        result["net"] += step["spend"] - count * kind["refund"]
         result["refund"] += count * kind["refund"]
         for line in lines:
             result["cash"] += line["cost"] - line["value"]
@@ -237,16 +241,19 @@ def lua_table(path, variable):
 
 
 def parse_addon_ladders(table):
-    """WaylaidHelperCharDB.markets.favor -> (scan time, {item: [(unit price, units), ...]}).
+    """WaylaidHelperCharDB.markets.favor -> (scan time, {item: ([(unit price, units), ...], units unseen)}).
 
-    Rows marked guess only promise units at no less than that price; they are kept as the addon keeps them."""
+    The addon marks units it only knows to be listed at no less than a price as guess; their price is
+    unknown, so they are counted apart and not given one."""
     market = ((table or {}).get("markets") or {}).get("favor") or {}
     ladders = {}
     for item, rows in (market.get("ladders") or {}).items():
         rows = rows.values() if isinstance(rows, dict) else rows
-        levels = [(int(r["price"]), int(r["qty"])) for r in rows if isinstance(r, dict) and r.get("price") and r.get("qty")]
-        if levels:
-            ladders[int(item)] = levels
+        rows = [r for r in rows if isinstance(r, dict) and r.get("price") and r.get("qty")]
+        known = [(int(r["price"]), int(r["qty"])) for r in rows if not r.get("guess")]
+        unseen = sum(int(r["qty"]) for r in rows if r.get("guess"))
+        if known:
+            ladders[int(item)] = (known, unseen)
     return market.get("time"), ladders
 
 
@@ -255,28 +262,62 @@ def addon_scan(root):
     best = None
     for path in forever_dir(root).glob("WTF/Account/*/*/*/SavedVariables/WaylaidHelper.lua"):
         when, ladders = parse_addon_ladders(lua_table(path, "WaylaidHelperCharDB"))
-        if ladders and (best is None or when > best[1]):
+        if ladders and when and (best is None or when > best[1]):
             best = (path, when, ladders)
     return best
 
 
 def auctionator_levels(root):
-    """Last Auctionator full scan: (saved time, {item: [(lowest unit price, units seen that day)]}) or None."""
+    """Last Auctionator full scan: (scan start or None, {item: [(lowest unit price, units seen)]}), or None.
+
+    Auctionator keeps the price of an item that sold out; those are left out (leveling_pricing.listed_in_scan)."""
     import auctionator_prices as ap
+    from leveling_pricing import listed_in_scan
     path = next(iter(ap.find_saved_files(root)), None)
     if not path:
         return None
     realms = ap.load_price_db(path)
     realm = max(realms, key=lambda k: len(realms[k]) if isinstance(realms[k], dict) else 0, default=None)
-    levels = {}
-    for key, rec in (realms.get(realm) or {}).items():
-        m = re.match(r"(?:[a-z]+:)?(\d+)$", str(key))
-        if not m or not isinstance(rec, dict) or not rec.get("m"):
+    started = ap.full_scan_started(path)
+    prices, _ = listed_in_scan(realms.get(realm) or {}, started)
+    return started, {item: [(int(price), int(units or 1))] for item, (price, units) in prices.items()}
+
+
+def corrected(older, known, unseen):
+    """An older ladder brought up to date by a newer look at its cheapest levels.
+
+    `known` are the newer levels, cheapest first, and `unseen` the units listed beyond them at unknown prices.
+    Nothing is listed below or between the known levels any more; above them the older levels still stand."""
+    if not unseen:
+        return list(known)
+    last = known[-1][0]
+    at_last = sum(q for p, q in known if p == last)
+    rest = [(p, q - at_last if p == last else q) for p, q in older if p >= last]
+    rest = [(p, q) for p, q in rest if q > 0]
+    # Nothing older to go by: the lowest price is all there is.
+    return list(known) + (rest or [(last, unseen)])
+
+
+def merge_sources(levels, api_time, looks):
+    """(levels, {item: label}, labels not used): every newer look applied to the API levels, oldest first.
+
+    A look is (time, label, {item: (known, unseen)}); one without a time, or older than the API, is not used."""
+    out, used, skipped = dict(levels), {}, []
+    for when, label, items in sorted(looks, key=lambda look: look[0] or 0):
+        if not when or when <= api_time:
+            skipped.append(label)
             continue
-        avail = rec.get("a") or {}
-        day = max(avail, key=lambda d: int(d), default=None)
-        levels[int(m.group(1))] = [(int(rec["m"]), int(avail[day]) if day is not None else 1)]
-    return path.stat().st_mtime, levels
+        for item, (known, unseen) in items.items():
+            out[item] = corrected(out.get(item, []), known, unseen)
+            used[item] = label
+    return out, used, skipped
+
+
+def inventory_time(root):
+    """When Syndicator last wrote the inventory (Unix seconds), or 0."""
+    import syndicator_inventory as si
+    files = si.find_saved_files(root)
+    return files[0].stat().st_mtime if files else 0
 
 
 def owned_items(root):
@@ -302,6 +343,8 @@ def local_time(seconds):
 
 
 def gold(copper):
+    if copper is not None and copper < 0:
+        return "-" + ac.coin(round(-copper))
     return ac.coin(None if copper is None else round(copper))
 
 
@@ -317,9 +360,9 @@ def main():
     parser.add_argument("--keep", nargs="+", type=int, default=[], metavar="ITEM",
                         help="--owned: item ids to keep out of the crates, e.g. bars a profession still needs")
     parser.add_argument("--scan", action="store_true",
-                        help="prefer the newest in-game Waylaid Auction Helper scan (price levels) per item")
+                        help="add the newest in-game Waylaid Auction Helper scan, where newer than the API snapshot")
     parser.add_argument("--auctionator", action="store_true",
-                        help="prefer the last Auctionator full scan (lowest price, units) for items the addon scan lacks")
+                        help="add the last Auctionator full scan (lowest price, units), where newer than the API snapshot")
     parser.add_argument("--cache", type=Path, default=Path(tempfile.gettempdir()) / "wowamobi-cache")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -330,24 +373,33 @@ def main():
     kinds = parse_crates(data.read_text(encoding="utf-8"), args.level)
     levels, modified = ac.live_levels()
     sources = [f"部落拍賣場 API 快照 {taiwan_time(modified)}"]
-    scanned = {}
+    api_time = email.utils.parsedate_to_datetime(modified).timestamp() if modified else 0
+    looks, described = [], {}
     if args.auctionator:
         got = auctionator_levels(args.root)
         if got:
-            when, prices = got
-            scanned.update({i: ("Auctionator", p) for i, p in prices.items()})
-            sources.append(f"Auctionator 完整掃描（存檔 {local_time(when)}，只有最低價與件數）")
+            # Only the lowest price is known: one unit at it, the rest at that price or more.
+            looks.append((got[0], "Auctionator", {i: ([(rows[0][0], 1)], rows[0][1] - 1) for i, rows in got[1].items()}))
+            described["Auctionator"] = f"Auctionator 完整掃描 {local_time(got[0])}（只有最低價與件數）"
+        else:
+            sources.append("找不到 Auctionator 存檔")
     if args.scan:
         got = addon_scan(args.root)
         if got:
-            _, when, ladders = got
-            scanned.update({i: ("插件掃描", p) for i, p in ladders.items()})
-            sources.append(f"遭攔截木箱助手掃描 {local_time(when)}（{len(ladders)} 樣）")
-    for item, (_, rows) in scanned.items():
-        levels[item] = rows
+            looks.append((got[1], "插件掃描", got[2]))
+            described["插件掃描"] = f"遭攔截木箱助手掃描 {local_time(got[1])}（{len(got[2])} 樣）"
+        else:
+            sources.append("找不到遭攔截木箱助手的掃描")
+    levels, scanned, skipped = merge_sources(levels, api_time, looks)
+    sources += [text + ("，比 API 舊或時間不明，未採用" if label in skipped else "") for label, text in described.items()]
+    warning = None
     if args.owned:
-        levels = with_owned(levels, owned_items(args.root), kinds, set(args.keep))
-        sources.append("自有庫存：Syndicator 全部角色")
+        owned, saved = owned_items(args.root), inventory_time(args.root)
+        levels = with_owned(levels, owned, kinds, set(args.keep))
+        sources.append(f"自有庫存：Syndicator 全部角色（存檔 {local_time(saved)}）")
+        newest = max([api_time] + [when for when, label, _ in looks if label not in skipped])
+        if saved - newest > STALE_AFTER:
+            warning = f"庫存存檔比最新的價格（{local_time(newest)}）晚 10 分鐘以上：之後買走的掛單可能還算在裡面，買之前先重掃。"
     meta = ac.load_market(args.cache, 6).get("meta", {})
     english = {k["id"]: k["name"] for k in kinds}
 
@@ -358,12 +410,12 @@ def main():
     rows, result = overview(kinds, levels), plan(kinds, levels, args.goal)
     line = import_line(result, name_of, args.list or f"木箱貢獻{args.goal}")
     if args.json:
-        print(json.dumps({"snapshot": modified, "sources": sources, "overview": rows, "plan": result, "import": line},
+        print(json.dumps({"snapshot": modified, "sources": sources, "warning": warning, "overview": rows, "plan": result, "import": line},
                          ensure_ascii=False, indent=1, default=str))
         return
 
     print("價格：" + "；".join(sources) + "（台灣時間）"
-          + (f"\n只算 {args.level} 級能填的木箱" if args.level else ""))
+          + (f"\n只算 {args.level} 級能填的木箱" if args.level else "") + (f"\n注意：{warning}" if warning else ""))
     if args.top:
         print("\n每 100 點貢獻的成本（一箱＋最便宜的一組，扣掉繳交退款）：")
         for r in rows[:args.top]:
@@ -377,11 +429,11 @@ def main():
             print(f"  {gold(r['per_favor'] * 100):>9}  {head}：{name_of(item)} ×{qty}，一箱 {gold(r['cost'])}，箱子在售 {r['on_sale']}{mine}")
     print(f"\n{args.goal} 點購物清單：")
     for pick in result["picks"]:
-        print(f"  {name_of(pick['kind']['id'])} ×{pick['count']}＝{pick['favor']} 點，淨 {gold(pick['cost'])}")
+        print(f"  {name_of(pick['kind']['id'])} ×{pick['count']}＝{pick['favor']} 點，淨 {gold(pick['net'])}")
         for l in pick["lines"]:
             group = f"（{l['bundles']} 組，每組 {l['per']}）" if "bundles" in l else ""
             mine = f"，自有 {l['own']}、買 {l['buy']}" if l["own"] else ""
-            src = f"，{scanned[l['item']][0]}" if l["buy"] and l["item"] in scanned else ""
+            src = f"，{scanned[l['item']]}" if l["buy"] and l["item"] in scanned else ""
             cost = f"買 {gold(l['cost'] - l['value'])}，最高單價 {gold(l['top'])}{src}" if l["buy"] else "全用自有"
             print(f"    {name_of(l['item'])} ×{l['units']}{group}{mine}  {cost}")
     if args.owned:
@@ -390,10 +442,10 @@ def main():
             unused[pick["kind"]["id"]] = unused.get(pick["kind"]["id"], 0) - pick["lines"][0]["own"]
         left = "、".join(f"{name_of(i)} ×{n}" for i, n in unused.items() if n > 0)
         if left:
-            print(f"  沒用到的自有木箱：{left}（填它們比買新箱子貴，先留著）")
+            print(f"  沒用到的自有木箱：{left}")
     short = "，拍賣場的貨不夠達標" if result["favor"] < args.goal else ""
     print(f"合計 {result['favor']} 點，現金 {gold(result['cash'])}，退 {gold(result['refund'])}，"
-          f"自有材料市值 {gold(result['value'])}，淨 {gold(result['cost'])}{short}")
+          f"自有材料市值 {gold(result['value'])}，淨 {gold(result['net'])}{short}")
     if line:
         print("\n拍賣小幫手匯入：\n" + line)
 

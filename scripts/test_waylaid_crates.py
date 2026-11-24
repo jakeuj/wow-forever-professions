@@ -1,11 +1,13 @@
+import datetime
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / ".agents/skills/wow-forever/scripts"))
-from waylaid_crates import (curve, import_line, overview, parse_addon_ladders, parse_crates, plan, split,  # noqa: E402
-                            take, with_owned)
+from waylaid_crates import (auctionator_levels, corrected, curve, import_line, merge_sources, overview,  # noqa: E402
+                            parse_addon_ladders, parse_crates, plan, split, take, with_owned)
 
 DATA = '''ns.Crates = {
 {id=1,name="Waylaid Crate: Expert Ingots",tier="expert",quality=2,level=20,bundles={{item=11,qty=10},{item=12,qty=20}}},
@@ -106,9 +108,48 @@ class ScanTest(unittest.TestCase):
             2772: {1: {"price": 200, "qty": 1}, 2: {"price": 200, "qty": 1491, "guess": True}}}}}}
         when, ladders = parse_addon_ladders(table)
         self.assertEqual(when, 1795450804)
-        self.assertEqual(ladders[3577], [(750, 1), (788, 13)])
-        self.assertEqual(ladders[2772], [(200, 1), (200, 1491)])
+        self.assertEqual(ladders[3577], ([(750, 1), (788, 13)], 0))
+        self.assertEqual(ladders[2772], ([(200, 1)], 1491))  # guessed units have no known price
         self.assertEqual(parse_addon_ladders(None), (None, {}))
+
+    def test_newest_source_wins_whatever_its_kind(self):
+        # Liferoot on 2026-11-24: the addon saw 1s at 00:20, those were bought, Auctionator saw dearer ones at 00:38.
+        api = {3357: [(100, 11), (199, 30), (220, 70)]}
+        addon = (1200, "插件掃描", {3357: ([(100, 11), (145, 132)], 0)})
+        auctionator = (2280, "Auctionator", {3357: ([(199, 1)], 99)})
+        for looks in ([addon, auctionator], [auctionator, addon]):
+            levels, used, skipped = merge_sources(api, 600, looks)
+            self.assertEqual(levels[3357][0][0], 199)
+            self.assertEqual((used[3357], skipped), ("Auctionator", []))
+        levels, used, skipped = merge_sources(api, 1800, [addon, (None, "Auctionator", auctionator[2])])
+        self.assertEqual((levels, used), (api, {}))
+        self.assertEqual(sorted(skipped), ["Auctionator", "插件掃描"])
+
+    def test_a_lowest_price_alone_keeps_the_deeper_levels(self):
+        api = [(500, 8), (700, 28), (788, 16)]
+        # The 5s and 7s bars are gone: one at the new lowest price, then the API's dearer levels.
+        self.assertEqual(corrected(api, [(750, 1)], 60), [(750, 1), (788, 16)])
+        # The lowest price is unchanged: the same units, none counted twice.
+        self.assertEqual(corrected(api, [(500, 1)], 51), [(500, 1), (500, 7), (700, 28), (788, 16)])
+        # A complete look replaces everything; with nothing older the lowest price is all there is.
+        self.assertEqual(corrected(api, [(600, 2)], 0), [(600, 2)])
+        self.assertEqual(corrected([], [(600, 1)], 9), [(600, 1), (600, 9)])
+
+    def test_auctionator_leaves_out_what_sold_out_before_the_scan(self):
+        started = datetime.datetime(2026, 11, 24, 0, 38).timestamp()
+        realm = {"1": {"m": 50, "h": {"2518": 50}, "a": {"2518": 9}}, "2": {"m": 70, "h": {"2519": 70}, "a": {"2519": 4}}}
+        with mock.patch("auctionator_prices.find_saved_files", return_value=[Path("Auctionator.lua")]), \
+                mock.patch("auctionator_prices.load_price_db", return_value={"PvP Horde": realm}), \
+                mock.patch("auctionator_prices.full_scan_started", return_value=started):
+            self.assertEqual(auctionator_levels("root"), (started, {2: [(70, 4)]}))
+
+
+class NetTest(unittest.TestCase):
+    def test_net_counts_the_whole_refund_even_below_zero(self):
+        kinds = parse_crates(DATA, max_level=34)
+        result = plan(kinds, {2: [(0, 2, True)], 21: [(5, 40, True)]}, 20)
+        self.assertEqual((result["cash"], result["value"], result["refund"]), (0, 200, 1000))
+        self.assertEqual((result["net"], result["cost"]), (-800, 0))
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ which covers every writ in one go); --api takes one live official snapshot
 instead. --owned counts every character's writs and wanted items from
 Syndicator as already paid for (cash view), and marks them.
 
-    python3 craftsman_writs.py --root 'F:\\Program Files (x86)\\World of Warcraft'
+    python3 craftsman_writs.py --root '<WoW root>'
     python3 craftsman_writs.py --root ... --owned --max 1.2 --zone 塔納利斯 菲拉斯
     python3 craftsman_writs.py --root ... --api --json
 """
@@ -118,7 +118,7 @@ def main():
         if not scan:
             sys.exit("Auctionator.lua not found; run a full scan and /reload, or use --api")
         when, levels = scan
-        source = f"Auctionator 完整掃描（存檔 {local_time(when)}，只有最低價）"
+        source = f"Auctionator 完整掃描 {local_time(when)}（只有最低價）"
     owned = owned_items(args.root) if args.owned else {}
     rows = price(writs, levels, owned)
     totals = daily(rows)

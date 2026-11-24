@@ -23,7 +23,7 @@ python3 '<skill-dir>/scripts/craftsman_writs.py' --root '<WoW 根目錄>' --owne
 python3 '<skill-dir>/scripts/craftsman_writs.py' --root '<WoW 根目錄>' --api --json
 ```
 
-- 預設用 Auctionator 最近一次完整掃描（一次涵蓋所有令狀與物品，只有最低價和件數），`--api` 改向官方 API 取一次即時快照。使用者說「我掃描了」時，先確認 `Auctionator.lua` 的存檔時間晚於掃描。
+- 預設用 Auctionator 最近一次完整掃描（一次涵蓋所有令狀與物品，只有最低價和件數；掃描當天沒看到的舊價不採用），`--api` 改向官方 API 取一次即時快照。使用者說「我掃描了」時，先確認 `Auctionator.lua` 的存檔時間晚於掃描。
 - 一份的成本是令狀最低價加物品最低價乘數量，排序依每 100 聲望的金額。物品無掛單的列在最後標「缺價」，多半是只能自己做的高等製造品。
 - `--owned` 從 Syndicator 讀全部角色的令狀和物品，有就算 0 元並標「自有」。這是現金觀點：自有物品若能賣，回答時一併提賣價。
 - 開頭兩行是密封令狀的價格，以及「每天每種各交一份」在不同每 100 聲望上限下的份數、聲望與總價。`--zone` 用繁中地區名篩選（Riverglades 是永恆新地區，保留英文）。
