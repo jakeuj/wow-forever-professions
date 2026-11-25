@@ -30,6 +30,12 @@ DungeonsForever 2.1.119 專業總覽的「傳承」區列出三項專業加成�
 
 由九項主要專業與每人兩格推導：若希望同時保留全部主要專業，至少五隻角色。僅覆蓋六項製造則三隻雙製造已足夠，但需要另行供應材料。分階段先讓六製造各到 150／225，分別累計 6／12 點；全部到 300 才是 18 點。
 
+## 釣魚的有效技能
+
+判斷能不能拋竿、會不會脫鉤，用「有效技能 ＝ 專業點數 ＋ 魚竿 ＋ 魚餌 ＋ 漁線、料理與裝備」，不要只看專業點數。API 的專業點數不含加成；魚竿用 `forever_api.py character <角色> --part equipment` 看主手，加成查物品 API。
+
+各區有拋竿與不脫鉤兩個門檻，取自插件的 `Data_ProfFishingRoutes.lua` 與[永恆釣魚指南](https://www.warcrafttavern.com/forever/guides/fishing-leveling/)。同一區可能有例外：菲拉斯 201／300，其中 Jademir Lake 326／425。300 點＋粗鐵魚竿（+20）是 320，再掛水下誘魚器（+100）是 420：能在 Jademir Lake 拋竿，但仍偶爾脫鉤。
+
 ## 依行情執行專業衝等
 
 要把角色的製造專業從分工規劃落實為材料採買與製作步驟時，讀 [DungeonsForever＋Auctionator 操作](profession-addon-workflow.md)。該節集中說明專業子模組、完整行情掃描、自動成本路線、庫存缺口、購物清單匯入及缺價處理；此處只保留角色分工與傳承目標。
