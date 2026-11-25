@@ -4,6 +4,8 @@
 
 查證範圍為套件 `.toc`、語系及必要實作；首輪 12 款以 DungeonJournal 同版本原始碼與其餘 11 款的發佈 ZIP 查證。後續補充的 CraftProfit Forever 和 Syndicator 各有查證日期。這些證據支持「宣告相容／具有語系資料」，不代表已安裝或在遊戲內測試，也不保證每段翻譯完整或符合台服用語。
 
+第 1～10 節就是「魔獸世界指南」頻道 2026-11-10 影片 [〈魔兽无限必装！10款实用插件，升级少跑腿，打本更顺手！〉](https://www.youtube.com/watch?v=W3MG6GnhCho)介紹的 10 款，順序與影片相同；使用者提到這支影片時從這裡回答。影片說明欄只有 1～10 的介紹，沒有推薦程度排名。**其中優先推薦 [Shortest Path Forever 的跨海航線弧線](#跨海航線弧線推薦)**：游標移到碼頭，就能在大地圖看出船或飛船通往哪裡。2026-11-25 只重新核對這一款，其餘 9 款仍是 2026-11-11 的快照。
+
 DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個插件，專業沖點不費腦，也不浪費一分錢！〉](https://www.youtube.com/watch?v=HmOf69erYRw)。以下操作依作者發佈套件查證，不作影片逐字轉述；遊戲版本與插件自身版本分開辨識。
 
 ## 專案與發佈快照
@@ -14,7 +16,7 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 | --- | --- | --- | --- |
 | [GnomeLevelUp](https://www.curseforge.com/wow/addons/gnomelevelup)／Captain_British | `1723473` | [v1.6.1，9532877](https://www.curseforge.com/wow/addons/gnomelevelup/files/9532877) | 2026-11-09 |
 | [RestedXP Guide](https://www.curseforge.com/wow/addons/restedxp-guide)／RestedXP | `486246` | [v4.11.35，9514096](https://www.curseforge.com/wow/addons/restedxp-guide/files/9514096) | 2026-11-08 |
-| [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever)／cjber | `1708599` | [v1.30.2-forever，9556421](https://www.curseforge.com/wow/addons/shortest-path-forever/files/9556421) | 2026-11-11 |
+| [Shortest Path Forever](https://www.curseforge.com/wow/addons/shortest-path-forever)／cjber | `1708599` | [v1.45.8-forever，9804915](https://www.curseforge.com/wow/addons/shortest-path-forever/files/9804915) | 2026-11-25 |
 | [Waypoint UI](https://www.curseforge.com/wow/addons/waypointui)／AdaptiveX | `1275146` | [1.7.5，9449968](https://www.curseforge.com/wow/addons/waypointui/files/9449968) | 2026-11-05 |
 | [Baganator](https://www.curseforge.com/wow/addons/baganator)／plusmouse | `914482` | [846，9512960](https://www.curseforge.com/wow/addons/baganator/files/9512960) | 2026-11-08 |
 | [Platynator](https://www.curseforge.com/wow/addons/platynator)／plusmouse | `1361299` | [544，9551652](https://www.curseforge.com/wow/addons/platynator/files/9551652) | 2026-11-11 |
@@ -26,7 +28,7 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 | [Auctionator](https://www.curseforge.com/wow/addons/auctionator)／plusmouse | `6124` | [345，9548985](https://www.curseforge.com/wow/addons/auctionator/files/9548985) | 2026-11-10 |
 | [CraftProfit Forever](https://www.curseforge.com/wow/addons/craftprofit-forever)／vystery | `1739431` | [CraftProfit 0.5.14，9764132](https://www.curseforge.com/wow/addons/craftprofit-forever/files/9764132) | 2026-11-23 |
 
-`.toc` 細節：Shortest Path 的版本字串為 `v1.30.2`，發佈檔另有 `-forever` 後綴；Leatrix 兩款同理，`.toc` 版本沒有分支後綴。Waypoint UI 的 `WaypointUI.toc` 列 Retail Interface，包內 **`WaypointUI_Camelot.toc` 才列 `16001`**，因此只讀預設 `.toc` 會誤判。以上其餘目標 `.toc` 均列有 `16001`。
+`.toc` 細節：Shortest Path 的發佈檔有 `-forever` 後綴，`.toc` 版本沒有（2026-11-11 核對 `v1.30.2`）；Leatrix 兩款同理。Waypoint UI 的 `WaypointUI.toc` 列 Retail Interface，包內 **`WaypointUI_Camelot.toc` 才列 `16001`**，因此只讀預設 `.toc` 會誤判。以上其餘目標 `.toc` 均列有 `16001`。
 
 ## 1. GnomeLevelUp：升級提示與可學技能
 
@@ -43,11 +45,27 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 
 ## 3. Shortest Path Forever：交通與步行路線規劃
 
+2026-11-25（台灣）依[作者專案](https://www.curseforge.com/wow/addons/shortest-path-forever)與[作者原始碼 v1.45.8](https://github.com/cjber/shortest-path-forever/tree/v1.45.8) 重新核對，尚未在遊戲內實測。更新很頻繁，當天 CurseForge 下載數約 259 萬。
+
+### 跨海航線弧線（推薦）
+
+想一眼看懂「這個碼頭能坐到哪裡」時首推這款：**把世界地圖縮到艾澤拉斯全圖，游標移到碼頭或飛船塔圖示上，就會畫出連到對岸的弧線**，同時列出各班船的目的地、抵達與出發時間。
+
+- 弧線平常不顯示，游標指到碼頭才畫，移開就消失；一座碼頭有幾條航線就畫幾條。跨大陸航線只在全圖畫成弧線，放大到大陸或區域時改畫實際航行路徑到地圖邊緣（`UI/Strokes.lua` 的 `OverviewCrossing`）。影片 0:19 同時出現多條弧線，0:23 為單一航線。
+- **排好行程後也會畫**：Shift 點目的地，它挑好要搭的船或飛船，路線裡的跨海段用同一套弧線畫在全圖上。只想查航線用游標指，要它帶路才 Shift 點。
+- 相近的碼頭在縮小時合併成一個圖示，提示框依位置分列各碼頭。在碼頭圖示上按左鍵會把地圖切到對岸並閃一下位置；有多個目的地時先出選單。
+- **看不到弧線時**：先確認地圖已縮到全圖，再到 `/path` 的「地圖標記」頁確認「顯示 Shortest Path 標記」「在世界地圖上顯示航線」「顯示船隻與飛艇」都有勾。世界地圖的篩選選單也能切換同樣的圖層。
+- 另一陣營營運的航線預設隱藏，要看勾「顯示另一陣營的航線」。作者說明任何陣營都能搭，但不代表對方的港口安全。
+- 班次要先有紀錄：自己搭過一次該航線才會倒數，搭之前顯示還沒看到過；v1.45.8 的班次只存在自己帳號，不會傳給其他玩家。弧線不需要紀錄，裝好就有。
+- Leatrix Maps 也標交通點，但不會畫航線或選路；其他能選船的候選（Travelcraft、Forever Maps、Mapzeroth、Vamoose's Slipstream）的專案頁都沒提到跨海弧線，只要這個效果就裝 Shortest Path Forever。
+
+### 其他功能與安裝
+
 - 從地圖目的地或任務規劃行程，綜合步行、已知飛行點、船、飛船、升降梯、地鐵、傳送門與可用傳送能力；步行路線會繞障礙並隨移動重算。顯示分段指示、時間／距離、地圖路線及交通班次。副本內目的地會導向入口，不能視為副本內攻略。
-- `/path` 開設定，`/spfnear` 查附近商人／訓練師等服務；Shift 點世界地圖或小地圖設定目的地，任務選單可選 Plan journey。支援 RestedXP／Guidelime 的目前目標，不必為這項整合另裝 TomTom。
-- **必要依賴為 cjber 的 [ForeverCore，專案 `1796337`](https://www.curseforge.com/wow/addons/forevercore)**；包內 `Dependencies: ForeverCore` 與作者說明一致。[1.30.1 發佈說明](https://www.curseforge.com/wow/addons/shortest-path-forever/files/9555733) 記錄已改由 CurseForge 隨同安裝核心。名稱相近的 [Forever Core UI，專案 `1743753`](https://www.curseforge.com/wow/addons/forever-core) 屬 Patzlinger 的另一套 UI，不能拿來代替這個依賴。
-- `OptionalDeps: QuestieDB, TweaksForever, RXPGuides, Guidelime`；附近 NPC／商人物品查詢使用已安裝的 QuestieDB，不能把這項資料需求說成所有導航功能都必須裝 Questie。
-- 有 `Locales/zhTW.lua`；[1.19.0 語系公告](https://www.curseforge.com/wow/addons/shortest-path-forever/files/9209169) 明列繁中，主要為機器翻譯。已自帶方向箭頭與地圖路線；是否再加 Waypoint UI 依想要的世界空間標記決定。
+- `/path` 開設定，`/spfnear` 查附近商人／訓練師等服務；Shift 點世界地圖或小地圖設定目的地，任務選單可選「規劃旅程」，`/way [區域] x y [標題]` 也可以（被其他插件占用時用 `/path way`）。世界地圖上右鍵點行程標記可清除。支援 RestedXP／Guidelime／Zygor／Dugi 的目前目標，不必為這項整合另裝 TomTom。
+- **不必另裝 ForeverCore**：1.43.6（2026-11-20）起核心內嵌在套件裡，舊的 ForeverCore 留著或移除都可以；更早的版本才需要另裝。名稱相近的 [Forever Core UI，專案 `1743753`](https://www.curseforge.com/wow/addons/forever-core) 是 Patzlinger 的另一套 UI，與它無關。
+- `.toc` 列 `Interface: 16001`，沒有必要相依；`OptionalDeps` 含 QuestieDB、TweaksForever、RXPGuides、Guidelime、GatherMate2、ForeverCore 等。附近 NPC／商人物品查詢使用已安裝的 QuestieDB，不能把這項資料需求說成所有導航功能都必須裝 Questie。
+- 有 `Locales/zhTW.lua`，主要為機器翻譯（[1.19.0 語系公告](https://www.curseforge.com/wow/addons/shortest-path-forever/files/9209169)），飛船在介面上譯為「飛艇」。已自帶方向箭頭與地圖路線；是否再加 Waypoint UI 依想要的世界空間標記決定。
 
 ## 4. Waypoint UI：世界空間的目標標記
 
@@ -152,7 +170,8 @@ DungeonsForever 與 Auctionator 的補充線索來自夏一可的 [〈只需2個
 | --- | --- |
 | 升級時看屬性與忘記學的技能 | GnomeLevelUp；與目前整合 UI 的技能提醒比較。 |
 | 決定下一個任務與練等順序 | RestedXP／Polestar；先核對 Forever 指南、陣營與免費範圍。 |
-| 決定如何到目的地 | Shortest Path Forever＋正確的 ForeverCore；附近服務查詢另核對 QuestieDB。 |
+| 看碼頭或飛船塔通往哪裡 | **Shortest Path Forever**：全圖上指到碼頭就畫出[跨海弧線](#跨海航線弧線推薦)。 |
+| 決定如何到目的地 | Shortest Path Forever；附近服務查詢另核對 QuestieDB。 |
 | 更醒目的畫面內目標 | Waypoint UI；先試目前導航來源已有的箭頭。 |
 | 分類背包及查其他角色庫存 | Baganator＋Syndicator；和整合背包、BagSync／Account Overview 逐項比較。只要 agent 讀庫存時單裝 Syndicator。 |
 | 姓名板、任務怪與仇恨顏色 | Platynator／Plater／Threat Plates／整合 UI 選主要來源。 |
