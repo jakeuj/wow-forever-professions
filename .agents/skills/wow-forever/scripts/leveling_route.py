@@ -25,8 +25,8 @@ Quick use for the owner's main character (slug from ~/.config/wow-forever/local.
 reads the current skill, its cap, the character level and learned recipes from the
 Battle.net API, so --from defaults to the current skill and, without --me, --to to its
 cap; mining skill unlocks smelting
-(steel = iron bar + coal) as a way to make bars. --live prices from the current
-Horde API snapshot instead of a scan. --bags reads the Syndicator save: plans any
+(steel = iron bar + coal) as a way to make bars. --live prices from the
+newer of the Horde API snapshot and the complete scan (--source forces one). --bags reads the Syndicator save: plans any
 character holds cost nothing, and the material list shows what you already have
 and what is left to buy. Holdings do not change which recipe is picked: owned
 materials still count at market price, since they could be sold instead.
@@ -51,6 +51,7 @@ import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import amobi_recipe_value as av  # noqa: E402
+import auction_changes  # noqa: E402
 from leveling_pricing import PRODUCT_MODES, Pricer, load_scan, parse_profession  # noqa: E402
 from leveling_report import apply_holdings, print_report, save_route, summarize  # noqa: E402
 from leveling_search import candidate_pool, cheaper_missing_plans, find_route  # noqa: E402
@@ -115,7 +116,8 @@ def build_parser():
     parser.add_argument("--me", action="store_true", help="the main character in local.md: --character <slug> --live --bags, to 300")
     parser.add_argument("--character", help="API slug name-surname: read skill, cap, level and learned recipes")
     parser.add_argument("--local", default="~/.config/wow-forever/local.md", help="local notes holding the main character's slug")
-    parser.add_argument("--live", action="store_true", help="prices from the current Horde API snapshot")
+    parser.add_argument("--live", action="store_true", help="prices from the newer of the Horde API snapshot and the complete scan")
+    auction_changes.add_source_options(parser, root=False)
     parser.add_argument("--bags", action="store_true", help="owned plans cost nothing; show held vs. still-to-buy materials")
     parser.add_argument("--mining", type=int, help="mining skill for smelting bars (default with --character: the API's)")
     parser.add_argument("--gate", type=int, default=225, help="rank cap that needs the next trainer rank (Artisan: 225)")

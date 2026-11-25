@@ -5,9 +5,9 @@ Reads auctions.json from the repo's `auction-data` branch: per item id, the unit
 sale now and the lowest unit price at each hour it changed (null = sold out). For
 item names, item ids, or every data-ah name in the personal pages, prints the price
 at --since, the price now, the low and high in between, and the latest changes.
---movers lists the biggest moves of all items instead. --live adds the current
-snapshot straight from the Battle.net API with the units at each price level (uses
-forever_api.py credentials). Names come from wowamobi.com's item list.
+--movers lists the biggest moves of all items instead. --live adds the current units
+at each price level from the newer of the Battle.net API snapshot (forever_api.py
+credentials) and your complete Auctionator scan (--source forces one). Names come from wowamobi.com's item list.
 
 Prices are lowest buyouts (unit price for stackables), never sale prices. The record
 keeps only the lowest price, so a lone cheap or absurd listing skews the change;
@@ -16,6 +16,7 @@ check --live levels before calling a trend.
 
 import argparse
 import datetime
+import email.utils
 import html
 import json
 import math
@@ -23,13 +24,16 @@ from pathlib import Path
 import re
 import sys
 import tempfile
+import time
 import urllib.request
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import amobi_recipe_value as av  # noqa: E402
+import auctionator_prices as ap  # noqa: E402
 
 AUCTIONS_URL = "https://raw.githubusercontent.com/jakeuj/wow-forever-professions/auction-data/auctions.json"
 API = "https://tw.api.blizzard.com/data/wow/ruleset/1/auctions/113"
+SCAN_MAX_AGE = 3 * 3600  # a scan older than this is no stand-in for an API that failed
 TAIPEI = datetime.timezone(datetime.timedelta(hours=8))
 QUALITY = {0: "垃圾", 1: "普通", 2: "優秀", 3: "精良", 4: "史詩", 5: "傳說"}
 
@@ -105,6 +109,54 @@ def live_levels():
     return {k: sorted(v.items()) for k, v in levels.items()}, modified
 
 
+def add_source_options(parser, root=True):
+    parser.add_argument("--source", choices=("auto", "api", "scan"), default="auto",
+                        help="current prices: the newer of API and Auctionator scan (auto, default), or only one")
+    if root:
+        parser.add_argument("--root", default="/Applications/World of Warcraft", help="WoW install root, for the scan")
+
+
+def current_levels(root, source="auto"):
+    """(levels, where they come from): the newer of the official API and the saved complete scan.
+
+    The second value has kind (api/scan), at and text for display, plus apiAt/scanAt when known.
+    The site's Worker and hourly record copy the API, so they are never newer than it.
+    """
+    stamp_text = lambda t: datetime.datetime.fromtimestamp(t, TAIPEI).strftime("%m/%d %H:%M")
+    scan = ap.latest_scan(root) if source != "api" else None
+    api, problem = None, None
+    if source != "scan":
+        try:
+            levels, modified = live_levels()
+            api = (email.utils.parsedate_to_datetime(modified).timestamp() if modified else None, levels)
+        except (SystemExit, OSError, ValueError) as error:
+            if source == "api":
+                raise
+            problem = str(error) or type(error).__name__
+    if api is None:
+        if scan is None:
+            sys.exit(f"no complete Horde scan under {root}" + (f", and the auction API failed: {problem}" if problem else ""))
+        if source == "auto" and time.time() - scan[0] > SCAN_MAX_AGE:
+            sys.exit(f"the auction API failed ({problem}) and the last scan is too old ({stamp_text(scan[0])})")
+    use_scan = api is None or (scan is not None and api[0] is not None and scan[0] > api[0])
+    info = {"kind": "scan" if use_scan else "api",
+            "apiAt": stamp_text(api[0]) if api and api[0] else None, "scanAt": stamp_text(scan[0]) if scan else None}
+    if use_scan:
+        levels = scan[1]
+        if api:
+            # Rows the scan could not read keep the API's price.
+            levels = {**levels, **{i: api[1][i] for i in scan[2] if i in api[1]}}
+        info["at"] = info["scanAt"]
+        other = f"，比 API {info['apiAt']} 新" if api else f"，API 失敗：{problem}" if problem else ""
+        info["text"] = f"拍賣小幫手掃描 {info['at']}{other}"
+    else:
+        levels = api[1]
+        info["at"] = info["apiAt"] or "時間不明"
+        other = f"，比掃描 {info['scanAt']} 新" if scan and api[0] else ""
+        info["text"] = f"官方 API {info['at']}{other}"
+    return levels, info
+
+
 def load_record(source=None):
     """auctions.json from a path or URL (default: the auction-data branch)."""
     source = source or AUCTIONS_URL
@@ -148,7 +200,7 @@ def line(row, levels, history):
         text += f"｜期間 {coin(row['low'])}～{coin(row['high'])}"
     if levels is not None:
         level = levels.get(row["id"])
-        text += "｜即時 " + ("沒貨" if not level else
+        text += "｜現價 " + ("沒貨" if not level else
                            f"{sum(q for _, q in level)} 件：" + "、".join(f"{coin(p)}×{q}" for p, q in level[:4]))
     if history and row["points"]:
         text += "｜最近 " + " ".join(f"{hour_text(h)} {coin(p)}" for h, p in row["points"][-history:])
@@ -167,7 +219,8 @@ def main():
     parser.add_argument("--type", help="--movers: only items whose wowamobi type contains this, e.g. 金屬 or 草藥")
     parser.add_argument("--top", type=int, default=15, help="--movers: rows per list (default 15)")
     parser.add_argument("--history", type=int, default=6, help="latest change points to show (0 hides them)")
-    parser.add_argument("--live", action="store_true", help="add the current API snapshot with units per price level")
+    parser.add_argument("--live", action="store_true", help="add the current units per price level (newer of API and scan)")
+    add_source_options(parser)
     parser.add_argument("--auctions", help="auctions.json path or URL (default: the auction-data branch)")
     parser.add_argument("--cache", type=Path, default=Path(tempfile.gettempdir()) / "wowamobi-cache")
     parser.add_argument("--max-age", type=float, default=6, help="hours wowamobi's item list stays cached")
@@ -187,15 +240,20 @@ def main():
     now = hours[-1]
     since = args.since if args.since is not None else now - 24
     meta = load_market(args.cache, args.max_age)["meta"]
-    levels, modified = live_levels() if args.live else (None, None)
+    levels, source = current_levels(args.root, args.source) if args.live else (None, None)
     name_count = {}
     for info in meta.values():
         name_count[info[0]] = name_count.get(info[0], 0) + 1
 
     def row_for(item_id, name=None):
         if str(item_id) not in record:
-            return None
-        row = summarize(item_id, record[str(item_id)], since, now)
+            if not (levels and levels.get(item_id)):
+                return None
+            # Listed now but new to the hourly record.
+            row = {"id": item_id, "units": 0, "since": "absent", "now": None, "change": None,
+                   "low": None, "high": None, "points": []}
+        else:
+            row = summarize(item_id, record[str(item_id)], since, now)
         info = meta.get(str(item_id))
         row["name"] = name or (info[0] if info else f"物品 {item_id}")
         if info and name_count[info[0]] > 1:
@@ -241,13 +299,13 @@ def main():
     window = [h for h in hours if since < h <= now]
     if args.json:
         json.dump({"updatedAt": data.get("updatedAt"), "since": since, "now": now, "snapshots": len(window),
-                   "liveModified": modified, "items": rows, "movers": movers, "missing": missing,
+                   "priceSource": source, "items": rows, "movers": movers, "missing": missing,
                    "live": {str(r["id"]): levels.get(r["id"]) for r in rows} if levels is not None else None},
                   sys.stdout, ensure_ascii=False, indent=1)
         print()
         return
     print(f"部落官方每小時紀錄：{hour_text(since)} → {hour_text(now)}（最新快照 {data.get('updatedAt')}），"
-          f"期間收到 {len(window)} 次快照" + (f"；即時快照 Last-Modified {modified}" if modified else ""))
+          f"期間收到 {len(window)} 次快照" + (f"；現價用{source['text']}" if source else ""))
     for row in rows:
         print("- " + line(row, levels, args.history))
     titles = {"down": "跌最多", "up": "漲最多", "sold_out": "賣光或下架", "new": "新上架"}

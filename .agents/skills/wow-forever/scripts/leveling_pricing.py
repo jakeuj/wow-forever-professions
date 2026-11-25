@@ -191,11 +191,10 @@ def listed_on_market_page(data):
 def load_scan(args):
     """{item id: (lowest buyout, listed count)} and a label for the source."""
     if args.live:
-        import auction_brief
         import auction_changes
-        levels, modified = auction_changes.live_levels()
+        levels, source = auction_changes.current_levels(args.root, args.source)
         return ({i: (lv[0][0], sum(q for _, q in lv)) for i, lv in levels.items()},
-                f"部落官方即時快照（{auction_brief.taiwan_time(modified)}）")
+                f"部落現價（{source['text']}）")
     if args.market_json:
         data = json.loads(Path(args.market_json).read_text(encoding="utf-8"))
         prices = listed_on_market_page(data)

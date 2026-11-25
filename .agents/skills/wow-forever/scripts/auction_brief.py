@@ -3,8 +3,8 @@
 
 Reads every data-ah item on the personal pages; data-ah-buy-below="<gold>" on an
 item marks the buy trigger that the page text states. Takes the current Horde
-listings from the Battle.net API (one house + commodities request, credentials as
-in forever_api.py), the hourly record on the auction-data branch for 7-day
+listings from the newer of the Battle.net API (credentials as in forever_api.py) and
+your complete Auctionator scan, the hourly record on the auction-data branch for 7-day
 context, wowamobi's realm-wide median (all three auction houses), and
 Syndicator's bags when that save file exists. The market reference is the lowest of
 wowamobi's median today, its median the day before and the Horde 7-day typical
@@ -401,8 +401,8 @@ def reason(r):
     return f"行情約 {coin(r['reference'])}，只要四分之一以下，有 {r['units_ok']} 件"
 
 
-def render(result, extra, modified, record_time, bags_note, route=None, route_rows=(), bags_saved=None):
-    head = f"部落拍賣場快訊（官方即時快照 {taiwan_time(modified)}；網站每小時紀錄到 {record_time}"
+def render(result, extra, source, record_time, bags_note, route=None, route_rows=(), bags_saved=None):
+    head = f"部落拍賣場快訊（現價用{source['text']}；網站每小時紀錄到 {record_time}"
     head += f"；背包存檔 {bags_saved}）" if bags_saved else "）"
     lines = [head, "", "## 現在處理"]
     actions = []
@@ -456,7 +456,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--repo", type=Path, default=Path.cwd(), help="repo root holding the personal pages (default: cwd)")
     parser.add_argument("--pages", nargs="+", default=list(PAGES), help="page folders to read (default: endgame alchemy speculation)")
-    parser.add_argument("--root", default="/Applications/World of Warcraft", help="WoW install root, for Syndicator's bags")
+    parser.add_argument("--root", default="/Applications/World of Warcraft", help="WoW install root, for Syndicator's bags and the scan")
+    ac.add_source_options(parser, root=False)
     parser.add_argument("--no-bags", action="store_true", help="skip the sell check")
     parser.add_argument("--max-now", type=int, default=5, help="most items under 現在處理 (default 5)")
     parser.add_argument("--top", type=int, default=5, help="recipes off the pages to list (default 5)")
@@ -479,7 +480,7 @@ def main():
     group = next((g for g in market["groups"] if g["realm"] == REALM), {"items": []})
     realm_rows = {row[0]: row for row in group["items"]}
     ids = ac.resolve(list(items), meta, data["items"])
-    levels, modified = ac.live_levels()
+    levels, source = ac.current_levels(args.root, args.source)
 
     bags, bags_note, bags_saved = None, None, None
     if not args.no_bags:
@@ -512,13 +513,13 @@ def main():
         route_rows = route_checks(route, lowest, levels_of, usual)
 
     if args.json:
-        json.dump({"liveModified": modified, "recordUpdatedAt": data.get("updatedAt"), **result,
+        json.dump({"priceSource": source, "recordUpdatedAt": data.get("updatedAt"), **result,
                    "offPage": extra, "unknownNames": unknown, "bags": bags is not None, "route": route_rows,
                    "routeImport": route_import(route, route_rows) if route else None},
                   sys.stdout, ensure_ascii=False, indent=1)
         print()
         return
-    print(render(result, extra, modified, data.get("updatedAt"), bags_note, route, route_rows, bags_saved))
+    print(render(result, extra, source, data.get("updatedAt"), bags_note, route, route_rows, bags_saved))
 
 
 if __name__ == "__main__":

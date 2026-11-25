@@ -13,6 +13,7 @@ import argparse
 import datetime
 import html
 import json
+import math
 from pathlib import Path
 import re
 import struct
@@ -231,6 +232,40 @@ def horde_full_scan(path):
             or not scan.get("items") or not scan.get("received") or scan["received"] != scan.get("expected")):
         return None
     return stamp, scan["items"]
+
+
+def scan_levels(items):
+    """Full-scan rows as {item id: [(unit price in whole copper, units)]} plus the ids it could not read.
+
+    Same shape as the official API levels: whole copper rounded down, cheapest first."""
+    levels, unread = {}, set()
+    rows = lambda table: list(table.values()) if isinstance(table, dict) else list(table or [])
+    for item_id, item in items.items():
+        pairs = [rows(row) for row in rows(item.get("d"))]
+        valid = all(len(p) == 2 and all(isinstance(v, (int, float)) and math.isfinite(v) and v > 0 for v in p)
+                    for p in pairs)
+        if item.get("failure") or not valid or sum(p[1] for p in pairs) != item.get("q", 0):
+            unread.add(int(item_id))
+            continue
+        merged = {}
+        for price, units in pairs:
+            merged[math.floor(price)] = merged.get(math.floor(price), 0) + units
+        if merged:
+            levels[int(item_id)] = sorted(merged.items())
+    return levels, unread
+
+
+def latest_scan(root):
+    """(time the newest complete Horde scan started, levels, unread ids), or None."""
+    newest = None
+    for path in find_saved_files(root):
+        try:
+            scan = horde_full_scan(path)
+        except (OSError, ValueError, IndexError, AttributeError, TypeError):
+            continue
+        if scan and (newest is None or scan[0] > newest[0]):
+            newest = scan
+    return (newest[0], *scan_levels(newest[1])) if newest else None
 
 
 def day_label(day):

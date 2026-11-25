@@ -79,7 +79,7 @@ Publisher 另有 cron trigger 啟動拍賣收集（見 `guild/worker/dispatch.mj
 - 部落行情從公會首頁進入。七個個人採購、練等、價差與木箱頁位於專業頁尾，並可互相切換。這八頁保留 `noindex`，皆可用公開網址開啟。
 - 純靜態 HTML，沿用 `style.css`，各頁共用 `endgame/endgame.css`；所有連結為相對路徑。
 - 物品名稱以 `<span data-ah="遊戲內完整名稱">` 標記，`endgame/ah-copy.js` 會把它們變成點一下就複製的按鈕，方便貼到拍賣場搜尋；剪貼簿被拒時改為選取文字。沒有 JavaScript 時仍是一般文字。
-- 頁面寫了觸發價的物品另加 `data-ah-buy-below="金額"`。技能的 `scripts/auction_brief.py` 據此比對部落即時掛單，先列出現在該買或該賣的幾項，見[行情快訊](.agents/skills/wow-forever/references/auction-market.md#行情快訊現在該買賣什麼)。
+- 頁面寫了觸發價的物品另加 `data-ah-buy-below="金額"`。技能的 `scripts/auction_brief.py` 據此比對部落現價（官方 API 與本機完整掃描取較新的），先列出現在該買或該賣的幾項，見[行情快訊](.agents/skills/wow-forever/references/auction-market.md#行情快訊現在該買賣什麼)。
 - 標了 `data-ah-list="清單名稱"` 的表格或區塊會變成拍賣小幫手（Auctionator）的購物清單；頁首面板可複製這頁、複製全部頁面或下載 `.txt`，到插件「購買」分頁按「匯入」貼上。名稱加引號做完全比對，套裝前綴加 `data-ah-prefix`；`.is-skip` 的列不列入。行情頁收藏的物品是另一份清單「行情-收藏」，「全部頁面」會一起帶上；行情頁也能把拍賣小幫手匯出的清單貼回來加入收藏。
 - 價格與角色進度是手動更新的快照，更新時同步頁面上的快照日期。
 - 行情頁讀 `market/data.json`。在遊戲內完整掃描後輸入 `/reload`，再執行 `python3 scripts/build-market-data.py`。程式優先選 `PvP Horde` 資料庫，同輪有無限副本手冊的完整快照時，採用其最低價與在售量。舊資料保留給收藏與分享，直到再次掃到前顯示為歷史掛單。名稱、分類與圖示取自遊戲資料表和 Wowhead。
