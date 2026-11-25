@@ -17,7 +17,7 @@
   <link rel="icon" type="image/svg+xml" href="../assets/crest.svg">
   <link rel="stylesheet" href="../style.css?v=20261119-guild">
   <link rel="stylesheet" href="../endgame/endgame.css?v=20261119-inline-links">
-  <link rel="stylesheet" href="./market.css?v=20261119-guild">
+  <link rel="stylesheet" href="./market.css?v=20261125-observation">
   <link rel="stylesheet" href="./tools.css">
   <script type="module" src="./bulk.mjs"></script>
   <script src="../endgame/ah-copy.js?v=20261119-shopping" defer></script>
@@ -27,7 +27,7 @@
   <a class="skip-link" href="#prices">跳至行情列表</a>
   <header class="site-header">
     <a class="brand" href="../" aria-label="回黎明之劍公會首頁"><img src="../assets/crest.svg" alt="" width="34" height="38"><span><span class="brand-guild">黎明之劍</span><span class="brand-divider"> / </span>專業議事廳<small>WOW FOREVER · HORDE GUILD</small></span></a>
-    <nav aria-label="本頁導覽"><a href="#prices"><span class="nav-full">行情列表</span><span class="nav-short">行情</span></a><a href="../speculation/"><span class="nav-full">配方期貨</span><span class="nav-short">期貨</span></a><a class="nav-secondary" href="#sources">資料依據</a></nav>
+    <nav aria-label="本頁導覽"><a href="#prices"><span class="nav-full">行情列表</span><span class="nav-short">行情</span></a><a href="#market-report"><span class="nav-full">市場觀察</span><span class="nav-short">觀察</span></a><a href="../speculation/"><span class="nav-full">配方期貨</span><span class="nav-short">期貨</span></a><a class="nav-secondary" href="#sources">資料依據</a></nav>
   </header>
 
   <main id="top">
@@ -55,6 +55,42 @@
       </form>
       <div id="bulk-result" aria-live="polite"></div>
     </section>
+
+    <section id="market-report" class="section-wrap mk-report" aria-labelledby="market-report-title">
+      <div class="mk-report-heading">
+        <h2 id="market-report-title">市場觀察</h2>
+        <time datetime="2026-11-25">2026/11/25 快照</time>
+      </div>
+      <div class="eg-groups">
+        <section class="eg-group" aria-labelledby="price-index-title">
+          <h3 id="price-index-title">物價反彈，持續通膨仍待觀察</h3>
+          <p class="eg-note">阿莫比台服 PvP 物價指數為 <strong>61.2，近 7 天 +8.3%</strong>，兩週前為 63.0。草藥漲 45.6%，礦石和金屬錠漲 2.5%，藥水跌 16.0%。漲幅集中在部分品類。</p>
+          <p class="eg-note">指數涵蓋 41 項材料與藥水。<a href="https://wowamobi.com/market">查看阿莫比最新指數與算法</a></p>
+        </section>
+        <section class="eg-group" aria-labelledby="thorium-title">
+          <h3 id="thorium-title">瑟銀礦石回落，部落瑟銀錠仍偏貴</h3>
+          <p class="eg-note">阿莫比瑟銀礦石的掛單中位數由 11/24 的 37.29 銀回落至 11/25 的 <strong>14 銀</strong>。<a href="https://raw.githubusercontent.com/jakeuj/wow-forever-professions/d116bcfb4f6fd0654b6aba5b37fa175e07bddecb/auctions.json">11/25 15:26 的部落快照</a>已無瑟銀礦石一口價掛單，瑟銀錠則是 <strong>29 銀起、1,718 個在售</strong>。</p>
+          <p class="eg-note">要估鍛造材料的整批成本，可用上方<a href="#bulk">批量採購</a>依當前價階試算。</p>
+        </section>
+      </div>
+      <details class="mk-report-ore">
+        <summary>查看 7 種礦石的價格走勢</summary>
+        <table class="eg-table">
+          <caption>阿莫比台服 PvP 每日掛單中位數，單位為銀／個。11/25 最新全掃描為台灣時間 02:24。每日中位數採上架最多的拍賣場，依件數加權。</caption>
+          <thead><tr><th scope="col">礦石</th><th scope="col">11/18</th><th scope="col">11/23</th><th scope="col">11/24</th><th scope="col">11/25</th><th scope="col">7 天漲跌</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><a href="https://wowamobi.com/items/2770">銅礦石</a></th><td data-label="11/18">3.88</td><td data-label="11/23">2.42</td><td data-label="11/24">4.28</td><td data-label="11/25">3.17</td><td data-label="7 天漲跌" class="mk-down">−18%</td></tr>
+            <tr><th scope="row"><a href="https://wowamobi.com/items/2771">錫礦石</a></th><td data-label="11/18">1.50</td><td data-label="11/23">0.79</td><td data-label="11/24">0.84</td><td data-label="11/25">0.80</td><td data-label="7 天漲跌" class="mk-down">−47%</td></tr>
+            <tr><th scope="row"><a href="https://wowamobi.com/items/2772">鐵礦石</a></th><td data-label="11/18">3.24</td><td data-label="11/23">2.30</td><td data-label="11/24">2.49</td><td data-label="11/25">3.38</td><td data-label="7 天漲跌" class="mk-up">+4%</td></tr>
+            <tr><th scope="row"><a href="https://wowamobi.com/items/3858">秘銀礦石</a></th><td data-label="11/18">10.85</td><td data-label="11/23">25.55</td><td data-label="11/24">10.30</td><td data-label="11/25">14.50</td><td data-label="7 天漲跌" class="mk-up">+34%</td></tr>
+            <tr><th scope="row"><a href="https://wowamobi.com/items/10620">瑟銀礦石</a></th><td data-label="11/18">9.98</td><td data-label="11/23">22.50</td><td data-label="11/24">37.29</td><td data-label="11/25">14.00</td><td data-label="7 天漲跌" class="mk-up">+40%</td></tr>
+            <tr><th scope="row"><a href="https://wowamobi.com/items/7911">真銀礦石</a></th><td data-label="11/18">15.40</td><td data-label="11/23">53.99</td><td data-label="11/24">16.90</td><td data-label="11/25">25.00</td><td data-label="7 天漲跌" class="mk-up">+62%</td></tr>
+            <tr><th scope="row"><a href="https://wowamobi.com/items/11370">黑鐵礦石</a></th><td data-label="11/18">10.54</td><td data-label="11/23">13.99</td><td data-label="11/24">17.80</td><td data-label="11/25">25.00</td><td data-label="7 天漲跌" class="mk-up">+137%</td></tr>
+          </tbody>
+        </table>
+      </details>
+    </section>
+
     <section id="prices" class="eg-section section-wrap" aria-labelledby="prices-title">
       <div class="section-heading"><div><p class="eyebrow">01 / PRICES</p><h2 id="prices-title">拍賣場上的物品。</h2></div><p>點物品名稱可以複製遊戲內的完整名稱，到拍賣場搜尋欄貼上；點名稱旁的 ☆ 可以收藏，再用連結分享給朋友。</p></div>
       <form class="mk-controls" data-market-form hidden>
