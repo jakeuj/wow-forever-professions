@@ -68,8 +68,8 @@
 `addons/index.html`（`https://jakeuj.com/wow-forever-professions/addons/`，`noindex`）是站主插件的手寫盤點，從首頁玩家工具進入；`addons/addons.js` 依用途、啟用狀態與關鍵字篩選卡片。
 
 - 頁首的插件數、資料夾數、客戶端版本與盤點日期都取自同一次本機盤點；改動時連同「資料依據」的存檔時間一起更新。
-- 卡片的 `data-addon-state` 有 `enabled`（已啟用）、`disabled`（已停用）、`planned`（準備安裝）。還沒裝的插件標 `planned`，版本寫 CurseForge 最新發佈，「安裝前須知」列預計資料夾、語系與需要注意的設定，且不計入盤點數字。實際裝好並重新盤點後，改回安裝目錄格式與 `enabled`，再更新頁首數字。
-- 盤點後才補裝、但還沒重新盤點的插件（目前是 Syndicator）：用 `inspect_install.py --root <安裝根目錄> --addon <資料夾>` 讀 `.toc` 版本，卡片照已安裝格式標 `enabled`，頁首插件數與資料夾數照加，盤點日期不動；「資料依據」寫補裝日期與版本讀取日期。下次整份重新盤點時刪掉這段說明。站主問「我裝了什麼沒列上去」時，比對本頁卡片、本機 `Interface/AddOns`、技能文件的「站主實測」紀錄與 `local.md`。
+- 卡片的 `data-addon-state` 有 `enabled`（已啟用）、`disabled`（已停用）、`unverified`（啟用待確認）、`planned`（準備安裝）。本機已安裝、角色啟用狀態待確認的插件標 `unverified`，計入盤點數字。還沒裝的插件標 `planned`，版本寫 CurseForge 最新發佈，「安裝前須知」列預計資料夾、語系與需要注意的設定，且不計入盤點數字。
+- 盤點後才補裝的插件（如 Syndicator、Shortest Path Forever），用 `inspect_install.py --root <安裝根目錄> --addon <資料夾>` 讀 `.toc` 版本，依存檔標示啟用狀態，將插件與資料夾計入頁首數字。保留原盤點日期，在「資料依據」記錄安裝或確認日期與版本來源。下次整份重新盤點時刪除個別補裝說明。站主問「我裝了什麼沒列上去」時，比對本頁卡片、本機 `Interface/AddOns`、技能文件的「站主實測」紀錄與 `local.md`。
 - CurseForge 等外部連結一律另開分頁（`target="_blank" rel="noopener noreferrer"`，文字後加 `<span aria-hidden="true">↗</span>`，有 `aria-label` 的結尾加「（另開分頁）」），站主才能連續點開好幾個插件安裝，不用一直按返回。新增卡片照這個寫法。
 - 改 `addons.css` 或 `addons.js` 時同步更新 `index.html` 引用的 `?v=` 查詢字串。
 

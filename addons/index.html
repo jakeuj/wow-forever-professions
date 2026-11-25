@@ -25,8 +25,8 @@
       <h1>我的插件清單</h1>
       <p class="addon-intro">jakeuj 的安裝紀錄。可依用途與啟用狀態篩選，或搜尋插件名稱、功能和模組資料夾。</p>
       <ul class="addon-meta" aria-label="盤點摘要">
-        <li><strong>24</strong> 項插件</li>
-        <li><strong>123</strong> 個資料夾</li>
+        <li><strong>25</strong> 項插件</li>
+        <li><strong>124</strong> 個資料夾</li>
         <li><strong>1</strong> 項準備安裝</li>
         <li>客戶端 <strong>1.60.1.70959</strong></li>
         <li>盤點日期 <time datetime="2026-11-19">2026 年 11 月 19 日</time></li>
@@ -43,7 +43,7 @@
           <label for="addon-category">用途</label>
           <select id="addon-category">
             <option value="">全部用途</option>
-            <option value="quest">任務與傳承</option>
+            <option value="quest">任務、傳承與導航</option>
             <option value="group">裝備、副本與組隊</option>
             <option value="gather">採集與釣魚</option>
             <option value="auction">拍賣與交易</option>
@@ -57,6 +57,7 @@
             <option value="">全部狀態</option>
             <option value="enabled">已啟用</option>
             <option value="disabled">已停用</option>
+            <option value="unverified">啟用待確認</option>
             <option value="planned">準備安裝</option>
           </select>
         </div>
@@ -66,7 +67,7 @@
       <p id="addon-empty" hidden>沒有符合的插件。試試調整條件或清除篩選。</p>
 
       <section class="addon-section" data-addon-group="quest" aria-labelledby="quest-title">
-        <h2 id="quest-title">任務與傳承</h2>
+        <h2 id="quest-title">任務、傳承與導航</h2>
         <div class="addon-grid">
           <article class="addon-card" aria-labelledby="Polestar-name">
             <header><h3 id="Polestar-name">Polestar Guides</h3><span class="addon-version">0.4.1.1</span></header>
@@ -141,6 +142,19 @@
               <summary>安裝目錄</summary>
               <ul class="addon-folders">
                 <li><code>LegacyForever</code></li>
+              </ul>
+            </details>
+          </article>
+          <article class="addon-card" id="shortest-path-forever" aria-labelledby="ShortestPathForever-name">
+            <header><h3 id="ShortestPathForever-name">Shortest Path Forever</h3><span class="addon-version">1.45.8</span></header>
+            <p>規劃步行、飛行點、船與飛艇的路線。按住 <kbd>Shift</kbd> 點地圖上的目的地即可導航。</p>
+            <p>要看<strong>跨海航線弧線</strong>，把世界地圖縮到艾澤拉斯全圖，滑鼠移到碼頭或飛艇塔圖示。弧線會連到對岸，提示框也會列出目的地。</p>
+            <p class="addon-source"><a href="https://www.curseforge.com/wow/addons/shortest-path-forever" aria-label="Shortest Path Forever 的 CurseForge 專案（另開分頁）" target="_blank" rel="noopener noreferrer">CurseForge <span aria-hidden="true">↗</span></a><span class="addon-state" data-addon-state="unverified">啟用待確認</span></p>
+            <details>
+              <summary>地圖設定與安裝目錄</summary>
+              <p>如果看不到弧線，輸入 <code>/path</code>，在「地圖標記」勾選「顯示 Shortest Path 標記」、「在世界地圖上顯示航線」和「顯示船隻與飛艇」。</p>
+              <ul class="addon-folders">
+                <li><code>ShortestPathForever</code></li>
               </ul>
             </details>
           </article>
@@ -486,6 +500,7 @@
       <p>版本取自盤點當天的本機安裝目錄與插件 <code>.toc</code>。</p>
       <p>啟用狀態以 <time datetime="2026-11-19T22:12:44+08:00">2026 年 11 月 19 日 22:12</time> 的遊戲存檔為準。當次有寫入設定的主程式標為已啟用，並查對角色 <code>AddOns.txt</code> 裡的停用紀錄。各角色與套件子模組可有不同設定。</p>
       <p>Syndicator 是盤點後於 <time datetime="2026-11-20">11 月 20 日</time>補裝的，已算進上方數字；版本取自 <time datetime="2026-11-23">11 月 23 日</time>的 <code>.toc</code>，也確認過存檔有寫入。</p>
+      <p><time datetime="2026-11-25">11 月 25 日</time>確認本機已安裝 Shortest Path Forever，已算進上方數字。版本取自本機 <code>.toc</code>，角色啟用狀態待確認。</p>
       <p>套件隨附的其他版本模組也列在安裝目錄內，並依 <code>.toc</code> 標出未宣告永恆介面版本 <code>16001</code> 的項目。</p>
       <p>「準備安裝」的插件還沒裝進本機，不算在盤點數字內；版本與說明取自 <time datetime="2026-11-23">2026 年 11 月 23 日</time>的 CurseForge 發佈與作者原始碼。</p>
     </section>
