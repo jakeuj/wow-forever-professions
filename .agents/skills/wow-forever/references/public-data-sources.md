@@ -15,14 +15,15 @@
 | 目前客戶端版本 | [TACT 版本伺服器](#客戶端版本與資料表) | wago.tools builds |
 | 物品名稱、品質、圖示（繁中） | [客戶端資料表](#客戶端版本與資料表)、[官方物品 API](battlenet-api.md#實測結論)、[Wowhead](#wowhead-永恆繁中) | 客戶端 `ItemSparse` 只有約六成物品；官方 `item`／`media/item` 有 zh_TW 名稱與圖示，但約四成拍賣物品回 404，Wowhead 補剩下的 |
 | 物品加成、料理效果、穿戴與技能需求 | 官方物品 API：`forever_api.py get /data/wow/item/{id}` 的 `preview_item` | 先於 wiki 與經典版資料。2026-11-25 wiki 資訊框寫粗鐵魚竿 +10，API 是 +20；烤魷魚在永恆是致命一擊 +1%。推薦煮來賣之前，跟同效果的便宜料理比。404 時改用 Wowhead 永恆提示框 |
-| 地名（台服譯名） | `forever_api.py --locale zh_TW get /data/wow/quest/area/index`，用 `en_US` 同一個 ID 對照 | 插件譯名不一定是官方譯名：Riverglades（16591）官方是「大河林地」，插件寫「河林」 |
+| 地名（台服譯名） | `forever_api.py --locale zh_TW get /data/wow/quest/area/index`，用 `en_US` 同一個 ID 對照 | 插件譯名不一定是官方譯名：Riverglades（16591）官方是「大河林地」，插件寫「河林」。陣營名查 `reputation-faction/{id}`：Powderfuse（2827）官方是「火線」。港口、湖泊等小地名不在 `quest/area/index`，查[客戶端資料表](#客戶端版本與資料表) `AreaTable` 的 enUS／zhTW 同 ID（例：16727 Powderfuse Port＝火線港、1112 Jademir Lake＝加德米爾湖）。都查不到時寫原文 |
 | 專業配方、技能點、材料 | [官方專業 API](battlenet-api.md#配方材料與產量核對)、客戶端資料表 | 已核對的名稱、成品、材料與固定產量可採官方值。工程區間保留上下限，材料缺漏以客戶端 `SpellReagents` 補齊。技能變色門檻沿用客戶端或插件，學費與訓練師沿用既有來源 |
 | 拍賣行情 | [官方拍賣 API](battlenet-api.md#拍賣場) | 部落現價、插件掃描與阿莫比分陣營價見[行情來源](auction-market.md) |
 | 角色等級、裝備、專業 | [官方角色 API](battlenet-api.md#角色與公會) | Lv10 以上且登出後才出現 |
 | 公會成員 | 官方公會 roster | 中文公會名直接當 slug 可查（2026-11-18 實測「黎明之劍」） |
 | 任務內容與獎勵 | [官方任務 API](battlenet-api-coverage.md#端點實測表) | 有 zh_TW 標題、需求與獎勵；沒有 NPC 位置 |
 | 各區釣魚漁獲率 | [GoldScout 釣點](https://wowgoldscout.com/fishing)（只收永恆玩家拾取） | 整區全天平均，魚群與開放水域不分；判讀見[練等頁釣魚分頁](profession-planner-site.md) |
-| 掉落、NPC 位置 | 無官方來源（副本手冊 API 為空）；[插件群眾回報](#遊戲內插件收集) | 經典版資料只能標示為參考 |
+| 掉落、NPC 位置 | 無官方來源（副本手冊 API 為空）；Wowhead 永恆物品頁、[插件群眾回報](#遊戲內插件收集)，掉率實測看 GoldScout `/item/{id}` | 經典版資料只能標示為參考 |
+| 誰在賣（NPC 商人） | 瀏覽器開 [Wowhead 永恆](#wowhead-永恆繁中)物品頁，讀內嵌的 `sold-by` 清單：`react[1]` 為 1 是部落可用，`location` 是區域 ID，`cost` 是每份銅價、`stack` 是一份幾個 | 官方物品 API 的 `purchase_price` ÷ `purchase_quantity` 可核對價格。先挑同一處有部落拍賣場的商人 |
 | 伺服器人口 | 無官方來源；插件抽樣 | 只代表被看到的角色，適合看比例 |
 | 官方公告 | [台灣新聞頁](#官方新聞與論壇) | 未找到 RSS／JSON |
 | 藍帖、BUG 回報 | 台灣官方論壇 JSON／RSS | Discourse 標準端點 |
