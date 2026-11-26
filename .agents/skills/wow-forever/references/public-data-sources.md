@@ -21,12 +21,30 @@
 | 角色等級、裝備、專業 | [官方角色 API](battlenet-api.md#角色與公會) | Lv10 以上且登出後才出現 |
 | 公會成員 | 官方公會 roster | 中文公會名直接當 slug 可查（2026-11-18 實測「黎明之劍」） |
 | 任務內容與獎勵 | [官方任務 API](battlenet-api-coverage.md#端點實測表) | 有 zh_TW 標題、需求與獎勵；沒有 NPC 位置 |
+| 魚名、釣區、漁獲用途 | [WOWF.IO 釣魚漁獲](https://wowf.io/tw/professions/fishing/catch) | 從魚種找到物品 ID，再用台服名稱和永恆配方、任務補核，見[釣魚漁獲來源與用途](#釣魚漁獲來源與用途) |
 | 各區釣魚漁獲率 | [GoldScout 釣點](https://wowgoldscout.com/fishing)（只收永恆玩家拾取） | 整區全天平均，魚群與開放水域不分；判讀見[練等頁釣魚分頁](profession-planner-site.md) |
 | 掉落、NPC 位置 | 無官方來源（副本手冊 API 為空）；Wowhead 永恆物品頁、[插件群眾回報](#遊戲內插件收集)，掉率實測看 GoldScout `/item/{id}` | 經典版資料只能標示為參考 |
 | 誰在賣（NPC 商人） | 瀏覽器開 [Wowhead 永恆](#wowhead-永恆繁中)物品頁，讀內嵌的 `sold-by` 清單：`react[1]` 為 1 是部落可用，`location` 是區域 ID，`cost` 是每份銅價、`stack` 是一份幾個 | 官方物品 API 的 `purchase_price` ÷ `purchase_quantity` 可核對價格。先挑同一處有部落拍賣場的商人 |
 | 伺服器人口 | 無官方來源；插件抽樣 | 只代表被看到的角色，適合看比例 |
 | 官方公告 | [台灣新聞頁](#官方新聞與論壇) | 未找到 RSS／JSON |
 | 藍帖、BUG 回報 | 台灣官方論壇 JSON／RSS | Discourse 標準端點 |
+
+## 釣魚漁獲來源與用途
+
+[WOWF.IO 釣魚漁獲](https://wowf.io/tw/professions/fishing/catch)列出漁獲、釣區和用途分類，也收錄箱子、水元素材料等副產物。以魚種的物品頁或配方材料連結查 ID。只有名稱時，先用該名稱、異名或英文名找永恆物品頁，再與庫存的物品 ID 核對。目錄讀不到或缺項時，查 Wowhead 永恆的物品和釣區資料。
+
+回報名稱以台服遊戲連結或 `forever_api.py get /data/wow/item/{id}` 的 `zh_TW` 名稱為準，API 缺項時用 Wowhead 永恆繁中。相同 ID 的譯名合併辨識，例如 WOWF.IO 的[生鮮的日鱗鮭魚](https://wowf.io/tw/items/13760)就是台服的「新鮮的陽鱗鮭魚」。用途欄適合找線索，再用永恆的配方材料、成品或任務需求核對。任務能否接取依台服目前的內容階段判斷。漁獲頁的售價是賣商人的價格，查拍賣場用[現價來源](auction-market.md#現價用哪個來源)。
+
+下表台服名稱經 2026-11-26 的 Battle.net API 核對。火鰭鯛、石鱗鰻、電鰻在 API 都列為商品／其他，盤點時以物品 ID 對照漁獲資料。
+
+| 物品 ID | 台服名與辨識線索 | 取得區域舉例 | 主要用途 |
+| --- | --- | --- | --- |
+| `6289` | 新鮮的長嘴泥鰍 | 西部荒野、暴風城等淡水 | 烹飪製作[長嘴泥鰍](https://www.wowhead.com/forever/tw/spell=7753) |
+| `6359` | 火鰭鯛 | 貧瘠之地、濕地等沿岸 | 煉金製作[火焰之油](https://www.wowhead.com/forever/tw/spell=7837/火焰之油) |
+| `8365` | 新鮮的銀頭鮭魚，WOWF.IO 列「生鮮的銀頭鱒魚」 | 荊棘谷、奧特蘭克山脈等內陸水域 | 烹飪製作[銀頭鮭魚](https://www.wowhead.com/forever/tw/spell=20916/銀頭鮭魚) |
+| `13422` | 石鱗鰻 | 荊棘谷、塔納利斯等沿岸 | 煉金製作[石鱗魚油](https://www.wowhead.com/forever/tw/spell=17551/石鱗魚油) |
+| `13757` | 電鰻，WOWF.IO 也可能顯示 Lightning Eel | [菲拉斯、東瘟疫之地等內陸水域](https://www.wowhead.com/forever/tw/item=13757) | [工匠令狀 - 電鰻](https://www.wowhead.com/forever/tw/quest=9206/工匠令狀-電鰻)的任務物品 |
+| `13760` | 新鮮的陽鱗鮭魚，WOWF.IO 列「生鮮的日鱗鮭魚」 | [菲拉斯、辛特蘭等內陸水域](https://www.wowhead.com/forever/tw/item=13760) | 烹飪製作[水煮陽鱗鮭魚](https://wowf.io/tw/recipes/cooking/18244) |
 
 ## Battle.net API（永恆）
 

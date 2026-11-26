@@ -20,7 +20,7 @@ description: 查證《魔獸世界：永恆》（WoW Forever／wowf）台服玩�
 | 選插件、比較功能重疊或繁中支援 | [插件挑選](references/addon-selection.md)、[插件功能與指令](references/addon-feature-guide.md)。比較 GearInsight 和整合 UI、AtlasLoot、Questie 或 LFG Forever 時讀 [GearInsight 分工](references/gearinsight-overlap.md)。 |
 | 插件版本、啟用狀態、安裝、更新或 Lua 錯誤 | [插件維護](references/addon-maintenance.md)。分辨同名套件時讀 [AtlasLoot 專案與版本](references/environment-and-atlasloot.md)。 |
 | 客戶端安裝、只留永恆、停用 CurseForge Retail 或 Battle.net 卡在解除安裝 | [客戶端版本管理](references/client-installation.md) |
-| 背包、銀行、信箱或跨角色庫存 | [Syndicator 庫存](references/syndicator-inventory.md) |
+| 背包、銀行、信箱或跨角色庫存 | [Syndicator 庫存](references/syndicator-inventory.md)。查包包裡有哪些魚，走[魚類庫存與物品 ID](references/syndicator-inventory.md#魚類庫存與物品-id)。 |
 | 傳承點數、雙採集、雙製造小號或跨角色分工 | [專業與傳承](references/professions-and-legacy.md)。個人規劃依當前角色職業、種族和專業，公開網站方案可作範例。 |
 | 依技能門檻與庫存算練等路線、材料或成本 | [專業練等試算](references/leveling-route.md) |
 | 釣魚或烹飪：釣點、魚價、料理、升點、脫鉤與釣竿 | 先 `git fetch`，讀練等頁 `leveling/index.html` 的 `#fishing`、`#cooking` 分頁；本機落後 `origin/main` 時用 `git show origin/main:leveling/index.html`。能不能拋竿與脫鉤看[釣魚的有效技能](references/professions-and-legacy.md#釣魚的有效技能)，漁獲率看[公開資料來源](references/public-data-sources.md#依需求選來源)，魚價查[現價](references/auction-market.md#現價用哪個來源)。 |
