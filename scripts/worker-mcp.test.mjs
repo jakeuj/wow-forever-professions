@@ -122,6 +122,8 @@ test('MCP 生命週期：initialize、initialized、ping、tools/list', async ()
   const { result } = await (await post(rpc('tools/list'))).json();
   assert.deepEqual(result.tools.map(tool => tool.name),
     ['get_item_prices', 'get_item_trend', 'check_buy_list', 'check_price_alerts', 'get_character_professions']);
+  assert.deepEqual(result.tools.find(tool => tool.name === 'check_price_alerts').annotations,
+    { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false });
   for (const tool of result.tools) {
     assert.equal(tool.inputSchema.type, 'object');
     assert.ok(tool.inputSchema.required.every(field => Object.hasOwn(tool.inputSchema.properties, field)));

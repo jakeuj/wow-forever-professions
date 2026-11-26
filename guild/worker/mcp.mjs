@@ -456,6 +456,7 @@ const tools = new Map([
     } },
   } }],
   ['check_price_alerts', { run: checkPriceAlerts, compact: true, definition: {
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     description: '用一次查詢比對部落 113 號拍賣場的物品清單。單價小於或等於門檻時 status 為 match，'
       + 'alerts 回傳最低價、門檻、門檻內總件數和最低三檔 [單價, 件數]。其餘狀態為 no_match、stale、unavailable。',
     inputSchema: { type: 'object', required: ['items'], properties: {
@@ -514,7 +515,7 @@ async function answer(ctx, message) {
     case 'ping':
       return reply({});
     case 'tools/list':
-      return reply({ tools: [...tools].map(([name, { definition }]) => ({ name, ...definition, annotations })) });
+      return reply({ tools: [...tools].map(([name, { definition }]) => ({ name, annotations, ...definition })) });
     case 'tools/call': {
       const tool = tools.get(params.name);
       return tool ? reply(await callTool(ctx, tool, params.arguments)) : rpcError(id, -32602, 'Unknown tool');
