@@ -21,7 +21,7 @@ USER_AGENT = "wow-forever-professions-site"
 
 
 def fetch(url, headers=None, data=None, timeout=180):
-    """Return (status, headers, body); 4xx comes back as a status, other errors retry."""
+    """Return (status, headers, body), including 304 without retrying."""
     headers = {"User-Agent": USER_AGENT, "Accept-Encoding": "gzip", **(headers or {})}
     for attempt in range(4):
         req = urllib.request.Request(url, data=data, headers=headers)
@@ -32,7 +32,7 @@ def fetch(url, headers=None, data=None, timeout=180):
                     body = gzip.decompress(body)
                 return resp.status, resp.headers, body
         except urllib.error.HTTPError as error:
-            if error.code in (400, 401, 403, 404) or attempt == 3:
+            if error.code in (304, 400, 401, 403, 404) or attempt == 3:
                 return error.code, error.headers, error.read()
         except (urllib.error.URLError, TimeoutError):
             if attempt == 3:
@@ -69,7 +69,7 @@ class Api:
         self.auth = {"Authorization": f"Bearer {token}"}
         self.calls = 0
 
-    def get(self, path, kind=None, timeout=180, *, all_locales=False):
+    def get(self, path, kind=None, timeout=180, *, all_locales=False, if_modified_since=None):
         query = dict(self.query)
         if kind is not None:
             query["namespace"] = f"{kind}-forever-{self.region}"
@@ -77,8 +77,11 @@ class Api:
             query.pop("locale", None)
         encoded_path = urllib.parse.quote(path, safe="/-_.~")
         url = f"{self.base}{encoded_path}?{urllib.parse.urlencode(query)}"
+        request_headers = self.auth
+        if if_modified_since:
+            request_headers = {**self.auth, "If-Modified-Since": if_modified_since}
         self.calls += 1
-        status, headers, body = fetch(url, self.auth, timeout=timeout)
+        status, headers, body = fetch(url, request_headers, timeout=timeout)
         payload = json.loads(body) if status == 200 else None
         return {"url": url, "status": status, "payload": payload, "bytes": len(body),
                 "last_modified": headers.get("Last-Modified") if headers else None}

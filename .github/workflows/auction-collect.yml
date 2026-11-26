@@ -1,8 +1,8 @@
 # Hourly: add the latest Horde auction snapshot from the Battle.net API to
 # auctions.json on the `auction-data` branch, which the market page reads, and the
 # stackables' price and units to hourly/<Taiwan date>.jsonl for time-of-day studies.
-# The Publisher Worker's cron trigger (guild/worker/dispatch.mjs) starts it at :10
-# and :40 through workflow_dispatch; GitHub's own schedule below fired only 3-4
+# The Publisher Worker's cron trigger (guild/worker/dispatch.mjs) starts it at :27
+# and :42 through workflow_dispatch; GitHub's own schedule below fired only 3-4
 # times a day and stays as a fallback. The API refreshes once an hour (minute drifts).
 # Credentials come from repo Secrets. GitHub turns off schedules in public repos
 # after 60 days without activity; re-enable this workflow in the Actions tab then

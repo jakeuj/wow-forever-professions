@@ -15,10 +15,11 @@ change points: [count, [[hour, price], ...]], where hour is hours since
 the Unix epoch (UTC) and price is copper, or null once the item is gone. `hours`
 lists the snapshots taken since `hourlyFrom`; before that (Taiwan days older than
 --hourly-days), each day is folded into one point at its midnight holding the
-day's lowest price, and days older than --keep-days are dropped. A snapshot that is
-already recorded, or one that looks broken (far fewer listings than the last one),
-is skipped without touching the file, and so is an hour whose /commodities request
-failed or comes from another hour, so stackables are not marked gone by mistake.
+day's lowest price, and days older than --keep-days are dropped. History records
+each hour once. It skips incomplete snapshots or a /commodities response from
+another hour, so stackables are not marked gone by mistake.
+With --publish-depth, publishedLastModified stores both HTTP validators from the
+last successful price ladder publication. An HTTP 304 skips the price update.
 
 With --hourly-dir, each newly recorded hour also appends one line to
 <dir>/<Taiwan date YYYY-MM-DD>.jsonl, for time-of-day and day-of-week studies
@@ -150,6 +151,11 @@ def summarize(message):
             f.write(message + "\n")
 
 
+def write_history(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", type=Path, required=True, help="auctions.json to update")
@@ -177,15 +183,24 @@ def main():
             publisher.send("battle-net-token", {"accessToken": token})
         except (SnapshotError, URLError, TimeoutError):
             summarize("::warning::Armory authorization could not be refreshed.")
+    data = json.loads(args.out.read_text(encoding="utf-8")) if args.out.is_file() else {"hours": [], "items": {}}
+    items, hours = data["items"], data["hours"]
+    published = data.get("publishedLastModified", {}) if publisher else {}
     api = Api(args.region, token)
     base = f"/data/wow/ruleset/{args.ruleset}/auctions/{args.house}"
-    auctions = api.get(base)
+    auctions = api.get(base, if_modified_since=published.get("auctions"))
+    if auctions["status"] == 304:
+        summarize(f"Auction house {args.house}: HTTP 304 Not Modified; skipped price ladder and market history.")
+        return
     if auctions["status"] != 200 or not auctions["last_modified"]:
         summarize(f"::warning::auction house {args.house}: HTTP {auctions['status']}; nothing recorded")
         return
     modified = email.utils.parsedate_to_datetime(auctions["last_modified"])
     hour = int(modified.timestamp() // 3600)
-    commodities = api.get(f"{base}/commodities")
+    commodities = api.get(f"{base}/commodities", if_modified_since=published.get("commodities"))
+    if commodities["status"] == 304:
+        summarize(f"Commodities of house {args.house}: HTTP 304 Not Modified; skipped price ladder and market history.")
+        return
     c_modified = commodities["last_modified"]
     if commodities["status"] != 200 or not c_modified \
             or int(email.utils.parsedate_to_datetime(c_modified).timestamp() // 3600) != hour:
@@ -201,14 +216,13 @@ def main():
         return
     prices = lowest_prices(single_rows, stackable_rows)
 
-    data = json.loads(args.out.read_text(encoding="utf-8")) if args.out.is_file() else {"hours": [], "items": {}}
-    items, hours = data["items"], data["hours"]
     listed_before = sum(1 for count, series in items.values() if series[-1][1] is not None)
     if not prices or len(prices) < args.min_share * listed_before:
         summarize(f"::warning::snapshot {iso_tw(modified)} lists {len(prices)} items against "
                   f"{listed_before} last time; skipped as incomplete")
         return
 
+    validators_changed = False
     if publisher:
         try:
             publisher.send("market-depth", {
@@ -220,8 +234,14 @@ def main():
             summarize("::warning::Price ladder could not be published; continuing with market history.")
         else:
             summarize(f"Price ladder published for {iso_tw(modified)}.")
+            if not hours or hour >= hours[-1]:
+                validators = {"auctions": auctions["last_modified"], "commodities": c_modified}
+                validators_changed = validators != published
+                data["publishedLastModified"] = validators
     if hours and hour <= hours[-1]:
-        summarize(f"Snapshot {iso_tw(modified)} is already recorded; nothing to do.")
+        if validators_changed:
+            write_history(args.out, data)
+        summarize(f"Snapshot {iso_tw(modified)} is already recorded; no hourly history added.")
         return
 
     changed = gone = new = 0
@@ -252,8 +272,7 @@ def main():
         "hours": hours,
         "items": dict(sorted(items.items(), key=lambda kv: int(kv[0]))),
     })
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    write_history(args.out, data)
     summarize(f"Snapshot {iso_tw(modified)}: {len(prices):,} items listed ({new:,} new, "
               f"{changed - new:,} new lowest price, {gone:,} gone); {len(hours)} snapshots kept; "
               f"{args.out.stat().st_size / 1024:.0f} KB.")
