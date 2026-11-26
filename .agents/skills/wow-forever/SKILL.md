@@ -11,7 +11,7 @@ description: 查證《魔獸世界：永恆》（WoW Forever／wowf）台服玩�
 
 需要個人角色、陣營、安裝目錄或 API slug 時，讀家目錄的 `.config/wow-forever/local.md`（Windows 用 `%USERPROFILE%\.config\wow-forever\local.md`）。要查個人進度時優先用指定角色，未指定時用檔內主角色。按題目重查角色等級、專業點數、已學配方或庫存，並標明資料時間。角色 API 可能落後一兩天，Syndicator 存檔在 `/reload` 或登出時更新。
 
-使用者提供或更正的私人設定寫入 repo 外的 [local.md](references/local.example.md)，需要時依對話確認欄位後建立。公開文件、範例與測試資料使用佔位符或相對路徑。帳號目錄、私人角色、BattleTag、未公開聯絡資訊與本機絕對路徑留在操作環境。憑證依本機工具說明管理，local.md 只記位置。公開公會聯絡資訊以現有招募內容為準。
+使用者提供或更正的私人設定寫入 repo 外的 [local.md](references/local.example.md)，需要時依對話確認欄位後建立。只記不常變的事實、決定與存檔看不到的事；等級、專業點數、庫存與物品位置不寫入，照 [local.example.md](references/local.example.md) 的「最新資料去哪查」即時查。公開文件、範例與測試資料使用佔位符或相對路徑。帳號目錄、私人角色、BattleTag、未公開聯絡資訊與本機絕對路徑留在操作環境。憑證依本機工具說明管理，local.md 只記位置。公開公會聯絡資訊以現有招募內容為準。
 
 ## 依任務讀取
 
