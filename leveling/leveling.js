@@ -47,13 +47,17 @@
 
   const apply = data => {
     const scanTime = data.snapshotAt || data.savedAt || data.scanStartedAt || data.latestDay;
-    if (dateChip?.dataset.lvSnapshot && !(Date.parse(scanTime) > Date.parse(dateChip.dataset.lvSnapshot))) return;
+    const routeSnapshot = dateChip?.dataset.lvSnapshot;
+    const newerThan = snapshot => !snapshot || Date.parse(scanTime) > Date.parse(snapshot);
+    const stamp = data.scanStartedAt || data.savedAt;
+    const scanLabel = stamp && `${data.scanStartedAt ? '完整掃描' : '部落掃描'} ${stamp.slice(0, 16).replace('T', ' ').replace(/-/g, '.')}`;
     const f = data.fields;
     const [iId, iPrice, iCount] = ['id', 'price', 'count'].map(k => f.indexOf(k));
     const live = new Map(data.items.filter(r => r[iPrice] && r[iCount] !== 0)
       .map(r => [r[iId], { price: r[iPrice], count: r[iCount] }]));
 
     phases.forEach(table => {
+      if (!newerThan(routeSnapshot)) return;
       const body = table.querySelector('tbody');
       const rows = [...body.querySelectorAll('tr[data-lv-id]')].map(row => {
         const hit = live.get(Number(row.dataset.lvId));
@@ -93,6 +97,8 @@
     // Plan totals stay inside each route variant, so one route's plans never add to another's.
     const scopes = document.querySelectorAll('[data-lv-variant]');
     (scopes.length ? [...scopes] : [document]).forEach(scope => {
+      if (!newerThan(scope.dataset.lvSnapshot || routeSnapshot)) return;
+      if (scanLabel) setText(scope, '[data-lv-price-source]', scanLabel);
       const planSummary = scope.querySelector('[data-lv-plan-total]');
       let planTotal = Number(planSummary?.dataset.lvPlanFixed || 0);
       scope.querySelectorAll('.lv-plans tr[data-lv-id]').forEach(row => {
@@ -104,10 +110,7 @@
       if (planSummary && planTotal) planSummary.textContent = total(planTotal);
     });
 
-    const stamp = data.scanStartedAt || data.savedAt;
-    if (dateChip && stamp) {
-      dateChip.textContent = `${data.scanStartedAt ? '完整掃描' : '部落掃描'} ${stamp.slice(0, 16).replace('T', ' ').replace(/-/g, '.')}`;
-    }
+    if (dateChip && scanLabel && newerThan(routeSnapshot)) dateChip.textContent = scanLabel;
   };
 
   fetch('../market/data.json', { cache: 'no-cache' })
