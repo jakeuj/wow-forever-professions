@@ -1,6 +1,6 @@
 ---
 name: wow-forever
-description: 查證《魔獸世界：永恆》（WoW Forever／wowf）台服玩法、插件與客戶端、專業傳承與練等、拍賣與配方利潤，並維護本 repo 的公會官網、GitHub Pages 玩家工具與 Battle.net API 資料串接。
+description: 查證《魔獸世界：永恆》（WoW Forever／wowf）台服玩法、插件與客戶端、專業傳承與練等、拍賣行情、物價通膨、現金／G 比值與配方利潤，並維護本 repo 的公會官網、GitHub Pages 玩家工具與 Battle.net API 資料串接。
 ---
 
 # 魔獸世界永恆
@@ -23,11 +23,12 @@ description: 查證《魔獸世界：永恆》（WoW Forever／wowf）台服玩�
 | 背包、銀行、信箱或跨角色庫存 | [Syndicator 庫存](references/syndicator-inventory.md)。查包包裡有哪些魚，走[魚類庫存與物品 ID](references/syndicator-inventory.md#魚類庫存與物品-id)。 |
 | 傳承點數、雙採集、雙製造小號或跨角色分工 | [專業與傳承](references/professions-and-legacy.md)。個人規劃依當前角色職業、種族和專業，公開網站方案可作範例。 |
 | 依技能門檻與庫存算練等路線、材料或成本 | [專業練等試算](references/leveling-route.md) |
-| 釣魚或烹飪：釣點、魚價、料理、升點、脫鉤與釣竿 | 先 `git fetch`，讀練等頁 `leveling/index.html` 的 `#fishing`、`#cooking` 分頁；本機落後 `origin/main` 時用 `git show origin/main:leveling/index.html`。能不能拋竿與脫鉤看[釣魚的有效技能](references/professions-and-legacy.md#釣魚的有效技能)，漁獲率看[公開資料來源](references/public-data-sources.md#依需求選來源)，魚價查[現價](references/auction-market.md#現價用哪個來源)。 |
+| 釣魚或烹飪：釣點、魚價、料理、升點、脫鉤與釣竿 | 先 `git fetch`，讀練等頁 `leveling/index.html` 的 `#fishing`、`#cooking` 分頁；本機落後 `origin/main` 時用 `git show origin/main:leveling/index.html`。問「該去哪釣魚」、釣魚賺金或某種魚的 AH 價格會不會改變首選，讀[依拍賣行情推薦釣點](references/professions-and-legacy.md#依拍賣行情推薦釣點)。拋竿與脫鉤看[釣魚的有效技能](references/professions-and-legacy.md#釣魚的有效技能)，查單品魚價看[現價](references/auction-market.md#現價用哪個來源)。 |
 | 遊戲內自動選路、完整掃描與缺料清單 | [DungeonsForever＋Auctionator 專業衝等](references/profession-addon-workflow.md) |
+| AH 有什麼值得注意、現在買什麼、掃描後看買點 | 按[行情快訊](references/auction-market.md#行情快訊現在該買賣什麼)先查[限量買點](references/auction-market.md#限量買點)。有進行中的練等路線時同時重選配方。先回報可立即買的品項，附[可複製名稱與購物清單](references/auction-market.md#可複製名稱與購物清單)。 |
 | 衝鍛造 300 要現在備料、還是等瑟銀降價 | 按[大宗材料分批採買](references/auction-market.md#大宗材料分批採買)比較部落近期走勢、買足成本與價格持平或上漲時的預算。 |
-| 現價、期間漲跌、跨陣營價差、時段分析、購物清單或掃描截圖 | 選讀 [拍賣行情](references/auction-market.md)的對應章節。問現在該買或賣什麼時，直接讀[行情快訊](references/auction-market.md#行情快訊現在該買賣什麼)。 |
-| 現金／遊戲 G 比值 | [現金與遊戲金幣比值](references/auction-market.md#現金與遊戲金幣比值) |
+| 現價、期間漲跌、跨陣營價差、時段分析、購物清單或掃描截圖 | 選讀 [拍賣行情](references/auction-market.md)的對應章節。 |
+| 阿莫比礦石走勢、物價通膨、現金／遊戲 G 比值 | 依題目查[阿莫比每日走勢](references/auction-market.md#阿莫比每日走勢)、[物價指數與通膨](references/auction-market.md#物價指數與通膨)或[現金與遊戲金幣比值](references/auction-market.md#現金與遊戲金幣比值)。 |
 | 配方毛利、NPC／任務來源、囤配方、回本、做來賣店（大廚師料理）或冷卻轉化（月布、篩鹽器、奧金） | [配方毛利與採買](references/market-recipe-value.md)。找遊戲內排序工具時讀 [配方利潤插件](references/addon-selection.md#配方利潤排序候選)。 |
 | 遭攔截的木箱、商人貢獻點：哪種箱子便宜、購物清單、算進自己的箱子或遊戲內掃描 | [遭攔截的木箱](references/waylaid-crates.md) |
 | 工匠令狀、補給聲望（杜洛塔補給與物流）：哪份令狀便宜、每天衝多少、密封令狀 | [工匠令狀與補給聲望](references/craftsman-writs.md) |
