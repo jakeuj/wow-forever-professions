@@ -11,7 +11,7 @@
 
 ## 團本時程
 
-- **官方**：2026-11-04 上市時沒有團本。12/9 開放地深獸穴（10 人、8 王）、海加爾山之巔（20 人、13 王）與奧妮克希亞的巢穴（40 人，需要龍火護符）；官方只特別提醒奧妮克希亞要堆火焰抗性。
+- **官方**（台服日期，11/26 核對）：首批團本於 2026-12-10 開放。地深獸穴 10 人、8 王，海加爾山之巔 20 人、13 王，奧妮克希亞的巢穴 40 人且需要龍火護符。台服公告特別提醒挑戰奧妮克希亞時準備火焰抗性。 [Blizzard 台服團本總覽](https://worldofwarcraft.blizzard.com/zh-tw/news/24303009)
 - **攻略**：2027 春季再開兩個新團本，2027 夏季有翻新的經典團本與專業更新。熔火之心、黑翼之巢、安其拉與納克薩瑪斯都還沒有公告日期。
 - 因此經典版依熔火之心、黑翼之巢、安其拉與納克薩瑪斯排出的抗性裝與抗性藥水優先序，不能直接套用。
 
@@ -20,7 +20,7 @@
 - **軍團鋼錠**（客戶端）：永恆新增的 300 級鍛造裝備多數每件要 6～20 根（物品等級 65 的史詩只要 1 根，但要延展自然精華），另外還要沉重瑟銀錠（採礦熔沉重瑟銀礦石）與艾澤源質錠。
 - **轉化：軍團鋼**（攻略，warcraft.wiki.gg）：唯一來源。需要鍊金術 275 與點金石，材料是沉重瑟銀錠＋惡魔水晶，冷卻約 47 小時。惡魔水晶只用在這個轉化。
 - **轉化冷卻**（攻略，Timesaver 引 Wowhead）：合成奧金約 47 小時（經典版為 2 天）、元素轉化 23 小時、點鐵成金與點化秘銀 1 小時。永恆的轉化是否共用冷卻**未確認**；共用的話，鍊金師每次只能在軍團鋼與奧金之間擇一。
-- **延展自然精華**（攻略）：聖騎「正義」與戰士「榮耀」套裝的材料，分解地深獸穴與海加爾山之巔的裝備取得，12/9 之後才有。
+- **延展自然精華**（攻略）：聖騎「正義」與戰士「榮耀」套裝的材料，台服 12/10 開團後可分解地深獸穴與海加爾山之巔的裝備取得。
 - **物品 ID**（官方拍賣 API 與阿莫比對照，2026-11-23）：查價與讀 `auctions.json` 時用。沉重瑟銀礦石 248815、沉重瑟銀錠 251291、艾澤源質錠 249726、軍團鋼錠 251290、惡魔水晶 248819、配方：轉化軍團鋼 284871；永恆新草藥魔鼠草 248821、死亡蓮花 248822、惡夢葉草 248823。`market/data.json` 只有站主掃描時有掛單的物品，沒列到的 ID 用阿莫比的物品清單或 `scripts/auction_changes.py` 查。
 - **營地道具**（客戶端）：主熔爐（鍛造 300）與鍊金實驗室（鍊金術 300）放置後供需要它們的配方使用，所有營地道具共用 1 小時冷卻。鍊金實驗室讓精煉藥劑不必再到通靈學院或黑翼之巢製作。主熔爐藍圖據 Zockify 由黑石深淵的 Golem Lord Argelmach 掉落；鍊金實驗室藍圖來源未知。
 
@@ -75,7 +75,7 @@
 
 ### 優先序較低
 
-- 黑鐵系裝備與瑟銀、輻光抗性裝：經典版靠熔火之心之後的抗性需求，永恆 12/9 的團本只有奧妮克希亞要火抗。
+- 黑鐵系裝備與瑟銀、輻光抗性裝依團本需求準備。台服 12/10 的首批團本，暴雪特別點名奧妮克希亞的火焰抗性。
 - 寒冰護衛者、精工風暴戰錘：經典版以 PvP 為主。
 - 武器大師／防具大師專精在永恆是否保留，攻略尚未確認。
 
@@ -102,7 +102,7 @@
 
 ## 來源
 
-- [Blizzard 團本總覽](https://news.blizzard.com/en-us/article/24303009/world-of-warcraft-forever-raid-overviewlocations-raid-sizes-and-attunement)、[Blizzard 2026-11-10 熱修](https://worldofwarcraft.blizzard.com/en-us/news/24315281/wow-forever-hotfixes-november-10-2026)
+- [Blizzard 台服團本總覽](https://worldofwarcraft.blizzard.com/zh-tw/news/24303009)、[Blizzard 2026-11-10 熱修](https://worldofwarcraft.blizzard.com/en-us/news/24315281/wow-forever-hotfixes-november-10-2026)
 - [Blizzard Watch：永恆路線圖](https://blizzardwatch.com/2026/09/13/world-warcraft-forevers-roadmap-gives-us-ann-idea-expect-rest-2026-summer-2027/)、[治療藥水改為急救](https://blizzardwatch.com/2026/10/16/first-aid-getting-new-recipes-updates-world-warcraft-forever/)
 - [warcraft.wiki.gg：轉化：軍團鋼](https://warcraft.wiki.gg/wiki/Transmute:_Legionite)、[永恆煉金配方](https://warcraft.wiki.gg/wiki/Forever_alchemy_recipes)、[獅心頭盔](https://warcraft.wiki.gg/wiki/Lionheart_Helm)
 - [Zockify 永恆鍛造配方](https://www.zockify.com/forever/professions/blacksmithing/recipes/)、[ConquestCapped 永恆新配方](https://conquestcapped.com/guides/wow-forever/wow-forever-new-recipes/)、[Warcraft Tavern 永恆煉金](https://www.warcrafttavern.com/forever/guides/alchemy/)、[Timesaver 專業冷卻](https://timesaver.gg/blog/wow-forever-profession-cooldowns-gold)
