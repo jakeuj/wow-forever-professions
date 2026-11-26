@@ -1,5 +1,5 @@
 import { SNAPSHOT_KEYS, marketExpiry, readSnapshot, snapshotExpiry } from './snapshots.mjs';
-import { dispatchAuctionCollect } from './dispatch.mjs';
+import { collectAuctionIfNeeded } from './dispatch.mjs';
 
 const headers = { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' };
 const encoder = new TextEncoder();
@@ -13,7 +13,7 @@ function authenticated(request, token) {
 
 export default {
   async scheduled(controller, env) {
-    await dispatchAuctionCollect(env);
+    await collectAuctionIfNeeded(controller, env);
   },
 
   async fetch(request, env) {
@@ -61,7 +61,7 @@ export default {
       const stamp = Date.parse(snapshot?.updatedAt);
       if (!(expires >= now + 60_000) || stamp > now + 60_000) return new Response(null, { status: 400, headers });
       const previous = await env.SNAPSHOTS.get(key, 'json');
-      if (!(Date.parse(previous?.updatedAt) >= stamp)) {
+      if (!(marketExpiry(previous) > now && Date.parse(previous.updatedAt) >= stamp)) {
         await env.SNAPSHOTS.put(key, JSON.stringify(snapshot), { expiration: Math.floor(expires / 1000) });
       }
       return new Response(null, { status: 204, headers });

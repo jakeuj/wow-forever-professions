@@ -168,6 +168,7 @@ def main():
     parser.add_argument("--min-share", type=float, default=0.4,
                         help="skip a snapshot listing fewer items than this share of the last one")
     parser.add_argument("--publish-depth", action="store_true", help="publish the latest TW Horde ladder to Workers KV")
+    parser.add_argument("--force-refresh", action="store_true", help="download both endpoints even if unchanged to rebuild KV")
     parser.add_argument("--hourly-dir", type=Path, help="also append stackables' price and units to <dir>/<date>.jsonl")
     parser.add_argument("--hourly-keep-days", type=int, default=56, help="Taiwan days of --hourly-dir files kept")
     parser.add_argument("--first-units", type=int, default=20, help="units averaged for the third --hourly-dir value")
@@ -186,9 +187,12 @@ def main():
     data = json.loads(args.out.read_text(encoding="utf-8")) if args.out.is_file() else {"hours": [], "items": {}}
     items, hours = data["items"], data["hours"]
     published = data.get("publishedLastModified", {}) if publisher else {}
+    request_validators = {} if args.force_refresh else published
+    if args.force_refresh:
+        summarize("Rebuilding the price ladder with unconditional GETs.")
     api = Api(args.region, token)
     base = f"/data/wow/ruleset/{args.ruleset}/auctions/{args.house}"
-    auctions = api.get(base, if_modified_since=published.get("auctions"))
+    auctions = api.get(base, if_modified_since=request_validators.get("auctions"))
     if auctions["status"] == 304:
         summarize(f"Auction house {args.house}: HTTP 304 Not Modified; skipped price ladder and market history.")
         return
@@ -197,7 +201,7 @@ def main():
         return
     modified = email.utils.parsedate_to_datetime(auctions["last_modified"])
     hour = int(modified.timestamp() // 3600)
-    commodities = api.get(f"{base}/commodities", if_modified_since=published.get("commodities"))
+    commodities = api.get(f"{base}/commodities", if_modified_since=request_validators.get("commodities"))
     if commodities["status"] == 304:
         summarize(f"Commodities of house {args.house}: HTTP 304 Not Modified; skipped price ladder and market history.")
         return

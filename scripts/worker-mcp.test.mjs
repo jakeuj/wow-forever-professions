@@ -121,7 +121,7 @@ test('MCP 生命週期：initialize、initialized、ping、tools/list', async ()
   assert.deepEqual(await (await post(rpc('ping', undefined, 0))).json(), { jsonrpc: '2.0', id: 0, result: {} });
   const { result } = await (await post(rpc('tools/list'))).json();
   assert.deepEqual(result.tools.map(tool => tool.name),
-    ['get_item_prices', 'get_item_trend', 'check_buy_list', 'get_character_professions']);
+    ['get_item_prices', 'get_item_trend', 'check_buy_list', 'check_price_alerts', 'get_character_professions']);
   for (const tool of result.tools) {
     assert.equal(tool.inputSchema.type, 'object');
     assert.ok(tool.inputSchema.required.every(field => Object.hasOwn(tool.inputSchema.properties, field)));
@@ -300,6 +300,51 @@ test('check_buy_list：觸發與估價的邊界、預設清單名稱與參數錯
     assert.match((await call('check_buy_list', args)).error, /必須|最多/u);
   }
   assert.match((await call('check_buy_list', { items: [{ query: 2 }] }, setup({ snapshots: {} }))).error, /三小時/u);
+});
+
+test('check_price_alerts：一次讀取整批，比對含等於門檻，只回最低三檔', async () => {
+  const data = market(now);
+  data.depth = { ...depth, 2: [[100, 5], [150, 10], [300, 20], [400, 30]] };
+  const context = setup({ snapshots: { 'market-depth': data } });
+  const reads = [];
+  context.env.SNAPSHOTS.get = async (...args) => { reads.push(args); return data; };
+  const items = [{ itemId: 4, maxUnitPriceCopper: 1600 }, { itemId: 2, maxUnitPriceCopper: 400 },
+    { itemId: 5, maxUnitPriceCopper: 999 }, { itemId: 10, maxUnitPriceCopper: 500 },
+    { itemId: 9, maxUnitPriceCopper: 500 }];
+  const result = await call('check_price_alerts', { items }, context);
+  assert.deepEqual(result, { status: 'match', updatedAtTaipei: '2026-11-24 11:00', alerts: [
+    { itemId: 4, minPriceText: '16.00s', maxUnitPriceText: '16.00s', unitsAtOrBelowTrigger: 2,
+      tiers: [['16.00s', 2], ['1.0900g', 1]] },
+    { itemId: 2, minPriceText: '1.00s', maxUnitPriceText: '4.00s', unitsAtOrBelowTrigger: 65,
+      tiers: [['1.00s', 5], ['1.50s', 10], ['3.00s', 20]] },
+  ], unreadableItemIds: [9] });
+  assert.deepEqual(reads, [['market-depth', 'json']]);
+  assert.deepEqual(context.calls, []);
+  const extra = await call('check_price_alerts', { items, includeNonMatches: true }, context);
+  assert.deepEqual(extra.nonMatches, [{ itemId: 5, minPriceText: '10.00s' }, { itemId: 10, minPriceText: null }]);
+  assert.deepEqual(extra.unreadableItemIds, [9]);
+});
+
+test('check_price_alerts：超價時回短結果，區分舊資料與缺快照', async () => {
+  const items = [{ itemId: 4, maxUnitPriceCopper: 1599 }];
+  const context = setup({ snapshots: { 'market-depth': market(now) } });
+  const response = await post(rpc('tools/call', { name: 'check_price_alerts', arguments: { items } }), context);
+  const previousTool = await post(rpc('tools/call', { name: 'check_buy_list', arguments: {
+    items: [{ query: 4, buyBelowCopper: 1599 }],
+  } }), context);
+  const text = (await response.json()).result.content[0].text;
+  assert.equal(text, '{"status":"no_match","updatedAtTaipei":"2026-11-24 11:00"}');
+  assert.ok(text.length < (await previousTool.json()).result.content[0].text.length / 2);
+  assert.deepEqual(await call('check_price_alerts', { items }), { status: 'stale', updatedAtTaipei: '2026-11-24 10:59' });
+  assert.deepEqual(await call('check_price_alerts', { items, snapshotHour: 'previous' }),
+    { status: 'no_match', updatedAtTaipei: '2026-11-24 10:59' });
+  for (const snapshots of [{}, { 'market-depth': market(now - MARKET_LIFETIME) }]) {
+    assert.deepEqual(await call('check_price_alerts', { items }, setup({ snapshots })), { status: 'unavailable' });
+  }
+  for (const args of [{ items: [] }, { items: Array(51).fill(items[0]) }, { items: [{ itemId: '4' }] },
+    { items: [{ itemId: 4, maxUnitPriceCopper: 1.6 }] }, { items, snapshotHour: 'tomorrow' }, { items, includeNonMatches: 'true' }]) {
+    assert.match((await call('check_price_alerts', args, context)).error, /必須/u);
+  }
 });
 
 test('get_character_professions：沿用軍械庫的排除名單、限流與錯誤', async t => {

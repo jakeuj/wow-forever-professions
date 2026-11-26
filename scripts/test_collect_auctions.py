@@ -51,10 +51,12 @@ class AuctionPublicationTest(unittest.TestCase):
         self.enterContext(patch.dict("os.environ", DAWNBLADE_PUBLISH_URL="https://example.test",
                                      DAWNBLADE_PUBLISH_TOKEN="test-token"))
 
-    def run_collection(self, *responses):
+    def run_collection(self, *responses, force_refresh=False):
         self.api.get.reset_mock()
         self.api.get.side_effect = responses
         args = ["collector", "--out", str(self.history), "--hourly-dir", str(self.hourly), "--publish-depth"]
+        if force_refresh:
+            args.append("--force-refresh")
         with patch("sys.argv", args):
             collect.main()
 
@@ -96,4 +98,17 @@ class AuctionPublicationTest(unittest.TestCase):
         after = json.loads(self.history.read_bytes())
         self.assertEqual(after.pop("publishedLastModified"), {"auctions": AUCTIONS_AT, "commodities": COMMODITIES_AT})
         self.assertEqual(before, after)
+        self.assertEqual(hourly.read_bytes(), hourly_before)
+
+    def test_force_refresh_republishes_existing_snapshot_without_adding_history(self):
+        self.run_collection(AUCTIONS, COMMODITIES)
+        before = self.history.read_bytes()
+        hourly = next(self.hourly.iterdir())
+        hourly_before = hourly.read_bytes()
+        self.publisher.send.reset_mock()
+        self.run_collection(AUCTIONS, COMMODITIES, force_refresh=True)
+        self.assertEqual(self.api.get.call_args_list, [call(HOUSE, if_modified_since=None),
+                                                      call(f"{HOUSE}/commodities", if_modified_since=None)])
+        self.assertEqual(self.publisher.send.call_args.args[0], "market-depth")
+        self.assertEqual(self.history.read_bytes(), before)
         self.assertEqual(hourly.read_bytes(), hourly_before)

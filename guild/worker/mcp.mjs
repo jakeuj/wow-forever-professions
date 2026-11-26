@@ -58,6 +58,13 @@ function moneyText(copper) {
   return `${value}c`;
 }
 
+function alertPriceText(copper) {
+  if (copper < 10000) return moneyText(copper);
+  const gold = Math.floor(copper / 10000);
+  const fraction = String(copper % 10000).padStart(4, '0');
+  return `${gold}.${fraction}g`;
+}
+
 // Taiwan time (UTC+8, no daylight saving). Intl's zh-TW output holds non-ASCII spaces that vary by ICU version.
 function taipeiText(value) {
   return new Date(Date.parse(value) + 8 * 3600e3).toISOString().slice(0, 16).replace('T', ' ');
@@ -326,6 +333,51 @@ async function checkBuyList(ctx, args) {
     auctionatorImportActionable: shoppingText(listName, actionable) };
 }
 
+async function checkPriceAlerts(ctx, { items, includeNonMatches = false, snapshotHour = 'current' }) {
+  if (!Array.isArray(items) || items.length < 1 || items.length > 50) {
+    throw new ToolError('items 必須有 1 到 50 筆物品。');
+  }
+  if (typeof includeNonMatches !== 'boolean') throw new ToolError('includeNonMatches 必須是布林值。');
+  if (snapshotHour !== 'current' && snapshotHour !== 'previous') {
+    throw new ToolError('snapshotHour 必須是 current 或 previous。');
+  }
+  const entries = items.map((entry, index) => {
+    const itemId = numberOf(entry?.itemId, `items[${index}].itemId`, { integer: true, min: 1 });
+    const limit = numberOf(entry?.maxUnitPriceCopper, `items[${index}].maxUnitPriceCopper`, { integer: true, min: 1 });
+    if (itemId === null || limit === null) throw new ToolError(`items[${index}] 必須有 itemId 和 maxUnitPriceCopper。`);
+    return { itemId, limit };
+  });
+
+  const market = await readMarket(ctx);
+  if (!market) return { status: 'unavailable' };
+  const updatedAtTaipei = taipeiText(market.updatedAt);
+  const hour = 3_600_000;
+  const target = (Math.floor(ctx.now() / hour) - (snapshotHour === 'previous' ? 1 : 0)) * hour;
+  if (Date.parse(market.updatedAt) < target) return { status: 'stale', updatedAtTaipei };
+
+  const alerts = [];
+  const nonMatches = [];
+  const unreadableItemIds = [];
+  for (const { itemId, limit } of entries) {
+    if (unreadable(market, itemId)) {
+      unreadableItemIds.push(itemId);
+      continue;
+    }
+    const ladder = ladderOf(market, itemId);
+    const lowest = ladder[0]?.[0];
+    if (lowest !== undefined && lowest <= limit) {
+      alerts.push({ itemId, minPriceText: alertPriceText(lowest), maxUnitPriceText: alertPriceText(limit),
+        unitsAtOrBelowTrigger: units(ladder, limit),
+        tiers: ladder.slice(0, 3).map(([price, quantity]) => [alertPriceText(price), quantity]) });
+    } else if (includeNonMatches) {
+      nonMatches.push({ itemId, minPriceText: lowest === undefined ? null : alertPriceText(lowest) });
+    }
+  }
+  return { status: alerts.length ? 'match' : 'no_match', updatedAtTaipei,
+    ...(alerts.length ? { alerts } : {}), ...(includeNonMatches ? { nonMatches } : {}),
+    ...(unreadableItemIds.length ? { unreadableItemIds } : {}) };
+}
+
 const armoryErrors = {
   400: '角色名稱格式不正確，請用「名字-姓氏」，例如 測試-角色。',
   404: '找不到這個角色，或該角色沒有公開資料。',
@@ -403,6 +455,21 @@ const tools = new Map([
       } },
     } },
   } }],
+  ['check_price_alerts', { run: checkPriceAlerts, compact: true, definition: {
+    description: '用一次查詢比對部落 113 號拍賣場的物品清單。單價小於或等於門檻時 status 為 match，'
+      + 'alerts 回傳最低價、門檻、門檻內總件數和最低三檔 [單價, 件數]。其餘狀態為 no_match、stale、unavailable。',
+    inputSchema: { type: 'object', required: ['items'], properties: {
+      items: { type: 'array', minItems: 1, maxItems: 50, items: {
+        type: 'object', required: ['itemId', 'maxUnitPriceCopper'], properties: {
+          itemId: { type: 'integer', minimum: 1, description: '物品 ID。' },
+          maxUnitPriceCopper: { type: 'integer', minimum: 1, description: '每件的到價門檻，單位為銅。' },
+        },
+      } },
+      includeNonMatches: { type: 'boolean', default: false, description: '附上超價或缺貨物品的最低價，缺貨回 null。' },
+      snapshotHour: { type: 'string', enum: ['current', 'previous'], default: 'current',
+        description: '快照至少是本小時（current）或上一小時（previous）。' },
+    } },
+  } }],
   ['get_character_professions', { run: getCharacterProfessions, definition: {
     description: '查《魔獸世界：永恆》台區角色的等級、職業、公會與各專業目前技能點數、上限和已學配方數。',
     inputSchema: { type: 'object', required: ['slug'], properties: {
@@ -420,7 +487,7 @@ const isObject = value => Boolean(value) && typeof value === 'object' && !Array.
 async function callTool(ctx, tool, args) {
   try {
     const payload = await tool.run(ctx, argumentsOf(args));
-    return { content: [{ type: 'text', text: JSON.stringify(payload, null, 2) }] };
+    return { content: [{ type: 'text', text: JSON.stringify(payload, null, tool.compact ? 0 : 2) }] };
   } catch (error) {
     const text = error instanceof ToolError ? error.message : '工具執行失敗，請稍後再試。';
     return { content: [{ type: 'text', text }], isError: true };

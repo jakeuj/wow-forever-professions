@@ -7,7 +7,6 @@ workers_dev = true
 binding = "SNAPSHOTS"
 id = "41656027e480400dbba01b2fa114d68c"
 
-# Starts .github/workflows/auction-collect.yml at :27 and :42 (see dispatch.mjs).
-# Battle.net snapshots have been observed at :26 and :40–:41.
+# Checks KV at :12, :27, :42 and :57. At :12, the target is the previous hour.
 [triggers]
-crons = ["27,42 * * * *"]
+crons = ["12,27,42,57 * * * *"]

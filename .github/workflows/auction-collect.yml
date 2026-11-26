@@ -1,18 +1,18 @@
 # Hourly: add the latest Horde auction snapshot from the Battle.net API to
 # auctions.json on the `auction-data` branch, which the market page reads, and the
 # stackables' price and units to hourly/<Taiwan date>.jsonl for time-of-day studies.
-# The Publisher Worker's cron trigger (guild/worker/dispatch.mjs) starts it at :27
-# and :42 through workflow_dispatch; GitHub's own schedule below fired only 3-4
-# times a day and stays as a fallback. The API refreshes once an hour (minute drifts).
-# Credentials come from repo Secrets. GitHub turns off schedules in public repos
-# after 60 days without activity; re-enable this workflow in the Actions tab then
-# (a disabled workflow also refuses the Worker's dispatch).
+# The Publisher Worker checks KV at :12, :27, :42 and :57 and dispatches only
+# when the target hour is missing. The API refreshes once an hour (minute drifts).
+# Credentials come from repo Secrets.
 name: Collect Horde auction prices
 
 on:
-  schedule:
-    - cron: "12 * * * *"
   workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: Rebuild the KV price ladder with an unconditional GET
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -41,6 +41,7 @@ jobs:
         run: >-
           python3 scripts/collect-auctions.py --out auction-data/auctions.json
           --hourly-dir auction-data/hourly --publish-depth
+          ${{ inputs.force_refresh && '--force-refresh' || '' }}
       - name: Commit to the data branch
         working-directory: auction-data
         run: |
