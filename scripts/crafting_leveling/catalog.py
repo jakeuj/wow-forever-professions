@@ -63,6 +63,9 @@ def auto_catalog(data_dir, release, enabled):
     professions = {}
     item_ids = set()
     for slug in enabled:
+        # The addon's plan conditions keep Classic skill values; these come from the official Forever item API.
+        official = {int(item): skill for item, skill in facts.get("formulaSkills", {}).get(slug, {}).items()}
+        unused = set(official)
         available = {}
         for spell, recipe in sorted(recipes[slug].items()):
             if recipe.restricted or not (type(recipe.learn) is int and 1 <= recipe.learn <= 300
@@ -80,9 +83,14 @@ def auto_catalog(data_dir, release, enabled):
                     offers = [{"item": 0, "fee": recipe.fee, "skill": recipe.learn, "level": 0}]
                 elif recipe.formula and recipe.formula in formulas:
                     offers = [{"item": recipe.formula, "fee": 0, "skill": recipe.learn, "level": 0}]
+            offers = [{**offer, "skill": official[offer["item"]]} if offer["item"] in official else offer
+                      for offer in offers]
+            unused.difference_update(offer["item"] for offer in offers)
             available[spell] = {**browser_recipe(recipe), "offers": offers, "grant": grants[slug].get(spell, 0)}
             item_ids.update((recipe.product, *recipe.tools, *(row["item"] for row in offers)))
             item_ids.update(item for item, _ in (*recipe.reagents, *recipe.unlock_materials))
+        if unused:
+            raise ValueError(f"{slug} 的設計圖技能修正找不到學習來源：{sorted(unused)}")
         ranks = series(trainers[slug]["ranks"])
         if tuple(row["cap"] for row in ranks) != (75, 150, 225, 300):
             raise ValueError(f"{slug} 的技能上限與現有學費不一致")

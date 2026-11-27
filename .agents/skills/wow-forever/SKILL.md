@@ -33,7 +33,7 @@ description: 查證《魔獸世界：永恆》（WoW Forever／wowf）台服玩�
 | 遭攔截的木箱、商人貢獻點：哪種箱子便宜、購物清單、算進自己的箱子或遊戲內掃描 | [遭攔截的木箱](references/waylaid-crates.md) |
 | 工匠令狀、補給聲望（杜洛塔補給與物流）：哪份令狀便宜、每天衝多少、密封令狀 | [工匠令狀與補給聲望](references/craftsman-writs.md) |
 | 60 級製造、團本消耗品與配方取得優先序 | [後期製造需求](references/endgame-crafting.md) |
-| Battle.net 端點、OAuth、namespace、HTTP 429 或核對配方材料與產量 | [官方 API](references/battlenet-api.md) |
+| Battle.net 端點、OAuth、namespace、HTTP 429 或核對配方材料、產量與設計圖學習技能 | [官方 API](references/battlenet-api.md) |
 | 使用 `forever_api.py` 或設定 DPAPI、macOS 鑰匙圈、環境變數 | [本機查詢與憑證](references/battlenet-local-tools.md) |
 | 端點可用性、參數與涵蓋率 | [實測與重新探測](references/battlenet-api-coverage.md) |
 | 客戶端資料表、Wowhead、論壇或外部資料整合 | [公開資料來源](references/public-data-sources.md) |

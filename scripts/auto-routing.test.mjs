@@ -166,6 +166,20 @@ test('搜尋依即時價階、缺貨與自備庫存更換鍛造 187 → 225 的�
   assert.equal(owned.plan.items.find(item => item.id === 2).owned, 38);
 });
 
+test('鍛造 225 → 300 依官方設計圖門檻 230 學黑檀剃刃，在 255 前就採用', () => {
+  const blacksmithing = catalog.professions.blacksmithing;
+  const shiv = blacksmithing.recipes[10013];
+  assert.deepEqual(shiv.offers.map(offer => [offer.item, offer.skill]), [[8030, 230]]);
+  const cheap = new Set([shiv.formula, ...shiv.tools, ...shiv.reagents.map(([id]) => id)]);
+  const depth = { depth: Object.fromEntries(Object.keys(catalog.items)
+    .map(id => [id, [[cheap.has(Number(id)) ? 1 : 10000, 50000]]])) };
+  const result = searchRoute(catalog, blacksmithing, { ...input, start: 225, cap: 300, target: 300 }, depth);
+  assert.equal(result.status, 'qualified');
+  const [learned, firstCraft] = result.plan.steps.filter(step => step.spell === 10013);
+  assert.equal(learned.kind, 'learn');
+  assert.ok(learned.from < 255 && firstCraft.from < 255, `${learned.from} → ${firstCraft.from}`);
+});
+
 test('預設 90%，95% 需要多一次，只有三份材料時清楚回報 87.5%', () => {
   const mixed = { ranks, recipes: { 11: recipe(11, 1, { yellow: 10, green: 20, grey: 30 }) } };
   const settings = { ...input, start: 20, target: 21, cap: 75 };

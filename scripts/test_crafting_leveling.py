@@ -1,10 +1,24 @@
 from fractions import Fraction
+import json
 import unittest
 
 from crafting_leveling.catalog import build_battle_net_recipe_map
 from crafting_leveling.render import priority_list
 from crafting_leveling.routes import Market, Phase, buy, compile_route
-from crafting_leveling.sources import Recipe, checked_depth, verified_recipe_fields
+from crafting_leveling.sources import REPO, ROUTE_FACTS, Recipe, checked_depth, verified_recipe_fields
+
+
+class AutoCatalogTests(unittest.TestCase):
+    def test_published_plans_use_the_checked_forever_skill(self):
+        checked = json.loads(ROUTE_FACTS.read_text(encoding="utf-8"))["formulaSkills"]
+        catalog = json.loads((REPO / "crafting-leveling/auto-recipes.json").read_text(encoding="utf-8"))
+        for slug, plans in checked.items():
+            offers = {offer["item"]: offer for recipe in catalog["professions"][slug]["recipes"].values()
+                      for offer in recipe["offers"]}
+            for item, skill in plans.items():
+                with self.subTest(slug=slug, item=item):
+                    self.assertEqual(offers[int(item)]["skill"], skill)
+        self.assertEqual(checked["blacksmithing"]["8030"], 230)
 
 
 class BattleNetRecipeMapTests(unittest.TestCase):
