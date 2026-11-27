@@ -270,5 +270,79 @@ class OptionsTest(unittest.TestCase):
                 self.assertEqual((args.start, args.end), (200, 225))
 
 
+class LearnableTest(unittest.TestCase):
+    """Amobi marks every trainer recipe 「訓練師 待確認」; the recipe library decides which are taught."""
+
+    PAGE = "".join(
+        f'<li class="pf-r" data-learn="trainer"><p class="hd"><a class="nm q2" href="/items/{item}">{name}</a>'
+        f'<span class="pf-sk" title="技能點數：變黃 {y}、變綠 {y + 10}、變灰 {y + 20}"></span></p>'
+        '<p class="ln"><span class="k">學習</span><span class="v"><span class="lm trainer">訓練師</span>'
+        '<small>待確認</small></span></p></li>'
+        for item, name, y in ((12644, "緻密砂輪", 230), (7945, "巨型黑色錘", 230), (7936, "華麗秘銀戰靴", 240),
+                              (12764, "瑟銀巨劍", 260)))
+    LIBRARY = {
+        "16639": {"name": "緻密砂輪", "product": 12644, "offers": [{"item": 0, "fee": 10000, "skill": 225, "level": 0}]},
+        "10001": {"name": "物品 7945", "product": 7945, "offers": [{"item": 0, "fee": 15000, "skill": 205, "level": 0}]},
+        "9979": {"name": "華麗秘銀戰靴", "product": 7936, "offers": []},
+        "16960": {"name": "瑟銀巨劍", "product": 12764, "offers": []},
+        "16969": {"name": "華麗瑟銀手斧", "product": 12775,
+                  "offers": [{"item": 12819, "fee": 0, "skill": 255, "level": 0}]},
+    }
+
+    def load(self, unconfirmed=False, learned=(), library=LIBRARY):
+        import argparse
+        import json
+        import leveling_route
+        with tempfile.TemporaryDirectory() as tmp:
+            learn = Path(tmp) / "learn.json"
+            learn.write_text(json.dumps({"recipes": [
+                {"name": "緻密砂輪", "skill": 225}, {"name": "華麗秘銀戰靴", "skill": 225},
+                {"name": "瑟銀巨劍", "skill": 245, "unobtainable": "2026-11-27 實測學不到"}]}), encoding="utf-8")
+            args = argparse.Namespace(profession="blacksmithing", learn_skills=learn, faction="部落",
+                                      exclude_formula=[], unconfirmed=unconfirmed)
+            taught = leveling_route.trainer_taught(library)
+            recipes = leveling_route.load_recipes(args, lambda url, name: self.PAGE, learned, taught)
+        return {r["name"]: r for r in recipes}
+
+    def test_only_recipes_the_library_has_a_trainer_for_are_learnable(self):
+        import leveling_route
+        # A plan is not a trainer; placeholder names still match by product.
+        self.assertEqual(leveling_route.trainer_taught(self.LIBRARY), {12644, "緻密砂輪", 7945, "物品 7945"})
+        self.assertIsNone(leveling_route.trainer_taught(None))
+        r = self.load()
+        self.assertFalse(r["緻密砂輪"]["blocked"] or r["巨型黑色錘"]["blocked"])
+        self.assertTrue(r["華麗秘銀戰靴"]["blocked"] and r["華麗秘銀戰靴"]["unconfirmed"])
+        self.assertTrue(r["瑟銀巨劍"]["blocked"])
+
+    def test_unconfirmed_adds_them_back_but_not_the_unobtainable(self):
+        r = self.load(unconfirmed=True)
+        self.assertFalse(r["華麗秘銀戰靴"]["blocked"])
+        self.assertTrue(r["華麗秘銀戰靴"]["unconfirmed"])  # labelled 訓練師（待確認）
+        self.assertTrue(r["瑟銀巨劍"]["blocked"])
+
+    def test_learned_recipes_and_a_missing_library_block_nothing_unsure(self):
+        for learned in ({"華麗秘銀戰靴"}, {7936}):  # by name, or by product for a placeholder name
+            r = self.load(learned=learned)
+            self.assertFalse(r["華麗秘銀戰靴"]["blocked"] or r["華麗秘銀戰靴"]["unconfirmed"])
+        r = self.load(library=None)
+        self.assertFalse(r["華麗秘銀戰靴"]["blocked"])
+        self.assertTrue(r["瑟銀巨劍"]["blocked"])  # the learn-skill flag still holds
+
+    def test_notes_name_what_was_left_out(self):
+        import leveling_route
+        notes = leveling_route.skipped_notes(list(self.load().values()), 225, 300, False)
+        self.assertIn("瑟銀巨劍學不到：2026-11-27 實測學不到", notes[0])
+        self.assertIn("華麗秘銀戰靴", notes[1])
+        self.assertEqual(leveling_route.skipped_notes(list(self.load().values()), 280, 300, False), [])  # all grey
+
+    def test_plan_vendors_keep_their_name(self):
+        from leveling_pricing import Pricer
+        pricer = Pricer(lambda url, name: "", {}, [])
+        pricer.pages[12819] = {"vendors": [{"zone": "西瘟疫之地", "npc": "瑪格努斯·霜鳴", "limited": False,
+                                            "unit_price": 16000}], "faction_seen": {}, "faction_min": {}}
+        self.assertEqual(pricer.sources(12819, plan=True)[0][2], "NPC 瑪格努斯·霜鳴（西瘟疫之地）")
+        self.assertIn("主城商人多半也有", pricer.sources(12819)[0][2])  # reagents keep the hint
+
+
 if __name__ == "__main__":
     unittest.main()

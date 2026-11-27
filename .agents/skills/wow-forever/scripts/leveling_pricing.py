@@ -249,8 +249,10 @@ class Pricer:
             self.pages[item_id] = info
         return self.pages[item_id]
 
-    def sources(self, item_id):
-        """Ways to buy the item, cheapest first: (copper per unit, listed count or None, label, kind)."""
+    def sources(self, item_id, plan=False):
+        """Ways to buy the item, cheapest first: (copper per unit, listed count or None, label, kind).
+
+        plan: the item is a recipe (plan, pattern...), which only the listed vendors sell."""
         options = []
         if item_id in self.scan:
             price, count = self.scan[item_id]
@@ -259,8 +261,9 @@ class Pricer:
         towns = HOME_TOWNS[self.faction]
         for v in sorted(info["vendors"], key=lambda v: not any(town in v["zone"] for town in towns)):
             if not v["limited"] and v["unit_price"]:
-                home = any(town in v["zone"] for town in towns)
-                # Amobi lists only a few vendors per item; a far-off one usually means the capital's also sells it.
+                home = plan or any(town in v["zone"] for town in towns)
+                # Amobi lists only a few vendors per reagent; a far-off one usually means the capital's also
+                # sells it. Not so for plans: 設計圖：華麗瑟銀手斧 is sold only by 瑪格努斯·霜鳴 (西瘟疫之地).
                 where = f"NPC {v['npc']}（{v['zone']}）" if home else "NPC 商人（阿莫比列的不在主城，主城商人多半也有）"
                 options.append((v["unit_price"], None, where, "npc"))
         seen = info["faction_seen"].get("中立拍賣場", "")

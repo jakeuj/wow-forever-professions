@@ -1,7 +1,7 @@
 {
   "source": "https://wowf.io/tw/professions/blacksmithing",
   "retrieved": "2026-11-18",
-  "note": "學會配方所需的技能（橘色門檻）。approx 表示 wowf.io 標「~」的概估值；faction 是限陣營配方。用於阿莫比沒有寫需要技能的訓練師配方。",
+  "note": "學會配方所需的技能（橘色門檻）。approx 表示 wowf.io 標「~」的概估值；faction 是限陣營配方；unobtainable 寫明永恆學不到的原因與查證日期，路線一律排除。用於阿莫比沒有寫需要技能的訓練師配方。",
   "recipes": [
     {"name": "劣質平衡石", "skill": 1},
     {"name": "劣質磨刀石", "skill": 1},
@@ -310,7 +310,7 @@
     {"name": "魔化戰錘", "skill": 255},
     {"name": "黑鐵護肩", "skill": 255},
     {"name": "平靜", "skill": 260},
-    {"name": "瑟銀巨劍", "skill": 260, "approx": true},
+    {"name": "瑟銀巨劍", "skill": 260, "approx": true, "unobtainable": "2026-11-27 鍛造 255 實測學不到；經典版由設計圖：瑟銀巨劍（12816）教，Wowhead 永恆沒有這張設計圖，也沒列教法術 16960 的訓練師或物品"},
     {"name": "瑟銀長柄斧", "skill": 260},
     {"name": "真銀聖劍", "skill": 260},
     {"name": "輻光手套", "skill": 260},

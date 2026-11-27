@@ -4,7 +4,11 @@
 Recipes, skill colours, reagents, NPC sale and vendor sell prices come from
 wowamobi.com; prices and listing counts from the owner's Auctionator full scan
 (or the market page's data.json). Trainer recipes have no "requires N" on Amobi,
-so their learn skill comes from data/wowf-learn-skill-<profession>.json.
+so their learn skill comes from data/wowf-learn-skill-<profession>.json. Amobi marks every
+trainer recipe 「訓練師 待確認」, so one counts as learnable only when the site's recipe
+library (crafting-leveling/auto-recipes.json, DungeonsForever's confirmed learning sources)
+has a trainer for it or the character already knows it; --unconfirmed adds the rest, marked
+待確認. "unobtainable" in the learn-skill JSON keeps a recipe out either way.
 
 Skill points are walked in order. Each goes to the recipe with the lowest expected
 net cost, (reagents - vendor sell price) / chance, where the chance is 1 below yellow
@@ -74,18 +78,42 @@ def local_slug(path):
     return m.group(1) if m else None
 
 
-def recipe_book(known_ids, profession):
-    """(learned zhTW recipe names, trainer fee in copper by name) from the site's recipe library."""
+def recipe_library(profession):
+    """The profession's recipes in the site's recipe library, or None without the library file."""
     path = REPO / "crafting-leveling" / "auto-recipes.json"
     if not path.is_file():
-        return set(), {}
-    recipes = json.loads(path.read_text(encoding="utf-8"))["professions"].get(profession, {}).get("recipes", {})
-    learned = {r["name"] for r in recipes.values() if r.get("battle_net_recipe_id") in known_ids}
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))["professions"].get(profession, {}).get("recipes", {})
+
+
+def trainer_taught(library):
+    """Product item IDs and zhTW names the library has a trainer offer (offer item 0) for, or
+    None without the library.
+
+    The library keeps only learning sources DungeonsForever marks confirmed. Amobi labels every
+    trainer recipe 「訓練師 待確認」, so this is the check that a trainer really teaches one.
+    Products match first: some library names are placeholders such as 「物品 7945」."""
+    if library is None:
+        return None
+    taught = [r for r in library.values() if any(o.get("item") == 0 for o in r.get("offers") or [])]
+    return {r["product"] for r in taught if r.get("product")} | {r["name"] for r in taught}
+
+
+def recipe_book(known_ids, profession):
+    """(learned recipes, trainer fee in copper) from the site's recipe library, both keyed by
+    zhTW name and by product item ID, since some library names are placeholders (「物品 250574」)."""
+    recipes = recipe_library(profession) or {}
+    learned = set()
+    for r in recipes.values():
+        if r.get("battle_net_recipe_id") in known_ids:
+            learned |= {r["name"], r.get("product")} - {None, 0}
     fees = {}
     for r in recipes.values():
         fee = r.get("fee") or next((o.get("fee") for o in r.get("offers") or [] if o.get("fee")), None)
         if fee:
             fees.setdefault(r["name"], fee)
+            if r.get("product"):
+                fees.setdefault(r["product"], fee)
     return learned, fees
 
 
@@ -125,6 +153,9 @@ def build_parser():
     parser.add_argument("--faction", default="部落", choices=["部落", "聯盟"])
     parser.add_argument("--neutral", action="store_true", help="also buy from neutral AH listings Amobi saw in the last two days")
     parser.add_argument("--exclude-formula", type=int, action="append", default=[], help="skip a formula by item ID")
+    parser.add_argument("--unconfirmed", action="store_true",
+                        help="also use trainer recipes the recipe library has no trainer for (marked 待確認); "
+                             "recipes the learn-skill JSON marks unobtainable stay out")
     parser.add_argument("--use", action="append", default=[], metavar="NAMES",
                         help="only these recipes (zhTW names, comma-separated or repeated), e.g. 鋼質頭盔,秘銀馬刺")
     parser.add_argument("--avoid", action="append", default=[], metavar="NAMES",
@@ -189,9 +220,13 @@ def resolve_options(argv=None):
     return args, state
 
 
-def load_recipes(args, get):
-    """The profession's recipes from wowamobi, with orange (learn skill) and blocked (the other
-    faction's, or --exclude-formula) set from the learn-skill data."""
+def load_recipes(args, get, learned=(), taught=None):
+    """The profession's recipes from wowamobi, with orange (learn skill) from the learn-skill data.
+
+    blocked: the other faction's, --exclude-formula, "unobtainable" in the learn-skill data, or
+    (without --unconfirmed) unconfirmed: a trainer recipe whose product and name are both outside
+    taught (trainer_taught). Recipes the character has learned (learned) are never either.
+    taught None (no library) checks nothing."""
     recipes = parse_profession(get(f"{av.BASE}/professions/{args.profession}", f"profession-{args.profession}.html"))
     if not recipes:
         sys.exit("no recipes parsed; the profession page layout may have changed")
@@ -200,9 +235,26 @@ def load_recipes(args, get):
     other = "聯盟" if args.faction == "部落" else "部落"
     for r in recipes:
         w = learn.get(r["name"], {})
+        known = r["name"] in learned or r["item_id"] in learned
         r["orange"] = r["need"] if r["need"] is not None else w.get("skill")
-        r["blocked"] = w.get("faction") == other or r["recipe_id"] in args.exclude_formula
+        r["unobtainable"] = None if known else w.get("unobtainable")
+        r["unconfirmed"] = (not known and r["learn"] == "trainer" and taught is not None
+                            and r["item_id"] not in taught and r["name"] not in taught)
+        r["blocked"] = (w.get("faction") == other or r["recipe_id"] in args.exclude_formula
+                        or bool(r["unobtainable"]) or (r["unconfirmed"] and not args.unconfirmed))
     return recipes
+
+
+def skipped_notes(recipes, start, end, unconfirmed):
+    """Notes naming the recipes in start..end left out as unobtainable or unconfirmed."""
+    in_range = [r for r in recipes if r["grey"] > start and (r["orange"] or 0) < end]
+    notes = [f"{r['name']}學不到：{r['unobtainable']}" for r in in_range if r["unobtainable"]]
+    unsure = [r["name"] for r in in_range if r["unconfirmed"] and not r["unobtainable"]]
+    if unsure and not unconfirmed:
+        names = "、".join(unsure[:6]) + ("等" if len(unsure) > 6 else "")
+        notes.append(f"略過 {len(unsure)} 個網站配方庫查無訓練師的配方（{names}），"
+                     "阿莫比只標「訓練師 待確認」；確認學得到再加 --unconfirmed")
+    return notes
 
 
 def character_notes(state, start, end):
@@ -224,7 +276,8 @@ def main():
 
     args.cache.mkdir(parents=True, exist_ok=True)
     get = lambda url, name: av.fetch(url, args.cache, name, args.max_age, 0.4)
-    recipes = load_recipes(args, get)
+    taught = trainer_taught(recipe_library(args.profession))
+    recipes = load_recipes(args, get, state["learned"] if state else (), taught)
     scan, scan_label = load_scan(args)
     unknown = sorted((args.use | args.avoid) - {r["name"] for r in recipes})
     if unknown:
@@ -256,7 +309,9 @@ def main():
         made_inputs = {m["id"]: [(i, per) for i, _, per in m["inputs"]] for ph in result["phases"] for m in ph["made"]}
         apply_holdings(result["phases"], holdings, made_inputs)
         result["bags_saved"] = bags_saved
-    notes = []
+    notes = skipped_notes(recipes, args.start, args.end, args.unconfirmed)
+    if taught is None:
+        notes.append("找不到網站配方庫（crafting-leveling/auto-recipes.json），訓練師配方沒有核對學習來源")
     if state:
         result["character"] = {"level": state["level"], "skill": state["skills"].get(PROFESSION_IDS.get(args.profession)),
                                "mining": args.mining, "api_modified": state["modified"]}

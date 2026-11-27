@@ -45,18 +45,21 @@ def candidate_pool(recipes, pricer, start, end, stock, use=(), avoid=(), state=N
         r["sell"], r["recover"] = pricer.product_value(r)
         r["net"] = r["cost"] - r["sell"]
         owned = (holdings or {}).get(r["recipe_id"]) if r["recipe_id"] else None
-        if r["learn"] == "trainer" and state and r["name"] not in state["learned"]:
-            fee = state["fees"].get(r["name"], 0)
+        unsure = "待確認，" if r.get("unconfirmed") else ""  # --unconfirmed: no known trainer teaches it
+        # learned and fees are keyed by name and product: some library names are placeholders.
+        known = bool(state) and (r["name"] in state["learned"] or r["item_id"] in state["learned"])
+        if r["learn"] == "trainer" and state and not known:
+            fee = state["fees"].get(r["name"]) or state["fees"].get(r["item_id"], 0)
             r["acquire"] = fee
-            r["acquire_from"] = "訓練師（未學" + (f"，學費 {fee / 10000:.2f}g" if fee else "") + "）"
+            r["acquire_from"] = f"訓練師（{unsure}未學" + (f"，學費 {fee / 10000:.2f}g" if fee else "") + "）"
         elif r["learn"] in ("trainer", "auto"):
-            r["acquire"], r["acquire_from"] = 0, "訓練師"
-        elif state and r["name"] in state["learned"]:
+            r["acquire"], r["acquire_from"] = 0, "訓練師（待確認）" if unsure else "訓練師"
+        elif known:
             r["acquire"], r["acquire_from"] = 0, "已學"
         elif owned:
             r["acquire"], r["acquire_from"] = 0, f"已有設計圖（{'、'.join(owned['where'][:2])}）"
         else:
-            plan = next(iter(pricer.sources(r["recipe_id"])), None)
+            plan = next(iter(pricer.sources(r["recipe_id"], plan=True)), None)
             if plan is None:
                 missing_plans.append(r)
                 continue
