@@ -50,6 +50,14 @@
 
 工程技能階段 `2941` 的繁中索引中，`56773` 和 `56774` 的 `name` 都是 `null`，核對時的收集程式因此在取明細前略過兩筆。新版收集程式按配方 ID 取明細，顯示名稱依序使用繁中配方名、繁中成品名、英文配方名。 [正式配方快照](https://dawnblade-guild-data.jakeuj.workers.dev/recipes.json)
 
+## 設計圖學習技能核對
+
+2026-11-27 用 `/data/wow/item/{id}` 逐筆取得自動選路的 1,124 張設計圖、配方、圖樣與公式，學習技能在 `preview_item.requirements.skill.level`。1,122 筆回 HTTP 200；鍊金 `2554`、製皮 `4295` 回 404，沿用插件值。
+
+- 無限副本手冊 `Data_ProfLearningSources.lua` 的技能條件有 93 筆是經典版數值，比官方高 10～45 點：鍛造 78、裁縫 11、製皮 2、鍊金 1、附魔 1，工程沒有。例：黑檀剃刃 `8030` 官方 230、插件 255；瑟銀長靴 `12693` 官方 255、插件 280；輻光護腿 `12713` 官方 280、插件 300。
+- 其中 92 筆的官方值等於配方的 `learn`，只有製皮架藍圖 `273096` 是 125，`learn` 為 140。守護披風圖樣 `5974` 相反，官方 160 高於 `learn` 125，插件值才對，所以不能直接拿 `learn` 當上限。
+- 官方值記在 `scripts/crafting-leveling-routes.json` 的 `formulaSkills`（專業 → 物品 ID → 技能）。重建自動配方庫時以它覆寫學習來源的技能，角色等級條件不變；表中物品找不到學習來源時建置會失敗。更換插件版本後重跑這項核對。
+
 ## 官方指南重點
 
 可信度：官方文件，2026-11-18 讀取 [Using APIs](https://community.developer.battle.net/documentation/guides) 與 WoW、WoW Classic 兩組指南。

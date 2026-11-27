@@ -111,7 +111,7 @@ python scripts/build-crafting-leveling.py --root 'C:/Games/World of Warcraft'
 | 要改的行為 | 來源 | 產物與驗證 |
 | --- | --- | --- |
 | 練等頁版面與費用呈現 | `scripts/crafting-leveling.html`、`scripts/crafting_leveling/render.py` | `--root <遊戲目錄>` 產生 `crafting-leveling/index.html`，同組輸入加 `--check` 比對。 |
-| 配方來源 | `scripts/crafting_leveling/sources.py` 讀插件與已核對資料，`catalog.py` 編排瀏覽器目錄。 | `--addon-zip <ZIP>` 產生 `crafting-leveling/routes.json`。加 `--auto-professions alchemy blacksmithing enchanting engineering leatherworking tailoring` 產生 `crafting-leveling/auto-recipes.json`。跑 Python 與 Node 測試驗證資料與試算。 |
+| 配方來源 | `scripts/crafting_leveling/sources.py` 讀插件與已核對資料，`catalog.py` 編排瀏覽器目錄。設計圖與圖樣的學習技能以 `scripts/crafting-leveling-routes.json` 的 `formulaSkills` 為準，核對方式見[官方 API](.agents/skills/wow-forever/references/battlenet-api.md#設計圖學習技能核對)。 | `--addon-zip <ZIP>` 產生 `crafting-leveling/routes.json`。加 `--auto-professions alchemy blacksmithing enchanting engineering leatherworking tailoring` 產生 `crafting-leveling/auto-recipes.json`。跑 Python 與 Node 測試驗證資料與試算。 |
 | 固定路線與估價 | `scripts/crafting_leveling/routes.py` 計算固定路線與估價，修訂資料在 `scripts/crafting-leveling-routes.json`。 | `--root <遊戲目錄>` 重建 HTML，路線有更新時以 `--addon-zip <ZIP>` 同步固定路線目錄。 |
 | 官方配方欄位與軍械庫 ID 對照 | `scripts/crafting_leveling/catalog.py` 管理目錄、欄位核對與 ID 對照；`sources.py` 載入已核對欄位。 | `--battle-net-audit <核對報告>` 產生 `scripts/battle-net-leveling-data.json`。重建自動配方庫後，以 `--battle-net-catalog <官方配方快照>` 產生 `crafting-leveling/battle-net-recipe-map.json`，跑兩套測試驗證核對與角色匯入。 |
 | 掃描價階備援 | `scripts/crafting_leveling/sources.py` 驗證同輪部落完整掃描。 | `--root <遊戲目錄> --scan-depth-out market/scan-depth.json` 匯出備援，核對市場、掃描時間及價階件數。 |
