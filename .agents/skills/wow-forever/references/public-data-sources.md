@@ -25,6 +25,7 @@
 | 各區釣魚漁獲率 | [GoldScout 釣點](https://wowgoldscout.com/fishing)（只收永恆玩家拾取） | 整區全天平均，魚群與開放水域不分；判讀見[練等頁釣魚分頁](profession-planner-site.md) |
 | 掉落、NPC 位置 | 無官方來源（副本手冊 API 為空）；Wowhead 永恆物品頁、[插件群眾回報](#遊戲內插件收集)，掉率實測看 GoldScout `/item/{id}` | 經典版資料只能標示為參考 |
 | 誰在賣（NPC 商人） | 瀏覽器開 [Wowhead 永恆](#wowhead-永恆繁中)物品頁，讀內嵌的 `sold-by` 清單：`react[1]` 為 1 是部落可用，`location` 是區域 ID，`cost` 是每份銅價、`stack` 是一份幾個 | 官方物品 API 的 `purchase_price` ÷ `purchase_quantity` 可核對價格。先挑同一處有部落拍賣場的商人 |
+| 飛行點（鳥點）、船與飛船 | [MetaBot 永恆飛行點](https://metabot.gg/en/wow-forever/flight-paths)（讀客戶端資料，2026-11-28 核對 build `1.60.1.71037` 共 67 個，含海加爾山／大河林地新增 5 個）、[classicwowforever 航線圖](https://classicwowforever.com/boats-and-zeppelins/)；遊戲內看 [Shortest Path Forever](addon-feature-guide.md#跨海航線弧線推薦) | **切勿混用《浩劫與重生》（4.0+）鳥點與座標**。例：西瘟疫之地無部落鳥點、**亡靈壁壘在永恆沒有飛行管理員**（最近的部落鳥點要跑回幽暗城 `63.1, 48.3` 或南下塔倫米爾 `60.2, 18.8`）；東瘟疫之地聖光之願禮拜堂的部落鳥點在 `70.4, 47.6`（非 4.0 後的 `80.2, 57.0`） |
 | 伺服器人口 | 無官方來源；插件抽樣 | 只代表被看到的角色，適合看比例 |
 | 官方公告 | [台灣新聞頁](#官方新聞與論壇) | 未找到 RSS／JSON |
 | 藍帖、BUG 回報 | 台灣官方論壇 JSON／RSS | Discourse 標準端點 |

@@ -36,6 +36,6 @@ description: 查證《魔獸世界：永恆》（WoW Forever／wowf）台服玩�
 | Battle.net 端點、OAuth、namespace、HTTP 429 或核對配方材料、產量與設計圖學習技能 | [官方 API](references/battlenet-api.md) |
 | 使用 `forever_api.py` 或設定 DPAPI、macOS 鑰匙圈、環境變數 | [本機查詢與憑證](references/battlenet-local-tools.md) |
 | 端點可用性、參數與涵蓋率 | [實測與重新探測](references/battlenet-api-coverage.md) |
-| 客戶端資料表、Wowhead、論壇或外部資料整合 | [公開資料來源](references/public-data-sources.md) |
+| 客戶端資料表、Wowhead、飛行點／航線、論壇或外部資料整合 | [公開資料來源](references/public-data-sources.md) |
 | 公會官網、專業議事廳、個人整理頁、GitHub Pages、拍賣排程或 Cloudflare | [網站維護](references/profession-planner-site.md)。網站程式、來源與產物從 [README 維護地圖](../../../README.md#維護地圖)找。 |
 | 《黎明之劍》招募、公開聯絡、文案或插圖 | [公會招募素材](references/dawnblade-guild.md) |
