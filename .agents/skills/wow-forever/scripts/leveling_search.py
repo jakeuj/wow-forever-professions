@@ -61,7 +61,8 @@ def candidate_pool(recipes, pricer, start, end, stock, use=(), avoid=(), state=N
         else:
             plan = next(iter(pricer.sources(r["recipe_id"], plan=True)), None)
             if plan is None:
-                missing_plans.append(r)
+                if r["recipe_id"] not in getattr(pricer, "gated_plans", ()):
+                    missing_plans.append(r)
                 continue
             r["acquire"], r["acquire_from"] = plan[0], plan[2]
         pool.append(r)

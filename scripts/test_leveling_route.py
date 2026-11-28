@@ -338,10 +338,50 @@ class LearnableTest(unittest.TestCase):
     def test_plan_vendors_keep_their_name(self):
         from leveling_pricing import Pricer
         pricer = Pricer(lambda url, name: "", {}, [])
-        pricer.pages[12819] = {"vendors": [{"zone": "西瘟疫之地", "npc": "瑪格努斯·霜鳴", "limited": False,
-                                            "unit_price": 16000}], "faction_seen": {}, "faction_min": {}}
-        self.assertEqual(pricer.sources(12819, plan=True)[0][2], "NPC 瑪格努斯·霜鳴（西瘟疫之地）")
-        self.assertIn("主城商人多半也有", pricer.sources(12819)[0][2])  # reagents keep the hint
+        pricer.pages[6044] = {"vendors": [{"zone": "荊棘谷", "npc": "賈琪爾·鐵蹄", "limited": False,
+                                           "unit_price": 3000}], "faction_seen": {}, "faction_min": {}}
+        self.assertEqual(pricer.sources(6044, plan=True)[0][2], "NPC 賈琪爾·鐵蹄（荊棘谷）")
+        self.assertIn("主城商人多半也有", pricer.sources(6044)[0][2])  # reagents keep the hint
+
+    def test_gated_ghost_vendor_skips_low_level_and_annotates_high_level(self):
+        import leveling_route
+        from leveling_pricing import Pricer
+        from leveling_search import candidate_pool
+
+        magnus = {"vendors": [{"zone": "西瘟疫之地", "npc": "瑪格努斯·霜鳴", "limited": False,
+                               "unit_price": 10000}], "faction_seen": {}, "faction_min": {}}
+        recipe = {"name": "黑檀剃刃", "item_id": 7947, "qty": 1, "learn": "recipe", "recipe_id": 8030,
+                  "recipe": "設計圖：黑檀剃刃", "orange": 230, "yellow": 255, "green": 267, "grey": 280,
+                  "mats": [(3860, "秘銀錠", 1)], "blocked": False}
+
+        # Unknown level or 55+: keep vendor option, but annotate Spectral Essence / BoP gate.
+        for lv in (None, 55):
+            pricer = Pricer(lambda url, name: "", {3860: (1000, 100)}, [recipe], level=lv)
+            pricer.pages[8030] = magnus
+            pricer.pages[7947] = {"vendors": [], "faction_seen": {}, "faction_min": {}, "sell": 0}
+            label = pricer.sources(8030, plan=True)[0][2]
+            self.assertIn("瑪格努斯·霜鳴", label)
+            self.assertIn("鬼魂精華", label)
+            self.assertIn("拾取綁定", label)
+
+        # Level 37 (< 55): skip Magnus Frostwake and do not put the BoP plan in missing_plans.
+        low = Pricer(lambda url, name: "", {3860: (1000, 100)}, [recipe], level=37)
+        low.pages[8030] = magnus
+        low.pages[7947] = {"vendors": [], "faction_seen": {}, "faction_min": {}, "sell": 0}
+        pool, missing = candidate_pool([dict(recipe)], low, 225, 300, {3860: 100})
+        self.assertEqual(pool, [])
+        self.assertEqual(missing, [])
+        notes = leveling_route.gated_vendor_notes([recipe], pool, low, 37)
+        self.assertEqual(len(notes), 1)
+        self.assertIn("瑪格努斯·霜鳴", notes[0])
+        self.assertIn("黑檀剃刃", notes[0])
+        self.assertIn("鬼魂精華", notes[0])
+        self.assertIn("目前 37 級", notes[0])
+
+        # Already learned on a sub-55 character: still usable.
+        learned_pool, _ = candidate_pool([dict(recipe)], low, 225, 300, {3860: 100},
+                                         state={"learned": {"黑檀剃刃"}, "fees": {}})
+        self.assertEqual([r["name"] for r in learned_pool], ["黑檀剃刃"])
 
 
 if __name__ == "__main__":

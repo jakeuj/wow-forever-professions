@@ -23,6 +23,16 @@ SHORT_PENALTY = 3  # price factor for units beyond the listed count when choosin
 HELD_WEIGHT = 0.1  # --goal cash: share of its buy price a held unit costs when comparing routes (it costs no gold)
 SELL = re.compile(r'class="wl w sell">售價：(.*?)</div>', re.S)
 HOME_TOWNS = {"部落": ("奧格瑪", "幽暗城", "雷霆崖"), "聯盟": ("暴風城", "鐵爐堡", "達納蘇斯")}
+# Vendors gated behind a quest/item requirement before they are visible or usable.
+# 瑪格努斯·霜鳴 (西瘟疫之地凱爾達隆 68.0, 77.5) is a ghost NPC invisible without the
+# Spectral Essence trinket from the Lv55+ Scholomance quest chain (Eva Sarkhoff ->
+# Kirtonos the Herald); his plans and recipes are BoP (cannot be bought on AH or mailed).
+GATED_VENDORS = {
+    "瑪格努斯·霜鳴": {
+        "min_level": 55,
+        "note": "需裝備「鬼魂精華」，55+ 通靈學院任務線・拾取綁定",
+    },
+}
 # Smelting a blacksmith route can use to make bars; Forever keeps the Classic recipes and mining
 # skills (steel = iron bar + coal, confirmed in game 2026-11-23).
 SMELTS = [
@@ -220,8 +230,10 @@ class Pricer:
     walks set it (--goal cash)."""
 
     def __init__(self, get, scan, recipes, faction="部落", neutral=False, mining=None, products="vendor",
-                 today=None):
+                 today=None, level=None):
         self.get, self.scan, self.faction, self.neutral, self.products = get, scan, faction, neutral, products
+        self.level = level
+        self.gated_plans = {}
         today = today or datetime.date.today()
         self.recent_days = {(today - datetime.timedelta(days=d)).strftime("%m/%d") for d in (0, 1)}
         self.pages = {}
@@ -261,10 +273,19 @@ class Pricer:
         towns = HOME_TOWNS[self.faction]
         for v in sorted(info["vendors"], key=lambda v: not any(town in v["zone"] for town in towns)):
             if not v["limited"] and v["unit_price"]:
+                gate = GATED_VENDORS.get(v["npc"]) if plan else None
+                if gate and self.level is not None and self.level < gate["min_level"]:
+                    self.gated_plans[item_id] = (v["npc"], gate)
+                    continue
                 home = plan or any(town in v["zone"] for town in towns)
                 # Amobi lists only a few vendors per reagent; a far-off one usually means the capital's also
                 # sells it. Not so for plans: 設計圖：華麗瑟銀手斧 is sold only by 瑪格努斯·霜鳴 (西瘟疫之地).
-                where = f"NPC {v['npc']}（{v['zone']}）" if home else "NPC 商人（阿莫比列的不在主城，主城商人多半也有）"
+                if gate:
+                    where = f"NPC {v['npc']}（{v['zone']}，{gate['note']}）"
+                elif home:
+                    where = f"NPC {v['npc']}（{v['zone']}）"
+                else:
+                    where = "NPC 商人（阿莫比列的不在主城，主城商人多半也有）"
                 options.append((v["unit_price"], None, where, "npc"))
         seen = info["faction_seen"].get("中立拍賣場", "")
         if self.neutral and "中立拍賣場" in info["faction_min"] and seen[:5] in self.recent_days:

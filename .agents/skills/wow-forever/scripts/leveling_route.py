@@ -148,6 +148,8 @@ def build_parser():
     auction_changes.add_source_options(parser, root=False)
     parser.add_argument("--bags", action="store_true", help="owned plans cost nothing; show held vs. still-to-buy materials")
     parser.add_argument("--mining", type=int, help="mining skill for smelting bars (default with --character: the API's)")
+    parser.add_argument("--level", type=int,
+                        help="character level (default with --character: the API's); skips plans from higher-level gated vendors")
     parser.add_argument("--gate", type=int, default=225, help="rank cap that needs the next trainer rank (Artisan: 225)")
     parser.add_argument("--learn-skills", type=Path, help="wowf learn-skill JSON (default: data/wowf-learn-skill-<profession>.json)")
     parser.add_argument("--faction", default="部落", choices=["部落", "聯盟"])
@@ -212,6 +214,8 @@ def resolve_options(argv=None):
             args.end = cap
         if args.mining is None:
             args.mining = state["skills"].get(MINING, (None,))[0]
+        if args.level is None:
+            args.level = state["level"]
     if args.start is None:
         parser.error("--from is required without --character or --me")
     args.end = 300 if args.end is None else args.end
@@ -267,6 +271,23 @@ def character_notes(state, start, end):
     return notes
 
 
+def gated_vendor_notes(recipes, pool, pricer, level):
+    """Notes for recipes skipped because their vendor requires a quest/item gate above this level."""
+    usable = {r["name"] for r in pool}
+    by_vendor = {}
+    for r in recipes:
+        if r["name"] in usable or r["recipe_id"] not in pricer.gated_plans:
+            continue
+        npc, gate = pricer.gated_plans[r["recipe_id"]]
+        by_vendor.setdefault(npc, (gate, []))[1].append(r["name"])
+    notes = []
+    for npc, (gate, names) in by_vendor.items():
+        shown = "、".join(names[:6]) + ("等" if len(names) > 6 else "")
+        who = f"（目前 {level} 級）" if level is not None else ""
+        notes.append(f"略過 {npc} 販售的配方（{shown}）：{gate['note']}{who}")
+    return notes
+
+
 def main():
     args, state = resolve_options()
     holdings, bags_saved = (None, None)
@@ -283,7 +304,7 @@ def main():
     if unknown:
         sys.exit("unknown recipe names (use the zhTW names wowamobi shows): " + "、".join(unknown))
 
-    pricer = Pricer(get, scan, recipes, args.faction, args.neutral, args.mining, args.products)
+    pricer = Pricer(get, scan, recipes, args.faction, args.neutral, args.mining, args.products, level=args.level)
     stock = {i: c for i, (_, c) in scan.items() if c is not None}
     if args.goal == "cash":
         stock.update({("held", i): e["count"] for i, e in (holdings or {}).items()})
@@ -310,6 +331,7 @@ def main():
         apply_holdings(result["phases"], holdings, made_inputs)
         result["bags_saved"] = bags_saved
     notes = skipped_notes(recipes, args.start, args.end, args.unconfirmed)
+    notes += gated_vendor_notes(recipes, pool, pricer, args.level)
     if taught is None:
         notes.append("找不到網站配方庫（crafting-leveling/auto-recipes.json），訓練師配方沒有核對學習來源")
     if state:
